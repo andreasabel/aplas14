@@ -97,6 +97,9 @@ ty≤K g≤g'       (a +̂ b) = ty≤K g≤g' a +̂ ty≤K g≤g' b
 ty≤K g≤g'       (a →̂ b) = ty≤K g≤g' a →̂ ty≤K g≤g' b
 ty≤K (s≤s g≤g') (μ̂ f)   = μ̂ λ g'≤g'' → f (≤K.trans g≤g' g'≤g'')
 
+ty↑ : ∀{Δ g} (a : Ty Δ g) → Ty Δ (suc g)
+ty↑ a = ty≤K n≤sn a
+
 tyMaxL : ∀ g' {g Δ} (a : Ty Δ g) → Ty Δ (max g g')
 tyMaxL g' a = caseMax (Ty _) (λ g≤g' → ty≤K g≤g' a) (λ g'≤g → a)
 
