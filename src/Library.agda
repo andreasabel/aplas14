@@ -12,7 +12,8 @@ open import Data.List using (List; []; _∷_; map) public
 open import Function using (_∘_) public
 
 open import Relation.Binary using (module DecTotalOrder)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl) public
+open import Relation.Binary.PropositionalEquality as PropEq using (_≡_) public
+module ≡ = PropEq
 
 module DecTotalOrderℕ = DecTotalOrder decTotalOrderℕ
 
