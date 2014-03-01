@@ -71,6 +71,13 @@ subst σ (pair t u) = pair (subst σ t) (subst σ u)
 subst σ (fst t)    = fst (subst σ t)
 subst σ (snd t)    = snd (subst σ t)
 
+-- Substituting for the 0th variable [u/0]t
+
+subst0 : Term → Term → Term
+subst0 u = subst (sgs u)
+
+--
+
 -- Shallow one-hole full reduction contexts
 
 data Shole : (Term → Term) → Set where
@@ -87,7 +94,7 @@ data Shole : (Term → Term) → Set where
 -- Depth-indexed reduction
 
 data _-⟨_⟩→_ : Term → ℕ → Term → Set where
-  β     : ∀{n t u}                 → app (abs t) u -⟨ n ⟩→ subst (sgs u) t
+  β     : ∀{n t u}                 → app (abs t) u -⟨ n ⟩→ subst0 u t
   β▹    : ∀{n t u}                 → ((▹ t) ∗ (▹ u)) -⟨ n ⟩→ ▹ (app t u)
   βfst  : ∀{n t u}                 → fst (pair t u) -⟨ n ⟩→ t
   βsnd  : ∀{n t u}                 → snd (pair t u) -⟨ n ⟩→ u
@@ -113,31 +120,31 @@ UU = Term → Set
 
 -- Strong normalization
 
--- SN : ℕ → UU
--- SN n = Acc (λ t' t → t -⟨ n ⟩→ t')
+-- sn : ℕ → UU
+-- sn n = Acc (λ t' t → t -⟨ n ⟩→ t')
 
-data SN (n : ℕ) (t : Term) : Set where
-  acc : (∀ {t'} → t -⟨ n ⟩→ t' → SN n t') → SN n t
+data sn (n : ℕ) (t : Term) : Set where
+  acc : (∀ {t'} → t -⟨ n ⟩→ t' → sn n t') → sn n t
 
--- Closure properties of SN
+-- Closure properties of sn
 
--- A direct sub term of a SN term is SN.
+-- A direct sub term of a sn term is sn.
 
-subSN : ∀{C} (sh : Shole C) {n t} → SN n (C t) → SN n t
-subSN sh (acc ih) = acc (λ red → subSN sh (ih (cong sh red)))
+subsn : ∀{C} (sh : Shole C) {n t} → sn n (C t) → sn n t
+subsn sh (acc ih) = acc (λ red → subsn sh (ih (cong sh red)))
 
 -- Strongly normalizing contexts
 
-SNHole : ∀ n {C} (sh : Shole C) → Set
-SNHole n abs       = ⊤
-SNHole n (appl u)  = SN n u
-SNHole n (appr t)  = SN n t
-SNHole n (pairl u) = SN n u
-SNHole n (pairr t) = SN n t
-SNHole n fst       = ⊤
-SNHole n snd       = ⊤
-SNHole n (t ∗l)    = SN n t
-SNHole n (∗r u)    = SN n u
+snHole : ∀ n {C} (sh : Shole C) → Set
+snHole n abs       = ⊤
+snHole n (appl u)  = sn n u
+snHole n (appr t)  = sn n t
+snHole n (pairl u) = sn n u
+snHole n (pairr t) = sn n t
+snHole n fst       = ⊤
+snHole n snd       = ⊤
+snHole n (t ∗l)    = sn n t
+snHole n (∗r u)    = sn n u
 
 -- Evaluation contexts
 
@@ -148,16 +155,104 @@ data Ehole : (Term → Term) → Set where
   _∗l   : ∀ u  → Ehole (λ t → t ∗ u)
   ∗r_   : ∀ t  → Ehole (λ u → (▹ t) ∗ u)
 
-data _⟨_⟩⇒_ : Term → ℕ → Term → Set where
-  β     : ∀{n t u}                 → app (abs t) u ⟨ n ⟩⇒ subst (sgs u) t
-  β▹    : ∀{n t u}                 → ((▹ t) ∗ (▹ u)) ⟨ n ⟩⇒ ▹ (app t u)
-  βfst  : ∀{n t u}                 → fst (pair t u) ⟨ n ⟩⇒ t
-  βsnd  : ∀{n t u}                 → snd (pair t u) ⟨ n ⟩⇒ u
-  ▹_    : ∀{n t t'} → t ⟨ n ⟩⇒ t' → ▹ t ⟨ suc n ⟩⇒ ▹ t'
-  cong  : ∀{C}(sh : Shole C) →
-          ∀{n t t'} → t ⟨ n ⟩⇒ t' → C t ⟨ n ⟩⇒ C t'
+-- Inductive SN
 
--- Strong head reduction
+mutual
+
+-- Strongly normalizing evaluation contexts
+
+  data SNhole (n : ℕ) : (Term → Term) → Set where
+    appl  : ∀{u} → SN n u     → SNhole n (λ t → app t u)
+    fst   : SNhole n fst
+    snd   : SNhole n snd
+    _∗l   : ∀{u} → SN n u     → SNhole n (λ t → t ∗ u)
+    ∗r_   : ∀{t} → SN n (▹ t) → SNhole n (λ u → (▹ t) ∗ u)
+
+  record SNHole (n : ℕ) : Set where
+    constructor snhole
+    field
+      shole  : Term → Term
+      isSN   : SNhole n shole
+
+  -- Stacking evaluation context, innermost first
+
+  SNHole* : (n : ℕ) → Set
+  SNHole* n = List (SNHole n)
+
+  -- Plugging a hole
+
+  _•_ : ∀{n} (t : Term) (E* : SNHole* n) → Term
+  t • [] = t
+  t • (snhole E _ ∷ E*) = E t • E*
+
+  -- Strongly neutral
+
+  record SNe' (n : ℕ) (t : Term) : Set where
+    constructor ne
+    field
+      head : ℕ
+      elim : SNHole* n
+      plug : (var head • elim) ≡ t
+
+  data SNe (n : ℕ) : Term → Set where
+    var  : ∀ x                            → SNe n (var x)
+    elim : ∀ {t E} → SNe n t → SNhole n E → SNe n (E t)
+
+  -- Strongly normalizing
+
+  data SN : ℕ → Term → Set where
+    ne   : ∀{n t}   → SNe n t         → SN n t
+    abs  : ∀{n t}   → SN n t          → SN n (abs t)
+    pair : ∀{n t u} → SN n t → SN n u → SN n (pair t u)
+    ▹0_  : ∀{t}                       → SN 0 (▹ t)
+    ▹_   : ∀{n t}   → SN n t          → SN (suc n) (▹ t)
+    exp  : ∀{n t t'} → t ⟨ n ⟩⇒ t' → SN n t' → SN n t
+
+  -- Strong head reduction
+
+  data _⟨_⟩⇒_ : Term → ℕ → Term → Set where
+    β     : ∀{n t u} → SN n u       → app (abs t) u   ⟨ n ⟩⇒ subst (sgs u) t
+    β▹    : ∀{n t u}                → ((▹ t) ∗ (▹ u)) ⟨ n ⟩⇒ ▹ (app t u)
+    βfst  : ∀{n t u} → SN n u       → fst (pair t u)  ⟨ n ⟩⇒ t
+    βsnd  : ∀{n t u} → SN n t       → snd (pair t u)  ⟨ n ⟩⇒ u
+--    ▹_    : ∀{n t t'} → t ⟨ n ⟩⇒ t' → ▹ t ⟨ suc n ⟩⇒ ▹ t'
+    cong  : ∀{n E}(sh : SNhole n E) →
+            ∀{n t t'} → t ⟨ n ⟩⇒ t' → E t             ⟨ n ⟩⇒ E t'
+
+
+  -- data SNe (n : ℕ) : Term → Set where
+  --   var  : ∀ x                           → SNe n (var x)
+  --   app  : ∀{t u} → SNe n t    → SN n u  → SNe n (app t u)
+  --   fst  : ∀{t}   → SNe n t              → SNe n (fst t)
+  --   snd  : ∀{t}   → SNe n t              → SNe n (snd t)
+  --   _*l_ : ∀{t u} → SNe n t    → SN  n u → SNe n (t ∗ u)
+  --   _*r_ : ∀{t u} → SN n (▹ t) → SNe n u → SNe n ((▹ t) ∗ u)
+
+-- Variables are SN
+
+varSN : ∀{n x} → var x ∈ SN n
+varSN = ne (var _)
+
+-- Closure of SN by application to variable
+
+appVarSN : ∀{n t x} → t ∈ SN n → app t (var x) ∈ SN n
+appVarSN (ne sne) = ne (elim sne (appl varSN))
+appVarSN (abs snt) = exp (β varSN) {!!}
+appVarSN (pair snt snt₁) = {!!}
+appVarSN ▹0_ = {!!}
+appVarSN (▹ snt) = {!!}
+appVarSN (exp x₁ snt) = {!!}
+
+-- Closure by strong head expansion
+
+Closed : (n : ℕ) (AA : UU) → Set
+Closed n AA = ∀{ t t'} → t ⟨ n ⟩⇒ t' → t' ∈ AA → t ∈ AA
+
+data Cl (n : ℕ) (AA : UU) (t : Term) : Set where
+  emb : AA t                             → Cl n AA t
+  exp : ∀{t'} → t ⟨ n ⟩⇒ t' → Cl n AA t' → Cl n AA t
+
+-- Semantic types
 
 _⟦→⟧_ : UU → UU → UU
 (AA ⟦→⟧ BB) t = ∀{u} → AA u → BB (app t u)
@@ -165,6 +260,35 @@ _⟦→⟧_ : UU → UU → UU
 _⟦×⟧_ : UU → UU → UU
 (AA ⟦×⟧ BB) t = AA (fst t) × BB (snd t)
 
+data _⟦▸⟧_ (n : ℕ) (AA : UU) : UU where
+  emb : ∀{t}  → AA t                       → (n ⟦▸⟧ AA) (▹ t)
+  exp : ∀{t t'} → t ⟨ n ⟩⇒ t' → (n ⟦▸⟧ AA) t' → (n ⟦▸⟧ AA) t
+
+-- Saturated sets
+
+record SAT (n : ℕ) (AA : UU) : Set where
+  field
+    satne   : SNe n ⊆ AA
+    satsn   : AA ⊆ SN n
+    satexp  : Closed n AA
+
+-- Closure properties of semantic types
+
+sat→ : ∀{n AA BB} → AA ⊆ SN n → BB ∈ SAT n → (AA ⟦→⟧ BB) ∈ SAT n
+sat→ snA satB = record
+  { satne  = λ sne aa → SAT.satne satB (elim sne (appl (snA aa)))
+  ; satsn  = λ ff → {!!}
+  ; satexp = {!!}
+  }
+
+-- Function space is closed under expansion
+
+cl→ : ∀ {AA BB} n {t t'} → t ⟨ n ⟩⇒ t' → t' ∈ (AA ⟦→⟧ BB) → t ∈ (AA ⟦→⟧ BB)
+cl→ n red ff aa = {!!}
+
+
+semAbs : ∀{AA BB t} n → (∀{u} → u ∈ AA → subst0 u t ∈ BB) → abs t ∈ (AA ⟦→⟧ BB)
+semAbs n h aa = {!cl→ n (β ?) {!(h aa)!}!}
 
 {-
 -- One-step Reduction
