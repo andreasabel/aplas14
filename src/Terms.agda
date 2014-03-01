@@ -29,8 +29,8 @@ data Tm : ∀{g} (Γ : Cxt g) (a : Ty⁰ g) → Set where
   ▹_     : ∀{g}{Γ : Cxt g}{a   : Ty⁰ (suc g)} (t : Tm (cxt↑ Γ) a)                     → Tm Γ (▸̂ a)
   _∗_    : ∀{g}{Γ : Cxt g}{a b : Ty⁰ (suc g)} (t : Tm Γ (▸̂ (a →̂ b))) (u : Tm Γ (▸̂ a)) → Tm Γ (▸̂ b)
   cast   : ∀{g}{Γ : Cxt g}{a b} (eq : a ≅ b)  (t : Tm Γ a)                            → Tm Γ b
-  fold   : ∀{g}{Γ : Cxt g}{f : TyF [] g}      (t : Tm Γ (f · μ̂ f))                    → Tm (cxt↑ Γ) (μ̂ f)
-  unfold : ∀{g}{Γ : Cxt g}{f : TyF [] g}      (t : Tm (cxt↑ Γ) (μ̂ f))                 → Tm Γ (f · μ̂ f)
+  -- fold   : ∀{g}{Γ : Cxt g}{f : TyF [] g}      (t : Tm Γ (f · μ̂ f))                    → Tm (cxt↑ Γ) (μ̂ f)
+  -- unfold : ∀{g}{Γ : Cxt g}{f : TyF [] g}      (t : Tm (cxt↑ Γ) (μ̂ f))                 → Tm Γ (f · μ̂ f)
 
 -- * Renaming (weakening and lifting)
 ------------------------------------------------------------------------
