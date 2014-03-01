@@ -2,14 +2,18 @@
 
 module Library where
 
+open import Data.List using (List; []; _∷_; map) public
 open import Data.Nat
   using    (ℕ; zero; suc; z≤n; s≤s)
   renaming (_≤_ to _≤ℕ_; decTotalOrder to decTotalOrderℕ; _⊔_ to max)
   public
 open import Data.Nat.Properties using (_+-mono_) public
-open import Data.List using (List; []; _∷_; map) public
+open import Data.Product using (_×_; _,_; proj₁; proj₂) public
+open import Data.Unit using (⊤) public
 
 open import Function using (_∘_) public
+
+open import Induction.WellFounded using (Acc; acc) public
 
 open import Relation.Binary using (module DecTotalOrder)
 open import Relation.Binary.PropositionalEquality as PropEq using (_≡_) public
