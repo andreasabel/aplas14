@@ -2,6 +2,7 @@
 
 module Library where
 
+open import Data.Fin using (Fin; zero; suc) public
 open import Data.List using (List; []; _∷_; map) public
 open import Data.Nat
   using    (ℕ; zero; suc; z≤n; s≤s)
