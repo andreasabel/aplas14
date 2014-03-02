@@ -21,6 +21,8 @@ open import Relation.Binary.PropositionalEquality as PropEq using (_≡_) public
 module ≡ = PropEq
 open import Relation.Unary using (_∈_; _⊆_) public
 
+open import Size public
+
 module DecTotalOrderℕ = DecTotalOrder decTotalOrderℕ
 
 caseMax : ∀{m n} (P : ℕ → Set)
