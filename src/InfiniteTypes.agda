@@ -19,6 +19,9 @@ mutual
     field       force_ : Ty
 open ∞Ty public
 
+▸_ : Ty → Ty
+▸ A = ▸̂ delay A
+
 _⇒_ :  ∀ (a∞ b∞ : ∞Ty) → ∞Ty
 force (a∞ ⇒ b∞) = force a∞ →̂ force b∞
 
@@ -32,6 +35,9 @@ force (μ̂ F) = F (μ̂ F)
 
 Fix_ : Ty → ∞Ty
 force Fix A = ▸̂ Fix A →̂ A
+
+Fix∞_ : ∞Ty → ∞Ty
+force Fix∞ A = ▸̂ Fix∞ A →̂ force A
 
 -- Type equality
 
@@ -68,40 +74,63 @@ data Var : (Γ : Cxt) (a : Ty) → Set where
 -- Well-typed terms
 
 data Tm (Γ : Cxt) : (a : Ty) → Set where
-  var  : ∀{a}        (x : Var Γ a)                           → Tm Γ a
-  abs  : ∀{a b}      (t : Tm (a ∷ Γ) b)                      → Tm Γ (a →̂ b)
-  app  : ∀{a b}      (t : Tm Γ (a →̂ b)) (u : Tm Γ a)         → Tm Γ b
-  ▹_   : ∀{a∞}       (t : Tm Γ (force a∞))                   → Tm Γ (▸̂ a∞)
-  ▹app : ∀{c∞ a∞ b∞} (eq : c∞ ∞≅ (a∞ ⇒ b∞))
-                     (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸̂ a∞))     → Tm Γ (▸̂ b∞)
+  var  : ∀{a}        (x : Var Γ a)                       → Tm Γ a
+  abs  : ∀{a b}      (t : Tm (a ∷ Γ) b)                  → Tm Γ (a →̂ b)
+  app  : ∀{a b}      (t : Tm Γ (a →̂ b)) (u : Tm Γ a)     → Tm Γ b
+  ▹_   : ∀{a∞}       (t : Tm Γ (force a∞))               → Tm Γ (▸̂ a∞)
+
+  ▹app : ∀{c∞ a b∞}  (eq : c∞ ∞≅ (delay a ⇒ b∞))
+                     (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸ a))  → Tm Γ (▸̂ b∞)
+
+  ▹ap≡ : ∀{c∞ a b∞}  (eq : force c∞ ≡ (a →̂ force b∞))
+                     (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸ a))  → Tm Γ (▸̂ b∞)
+
+  ▹a   : ∀{c∞ a∞ b∞} (eq : c∞ ∞≅ (a∞ ⇒ b∞))
+                     (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸̂ a∞)) → Tm Γ (▸̂ b∞)
+
   ▹ap  : ∀{c∞ a∞ b∞} (eq : force c∞ ≡ (force a∞ →̂ force b∞))
-                     (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸̂ a∞))     → Tm Γ (▸̂ b∞)
-  _∗_  : ∀{a∞ b∞}    (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) (u : Tm Γ (▸̂ a∞)) → Tm Γ (▸̂ b∞)
-  cast : ∀{a b}      (eq : a ≅ b)  (t : Tm Γ a)              → Tm Γ b
+                     (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸̂ a∞)) → Tm Γ (▸̂ b∞)
+
+  _∗_  : ∀{a b∞}     (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
+                     (u : Tm Γ (▸ a))                    → Tm Γ (▸̂ b∞)
+
+  _∗'_ : ∀{a∞ b∞}    (t : Tm Γ (▸̂ (a∞ ⇒ b∞)))
+                     (u : Tm Γ (▸̂ a∞))                   → Tm Γ (▸̂ b∞)
+
+  cast : ∀{a b}      (eq : a ≅ b)  (t : Tm Γ a)          → Tm Γ b
 
 module FixDelay where
 
   -- Example: fixed-point combinator
 
-  omega'' : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸̂ delay A)
+  omega''' : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
+  omega''' x = ▹ap≡ ≡.refl x (▹ x)
+
+  omega'' : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
   omega'' x = ▹ap {a∞ = delay _} ≡.refl x (▹ x)
 
-  omega' : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸̂ delay A)
-  omega' x = ▹app {a∞ = delay _} (≅delay ≅refl) x (▹ x)
+  omega' : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
+  omega' x = ▹a {a∞ = delay _} (≅delay ≅refl) x (▹ x)
 
-  omega : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸̂ delay A)
-  omega {A = A} x = _∗_ {a∞ = delay _} (cast (▸̂ (≅delay ≅refl)) x) (▹ x)
+  omega3 : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
+  omega3 x = ▹app  (≅delay ≅refl) x (▹ x)
+
+  omega2 : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
+  omega2 {A = A} x = _∗'_ {a∞ = delay _} (cast (▸̂ (≅delay ≅refl)) x) (▹ x)
+
+  omega : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
+  omega {A = A} x = _∗_ (cast (▸̂ (≅delay ≅refl)) x) (▹ x)
 
   -- omega {A = A} x = _∗_ {a∞ = delay (▸̂ (Fix A))}{b∞ = delay A} (cast (▸̂ (≅delay (≅refl {force (Fix A)}))) x) (▹ x)
   -- omega {A = A} x = (cast (▸̂ (≅delay (≅refl {force (Fix A)}))) x) ∗ (▹ x)
   -- omega x = (cast (▸̂ (≅delay (≅refl {force (Fix _)}))) x) ∗ (▹ x)
 
 
-  -- Y : ∀{Γ A} → Tm Γ (▸̂ delay A →̂ A) → Tm Γ A
+  -- Y : ∀{Γ A} → Tm Γ (▸ A →̂ A) → Tm Γ A
   -- Y f = {!app L!}
   --   where L = abs (app f (omega (var 0)))
 
-  Y : ∀{Γ A} → Tm Γ ((▸̂ delay A →̂ A) →̂ A)
+  Y : ∀{Γ A} → Tm Γ ((▸ A →̂ A) →̂ A)
   Y = abs (app L (▹ L))
     where L = abs (app (var (suc zero)) (omega (var zero)))
 
@@ -109,15 +138,54 @@ module FixForce where
 
   -- Example: fixed-point combinator
 
+  omega''' : ∀{Γ a∞} → Tm Γ (▸̂ Fix force a∞) → Tm Γ (▸̂ a∞)
+  omega''' x = ▹ap≡ ≡.refl x (▹ x)
+
   omega'' : ∀{Γ a∞} → Tm Γ (▸̂ Fix force a∞) → Tm Γ (▸̂ a∞)
   omega'' x = ▹ap {a∞ = delay _} ≡.refl x (▹ x)
 
   omega' : ∀{Γ a∞} → Tm Γ (▸̂ Fix force a∞) → Tm Γ (▸̂ a∞)
-  omega' x = ▹app {a∞ = delay _} (≅delay ≅refl) x (▹ x)
+  omega' x = ▹a {a∞ = delay _} (≅delay ≅refl) x (▹ x)
+
+  omega3 : ∀{Γ a∞} → Tm Γ (▸̂ Fix force a∞) → Tm Γ (▸̂ a∞)
+  omega3 x = ▹app (≅delay ≅refl) x (▹ x)
+
+  omega2 : ∀{Γ a∞} → Tm Γ (▸̂ Fix force a∞) → Tm Γ (▸̂ a∞)
+  omega2 {a∞ = a∞} x = _∗'_ {a∞ = delay _} (cast (▸̂ (≅delay ≅refl)) x) (▹ x)
 
   omega : ∀{Γ a∞} → Tm Γ (▸̂ Fix force a∞) → Tm Γ (▸̂ a∞)
-  omega {a∞ = a∞} x = _∗_ {a∞ = delay _} (cast (▸̂ (≅delay ≅refl)) x) (▹ x)
+  omega x = cast (▸̂ (≅delay ≅refl)) x ∗ (▹ x)
 
   Y : ∀{Γ a∞} → Tm Γ ((▸̂ a∞ →̂ force a∞) →̂ force a∞)
+  Y = abs (app L (▹ L))
+    where L = abs (app (var (suc zero)) (omega (var zero)))
+
+module Fix∞Force where
+
+  -- Example: fixed-point combinator
+
+  omega''' : ∀{Γ a∞} → Tm Γ (▸̂ Fix∞ a∞) → Tm Γ (▸̂ a∞)
+  omega''' x = ▹ap≡ ≡.refl x (▹ x)
+
+  omega'' : ∀{Γ a∞} → Tm Γ (▸̂ Fix∞ a∞) → Tm Γ (▸̂ a∞)
+  omega'' x = ▹ap {a∞ = delay _} ≡.refl x (▹ x)
+
+  omega' : ∀{Γ a∞} → Tm Γ (▸̂ Fix∞ a∞) → Tm Γ (▸̂ a∞)
+  omega' x = ▹a {a∞ = delay _} (≅delay ≅refl) x (▹ x)
+
+  omega3 : ∀{Γ a∞} → Tm Γ (▸̂ Fix∞ a∞) → Tm Γ (▸̂ a∞)
+  omega3 x = ▹app (≅delay ≅refl) x (▹ x)
+
+  omega2 : ∀{Γ a∞} → Tm Γ (▸̂ Fix∞ a∞) → Tm Γ (▸̂ a∞)
+  omega2 {a∞ = a∞} x = _∗'_ {a∞ = delay _} (cast (▸̂ (≅delay ≅refl)) x) (▹ x)
+
+  omega : ∀{Γ a∞} → Tm Γ (▸̂ Fix∞ a∞) → Tm Γ (▸̂ a∞)
+  omega x = cast (▸̂ (≅delay ≅refl)) x ∗ (▹ x)
+
+  Y' : ∀{Γ a∞} → Tm Γ ((▸̂ a∞ →̂ force a∞) →̂ force a∞)
+  Y' = abs (app L (▹ L))
+    where L = abs (app (var (suc zero)) (omega (var zero)))
+
+  Y : ∀{Γ A} → Tm Γ ((▸ A →̂ A) →̂ A)
   Y = abs (app L (▹ L))
     where L = abs (app (var (suc zero)) (omega (var zero)))
