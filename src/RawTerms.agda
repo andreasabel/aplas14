@@ -168,6 +168,7 @@ mutual
     _∗l   : ∀{u} → SN n u     → SNhole n (λ t → t ∗ u)
     ∗r_   : ∀{t} → SN n (▹ t) → SNhole n (λ u → (▹ t) ∗ u)
 
+{-
   record SNHole (n : ℕ) : Set where
     constructor snhole
     field
@@ -194,6 +195,8 @@ mutual
       elim : SNHole* n
       plug : (var head • elim) ≡ t
 
+-}
+
   data SNe (n : ℕ) : Term → Set where
     var  : ∀ x                            → SNe n (var x)
     elim : ∀ {t E} → SNe n t → SNhole n E → SNe n (E t)
@@ -216,8 +219,8 @@ mutual
     βfst  : ∀{n t u} → SN n u       → fst (pair t u)  ⟨ n ⟩⇒ t
     βsnd  : ∀{n t u} → SN n t       → snd (pair t u)  ⟨ n ⟩⇒ u
 --    ▹_    : ∀{n t t'} → t ⟨ n ⟩⇒ t' → ▹ t ⟨ suc n ⟩⇒ ▹ t'
-    cong  : ∀{n E}(sh : SNhole n E) →
-            ∀{n t t'} → t ⟨ n ⟩⇒ t' → E t             ⟨ n ⟩⇒ E t'
+    cong  : ∀{n}{E} → Ehole E → -- NOT NEEDED: (sh : SNhole n E) →
+            ∀{t t'} → t ⟨ n ⟩⇒ t' → E t             ⟨ n ⟩⇒ E t'
 
 
   -- data SNe (n : ℕ) : Term → Set where
@@ -238,10 +241,11 @@ varSN = ne (var _)
 appVarSN : ∀{n t x} → t ∈ SN n → app t (var x) ∈ SN n
 appVarSN (ne sne) = ne (elim sne (appl varSN))
 appVarSN (abs snt) = exp (β varSN) {!!}
+appVarSN (exp shr snt) = exp (cong (appl (var _)) shr) (appVarSN snt)
+-- Ill-typed cases:
 appVarSN (pair snt snt₁) = {!!}
 appVarSN ▹0_ = {!!}
 appVarSN (▹ snt) = {!!}
-appVarSN (exp x₁ snt) = {!!}
 
 -- Closure by strong head expansion
 
