@@ -83,6 +83,7 @@ data Tm (Γ : Cxt) : (a : Ty) → Set where
   snd  : ∀{a b}        (t : Tm Γ (a ×̂ b))              → Tm Γ b
   ▹_   : ∀{a∞}         (t : Tm Γ (force a∞))           → Tm Γ (▸̂ a∞)
 
+  -- `applicative'
   _∗_  : ∀{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
                        (u : Tm Γ (▸ a))                → Tm Γ (▸̂ b∞)
 
@@ -93,6 +94,12 @@ data Tm (Γ : Cxt) : (a : Ty) → Set where
 ▹app : ∀{Γ c∞ b∞}{a : Ty} (eq : c∞ ∞≅ (delay a ⇒ b∞))
                           (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
 ▹app eq t u = cast (▸̂ eq) t ∗ u
+
+_∗'_  : ∀{Γ a∞ b∞} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) (u : Tm Γ (▸̂ a∞)) → Tm Γ (▸̂ b∞)
+_∗'_ {a∞ = a∞} t u = _∗_ {a = force a∞} (cast (▸̂ (≅delay ≅refl)) t) (cast ((▸̂ (≅delay ≅refl))) u)
+
+_<$>_ : ∀{Γ}{a : Ty}{b∞} (t : Tm Γ (a →̂  force b∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
+t <$> u = ▹ t ∗ u
 
 -- * Examples
 ------------------------------------------------------------------------
@@ -107,7 +114,10 @@ omega x = ▹app (≅delay ≅refl) x (▹ x)
 
 Y : ∀{Γ A} → Tm Γ ((▸ A →̂ A) →̂ A)
 Y = abs (app L (▹ L))
-  where L = abs (app (var (suc zero)) (omega (var zero)))
+  where
+    f = var (suc zero)
+    x = var zero
+    L = abs (app f (omega x))
 
 -- Alternative definition of omega
 
@@ -134,7 +144,6 @@ mutual
 
 cons : ∀{Γ A} → Tm Γ A → Tm Γ (▸ Stream A) → Tm Γ (Stream A)
 cons a s = pair a (cast (▸̂ (≅delay ≅refl)) s)
--- cons a s = cast (≅refl ×̂ (▸̂ (≅delay ≅refl))) (pair a s)
 
 head : ∀{Γ A} → Tm Γ (Stream A) → Tm Γ A
 head s = fst s
@@ -157,6 +166,47 @@ smap = abs (app Y (abs (abs
        map = var (suc zero)
        s   = var zero
    in pair (app f (head s)) (▹app (≅delay ≅refl) map (tail s))))))
+
+-- zipWith f s t = cons (f (head s) (head t)) (zipWith f (tail s) (tail t))
+-- zipWith = λ f → Y λ zipWith → λ s t →
+--   (f (head s) (head t) , zipWith <*> tail s <*> tail t)
+
+zipWith : ∀{Γ A B C} → Tm Γ ((A →̂ (B →̂ C)) →̂ (Stream A →̂ (Stream B →̂ Stream C)))
+zipWith = abs (app Y (abs (abs (abs
+  (let f   = var (suc (suc (suc zero)))
+       zw  = var (suc (suc zero))
+       s   = var (suc zero)
+       t   = var zero
+   in pair (app (app f (head s)) (head t))
+           (▹app {c∞ = Stream∞ _ ⇒ Stream∞ _} (≅delay ≅refl)
+                 (▹app (≅delay ≅refl) zw (tail s))
+                 (tail t)))))))
+
+-- Fibonacci stream
+
+module Fib (N : Ty) (n0 n1 : ∀{Γ} → Tm Γ N) (plus : ∀{Γ} → Tm Γ (N →̂ (N →̂  N))) where
+
+  -- fib = Y λ fib → cons n0 (▹ (cons n1
+  --   (zipWith plus <$> fib <*> (tail <$> fib)))) -- Ill-typed!
+  --
+  -- fib = Y λ fib → cons n0 (cons n1 <$>
+  --   ((λ s → (zipWith plus <$> fib) <*> s) <$> (tail <$> fib)))
+
+  fib : ∀{Γ} → Tm Γ (Stream N)
+  fib {Γ} = app Y (abs
+    (let fib  : Tm (_ ∷ Γ) (▸ Stream N)
+         fib  = var zero
+         fib₁  : Tm (_ ∷ _ ∷ Γ) (▸ Stream N)
+         fib₁  = var (suc zero)
+         adds : Tm (_ ∷ _ ∷ Γ) (Stream N →̂ (Stream N →̂ Stream N))
+         adds = app zipWith plus
+         addf :  Tm (_ ∷ _ ∷ Γ) (▸ (Stream N →̂ Stream N))
+         addf = adds <$> fib₁
+         tf   : Tm (_ ∷ Γ) (▸ ▸ Stream N)
+         tf   = abs (tail (var zero)) <$> fib
+         aftf : Tm (_ ∷ Γ) (▸ ▸ Stream N)
+         aftf = abs (▹app (≅delay ≅refl) addf (var zero)) <$> tf
+     in  cons n0 (abs (cons n1 (var zero)) <$> aftf)))
 
 -- * Renaming (weakening and lifting)
 ------------------------------------------------------------------------
