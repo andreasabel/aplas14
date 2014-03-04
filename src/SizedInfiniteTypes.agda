@@ -272,3 +272,16 @@ var≤-• (lift η) (weak η') x       = ≡.cong suc (var≤-• η η' x)
 var≤-• (lift η) (lift η') zero    = ≡.refl
 var≤-• (lift η) (lift η') (suc x) = ≡.cong suc (var≤-• η η' x)
 
+
+-- Renaming
+
+rename : ∀ {Γ Δ : Cxt} {a : Ty} (η : Γ ≤ Δ) (x : Tm Δ a) → Tm Γ a
+rename η (var x)      = var (var≤ η x)
+rename η (abs t)      = abs (rename (lift η) t)
+rename η (app t₁ t₂)  = app (rename η t₁) (rename η t₂)
+rename η (pair t₁ t₂) = pair (rename η t₁) (rename η t₂)
+rename η (fst t)      = fst (rename η t)
+rename η (snd t)      = snd (rename η t)
+rename η (▹ t)        = ▹ rename η t
+rename η (t₁ ∗ t₂)    = rename η t₁ ∗ rename η t₂
+rename η (cast eq t)  = cast eq (rename η t)
