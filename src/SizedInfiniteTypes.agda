@@ -98,8 +98,11 @@ data Tm (Γ : Cxt) : (a : Ty) → Set where
 _∗'_  : ∀{Γ a∞ b∞} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) (u : Tm Γ (▸̂ a∞)) → Tm Γ (▸̂ b∞)
 _∗'_ {a∞ = a∞} t u = _∗_ {a = force a∞} (cast (▸̂ (≅delay ≅refl)) t) (cast ((▸̂ (≅delay ≅refl))) u)
 
-_<$>_ : ∀{Γ}{a : Ty}{b∞} (t : Tm Γ (a →̂  force b∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
+_<$>_ : ∀{Γ}{a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
 t <$> u = ▹ t ∗ u
+
+_∶_ : ∀ {Γ} a -> Tm Γ a -> Tm Γ a
+a ∶ t = t
 
 -- * Examples
 ------------------------------------------------------------------------
@@ -285,3 +288,96 @@ rename η (snd t)      = snd (rename η t)
 rename η (▹ t)        = ▹ rename η t
 rename η (t₁ ∗ t₂)    = rename η t₁ ∗ rename η t₂
 rename η (cast eq t)  = cast eq (rename η t)
+
+
+-- Parallel substitution
+Subst : Cxt → Cxt → Set
+Subst Γ Δ = ∀ {a : Ty} → Var Γ a → Tm Δ a
+
+-- Identity substitution
+
+ids : ∀ {Γ} → Subst Γ Γ
+ids = var
+
+-- Substitution for 0th variable
+
+sgs : ∀ {Γ a} → Tm Γ a → Subst (a ∷ Γ) Γ
+sgs t zero    = t
+sgs t (suc x) = var x
+
+-- Lifiting a substitution
+
+lifts : ∀ {Γ Δ a} → Subst Γ Δ → Subst (a ∷ Γ) (a ∷ Δ) 
+lifts σ zero    = var zero
+lifts σ (suc x) = rename (weak id) (σ x)
+
+-- Performing a substitution
+
+subst : ∀ {Γ Δ τ} → Subst Γ Δ → Tm Γ τ → Tm Δ τ
+subst σ (var x)     = σ x
+subst σ (abs t)     = abs (subst (lifts σ) t)
+subst σ (app t u)   = app (subst σ t) (subst σ u)
+subst σ (▹ t)       = ▹ (subst σ t)
+subst σ (t ∗ u)     = (subst σ t) ∗ (subst σ u)
+subst σ (pair t u)  = pair (subst σ t) (subst σ u)
+subst σ (fst t)     = fst (subst σ t)
+subst σ (snd t)     = snd (subst σ t)
+subst σ (cast eq t) = cast eq (subst σ t)
+
+-- Substituting for the 0th variable [u/0]t
+
+subst0 : ∀ {Γ a b} → Tm Γ a → Tm (a ∷ Γ) b → Tm Γ b
+subst0 u = subst (sgs u)
+
+
+-- Evaluation Contexts
+
+data Ehole {Γ : Cxt} : {a b : Ty} → (Tm Γ a → Tm Γ b) → Set where
+  appl  : ∀ {a b} (u : Tm Γ a)  → Ehole (λ (t : Tm Γ (a →̂ b)) → app t u)
+  fst   : ∀ {a b} → Ehole {a = a ×̂ b} fst
+  snd   : ∀ {a b} → Ehole {a = a ×̂ b} snd
+  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → Ehole {a = (▸̂ (delay a ⇒ b∞))} (λ t → t ∗ u)
+  ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → Ehole (λ u → ▸̂ b∞ ∶ ((▹ t) ∗ (▸ a ∶ u)))
+
+
+mutual
+
+-- Strongly normalizing evaluation contexts
+
+  data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → (Tm Γ a → Tm Γ b) → Set where
+    appl  : ∀ {a b u} → SN n u     → SNhole n (λ t → b ∶ app t (a ∶ u))
+    fst   : ∀ {a b}                → SNhole n (fst {a = a} {b = b})
+    snd   : ∀ {a b}                → SNhole n (snd {a = a} {b = b})
+    _∗l   : ∀ {a b∞ u} → SN n u    → SNhole n (λ t → _∗_ {a = a} {b∞} t u)
+    ∗r_   : ∀ {a : Ty}{b∞ t} → SN n (▹_ {a∞ = delay (a →̂ force b∞)} t) 
+                                   → SNhole n (λ u → _<$>_ {a = a} {b∞} t u)
+
+  data SNe (n : ℕ) {Γ} {b} : Tm Γ b → Set where
+    var  : ∀ x                    → SNe n (var x)
+    elim : ∀ {a} {t : Tm Γ a} {E} 
+           → SNe n t → SNhole n E → SNe n (E t)
+
+  -- Strongly normalizing
+
+  data SN {Γ} : ℕ → ∀ {a} → Tm Γ a → Set where
+    ne   : ∀{a n t}     → SNe n t            → SN n {a} t
+    abs  : ∀{a b n t}   → SN {a ∷ Γ} n {b} t → SN n (abs t)
+    pair : ∀{a b n t u} → SN n t → SN n u    → SN n {a ×̂ b} (pair t u)
+    ▹0_  : ∀{a}   {t : Tm Γ (force a)}          → SN 0       {▸̂ a} (▹ t)
+    ▹_   : ∀{a n} {t : Tm Γ (force a)} → SN n t → SN (suc n) {▸̂ a} (▹ t)
+    exp  : ∀{a n t t'} → t ⟨ n ⟩⇒ t'  → SN n t' → SN n {a} t
+
+  -- Strong head reduction
+
+  data _⟨_⟩⇒_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
+    β     : ∀{n a b t u} → SN n (a ∶ u)  →   (b ∶ app (abs t) u)     ⟨ n ⟩⇒ subst0 u t
+    β▹    : ∀{n a b t}{u : Tm _ (force a)} → ((▸̂ b) ∶ (t <$> (▹ u))) ⟨ n ⟩⇒ ▹ (app t u)
+    βfst  : ∀{n a b t u} → SN n u       → fst (pair (a ∶ t) (b ∶ u)) ⟨ n ⟩⇒ t
+    βsnd  : ∀{n a b t u} → SN n t       → snd (pair (a ∶ t) (b ∶ u)) ⟨ n ⟩⇒ u
+    ▹_    : ∀{n a∞}{t t'} → t ⟨ n ⟩⇒ t'         → ((▸̂ a∞) ∶ ▹ t) ⟨ suc n ⟩⇒ ▹ t'
+    cong  : ∀{n a b}{E} → Ehole {Γ} {a} {b} E → 
+            ∀{t t'} → t ⟨ n ⟩⇒ t' →                              E t ⟨ n ⟩⇒ E t'
+
+varSN : ∀{Γ a n x} → var x ∈ SN {Γ} n {a}
+varSN = ne (var _)
+
