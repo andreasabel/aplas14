@@ -9,7 +9,7 @@ open import Data.Nat
   renaming (_≤_ to _≤ℕ_; decTotalOrder to decTotalOrderℕ; _⊔_ to max)
   public
 open import Data.Nat.Properties using (_+-mono_) public
-open import Data.Product using (_×_; _,_; proj₁; proj₂) public
+open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂) public
 open import Data.Unit using (⊤) public
 
 open import Function using (_∘_) public
