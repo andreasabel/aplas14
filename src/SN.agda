@@ -1,5 +1,6 @@
 {-# OPTIONS --copatterns --sized-types #-}
 {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --no-termination-check #-} -- too slow
 
 module SN where
 
@@ -168,6 +169,7 @@ record RenSubSNe {i} (vt : VarTm i) (n : ℕ) (Γ Δ : Cxt) : Set where
         isSNe    : ∀ {a} (x : Var Γ a) → SNe n (vt2tm _ (theSubst x))
 open RenSubSNe
 
+RenSN    = RenSubSNe `Var
 SubstSNe = RenSubSNe `Tm
 
 -- Substitutions are functorial in the evaluation depth n
@@ -216,7 +218,7 @@ mutual
   subst⇒         σ (β▹ {a∞ = a∞})        = β▹ {a∞ = a∞}
   subst⇒         σ (βfst t∈SN)           = βfst (substSN σ t∈SN)
   subst⇒         σ (βsnd u∈SN)           = βsnd (substSN σ u∈SN)
-  subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t') 
+  subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t')
                                              (substEh'-subst (theSubst σ) E∈Eh _)
                                              (substEh'-subst (theSubst σ) E∈Eh _)
                                              (cong (substEh (theSubst σ) E∈Eh) (subst⇒ σ t→t'))
@@ -242,6 +244,19 @@ mutual
   substSN σ (▹ t∈SN)           = ▹ substSN (mapSubSNe n≤sn σ) t∈SN
   substSN σ (exp t→t' t'∈SN)   = exp (subst⇒ σ t→t') (substSN σ t'∈SN)
 
+-- SN is closed under renaming.
+
+renSN :  ∀{n Γ Δ} (ρ : Γ ≤ Δ) → RenSN n Δ Γ
+renSN ρ = (ρ , λ x → var (ρ x))
+
+renameSNe : ∀{n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
+  SNe n t → SNe n (rename ρ t)
+renameSNe ρ = substSNe (renSN ρ)
+
+renameSN : ∀{n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
+  SN n t → SN n (rename ρ t)
+renameSN ρ = substSN (renSN ρ)
+
 -- Variables are SN.
 
 varSN : ∀{Γ a n x} → var x ∈ SN {Γ} n {a}
@@ -254,3 +269,8 @@ appVarSN (ne t∈SNe)       = ne (elim t∈SNe (appl varSN))
 appVarSN (abs t∈SN)       = exp (β varSN) (substSN (sgs-varSNe _) t∈SN)
 appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) t→t') (appVarSN t'∈SN)
 
+absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)}{x} → app t (var x) ∈ SN n → t ∈ SN n
+absVarSN x = TODO
+-- absVarSN (ne (var ())) = {!𝒏!}
+-- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
+-- absVarSN (exp t⇒ x₁) = {!!}

@@ -68,7 +68,7 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
 𝓐 ⟦→⟧ 𝓑 = record
   { satSet  = 𝑪
   ; satProp = record
-    { satSNe = {!!}
+    { satSNe = CSNe
     ; satSN  = {!!}
     ; satExp = {!!}
     }
@@ -77,19 +77,22 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
     𝑨 = satSet 𝓐
     𝑩 = satSet 𝓑
     𝑪 = 𝑨 [→] 𝑩
-    CSNe : SNe _ ⊆ 𝑪
-    CSNe 𝒏 ρ 𝒖 = SAT.satSNe 𝓑 (sneApp {!!} (SAT.satSN 𝓐 𝒖))
 
--- If 𝓐, 𝓑 ∈ SAT
--- Lemma: λ x → t ∈ (𝓐 ⟦→⟧ 𝓑)
+    CSNe : SNe _ ⊆ 𝑪
+    CSNe 𝒏 ρ 𝒖 = SAT.satSNe 𝓑 (sneApp (renameSNe ρ 𝒏) (SAT.satSN 𝓐 𝒖))
+
+    CSN : 𝑪 ⊆ SN _
+    CSN 𝒕 = {!appVarSAT.satSN 𝓑 ?!}
+
+-- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
 module _ {n}{𝓐 𝓑 : SAT n} where
   a = SAT.satTy 𝓐
   b = SAT.satTy 𝓑
 
   semAbs : ∀{Γ}{t : Tm (a ∷ Γ) b} →
-    (∀{u} → u ∈ 𝓐 → subst0 u t ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
-  semAbs 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) {!!}
+    (∀{Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} → u ∈ 𝓐 → subst0 u (subst (lifts ρ) t) ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
+  semAbs 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) (𝒕 ρ 𝒖)
 
 
 -- _⟦×⟧_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
