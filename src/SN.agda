@@ -1,4 +1,5 @@
 {-# OPTIONS --copatterns --sized-types #-}
+{-# OPTIONS --allow-unsolved-metas #-}
 
 module SN where
 
@@ -6,6 +7,11 @@ open import Library
 open import SizedInfiniteTypes
 open import Terms
 open import Substitution
+
+-- TODOs
+
+postulate
+  TODO : ∀ {a}{A : Set a} → A
 
 -- Term contexts which do not include binders.
 
@@ -133,7 +139,7 @@ isSNe    (sgs-varSNe x) (suc y) = var y
 liftsSNe : ∀ {n Γ Δ a} → SubstSNe n Γ Δ → SubstSNe n (a ∷ Γ) (a ∷ Δ)
 theSubst (liftsSNe σ)                   = lifts (theSubst σ)
 isSNe    (liftsSNe (σ , σ∈SNe)) zero    = var zero
-isSNe    (liftsSNe (σ , σ∈SNe)) (suc y) = {!!}
+isSNe    (liftsSNe (σ , σ∈SNe)) (suc y) = TODO
 
 -- The SN-notions are closed under SNe substitution.
 
@@ -162,12 +168,12 @@ mutual
 
   subst⇒ : ∀ {Γ Δ a n} (σ : SubstSNe n Γ Δ) {t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → subst (theSubst σ) t ⟨ n ⟩⇒ subst (theSubst σ) t'
   subst⇒ {n = n} (σ , σ∈Ne) (β {t = t} {u = u} x) = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⟨ n ⟩⇒ t')
-                                                   {!!}
+                                                   TODO
                                                    (β {t = subst (lifts σ) t} (substSN (σ , σ∈Ne) x))
   subst⇒         σ (β▹ {a = a})          = β▹ {a = a}
   subst⇒         σ (βfst t∈SN)           = βfst (substSN σ t∈SN)
   subst⇒         σ (βsnd u∈SN)           = βsnd (substSN σ u∈SN)
-  subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t') {!!} {!!} (cong (substEh (theSubst σ) E∈Eh) (subst⇒ σ t→t'))
+  subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t') TODO TODO (cong (substEh (theSubst σ) E∈Eh) (subst⇒ σ t→t'))
 
   substSNe : ∀ {Γ Δ τ n} → (σ : SubstSNe n Γ Δ) → ∀ {t : Tm Γ τ} → SNe n t → SNe n (subst (theSubst σ) t)
   substSNe σ (var x)            = isSNe σ x
