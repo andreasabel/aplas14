@@ -19,7 +19,6 @@ open import Induction.WellFounded using (Acc; acc) public
 open import Relation.Binary using (module DecTotalOrder)
 open import Relation.Binary.PropositionalEquality as PropEq using (_≡_) public
 module ≡ = PropEq
-open import Relation.Unary using (_∈_; _⊆_) public
 
 open import Size public
 

@@ -3,6 +3,8 @@
 
 module SN where
 
+open import Relation.Unary using (_∈_; _⊆_)
+
 open import Library
 open import SizedInfiniteTypes
 open import Terms
