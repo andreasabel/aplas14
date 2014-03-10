@@ -31,37 +31,77 @@ mutual
 -- Strongly normalizing evaluation contexts
 
   data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → TmCxt Γ a b → Set where
-    appl  : ∀ {a b u} → SN n u     → SNhole n (λ t → app t (u ∶ a) ∶ b)
-    fst   : ∀ {a b}                → SNhole n (fst {a = a} {b = b})
-    snd   : ∀ {a b}                → SNhole n (snd {a = a} {b = b})
-    _∗l   : ∀ {a b∞ u} → SN n u    → SNhole n (λ t → _∗_ {a = a} {b∞} t u)
-    ∗r_   : ∀ {a : Ty}{b∞ t} → SN n (▹_ {a∞ = delay (a →̂ force b∞)} t)
-                                   → SNhole n (λ u → _<$>_ {a = a} {b∞} t u)
+    appl  : ∀ {a b u}  (𝒖 : SN n u) → SNhole n (λ t → app t (u ∶ a) ∶ b)
+    fst   : ∀ {a b}                 → SNhole n (fst {a = a} {b = b})
+    snd   : ∀ {a b}                 → SNhole n (snd {a = a} {b = b})
+    _∗l   : ∀ {a b∞ u} (𝒖 : SN n u) → SNhole n (λ t → _∗_ {a = a} {b∞} t u)
+    ∗r_   : ∀ {a : Ty}{b∞ t}
+              (𝒕 : SN n (▹_ {a∞ = delay (a →̂ force b∞)} t))
+                                    → SNhole n (λ u → _<$>_ {a = a} {b∞} t u)
+
+  -- Strongly neutral terms.
 
   data SNe (n : ℕ) {Γ} {b} : Tm Γ b → Set where
-    var  : ∀ x                    → SNe n (var x)
+    var  : ∀ x                              → SNe n (var x)
     elim : ∀ {a} {t : Tm Γ a} {E}
-           → SNe n t → SNhole n E → SNe n (E t)
+           → (𝒏 : SNe n t) (𝑬 : SNhole n E) → SNe n (E t)
 
-  -- Strongly normalizing
+  -- Strongly normalizing terms.
 
   data SN {Γ} : ℕ → ∀ {a} → Tm Γ a → Set where
-    ne   : ∀{a n t}     → SNe n t            → SN n {a} t
-    abs  : ∀{a b n t}   → SN {a ∷ Γ} n {b} t → SN n (abs t)
-    pair : ∀{a b n t u} → SN n t → SN n u    → SN n {a ×̂ b} (pair t u)
-    ▹0_  : ∀{a}   {t : Tm Γ (force a)}          → SN 0       {▸̂ a} (▹ t)
-    ▹_   : ∀{a n} {t : Tm Γ (force a)} → SN n t → SN (suc n) {▸̂ a} (▹ t)
-    exp  : ∀{a n t t'} → t ⟨ n ⟩⇒ t'  → SN n t' → SN n {a} t
+
+    ne   : ∀ {a n t}
+           → (𝒏 : SNe n t)
+           → SN n {a} t
+
+    abs  : ∀ {a b n}{t : Tm (a ∷ Γ) b}
+           → (𝒕 : SN n t)
+           → SN n (abs t)
+
+    pair : ∀ {a b n t u}
+           → (𝒕 : SN n t) (𝒖 : SN n u)
+           → SN n {a ×̂ b} (pair t u)
+
+    ▹0_  : ∀ {a} {t : Tm Γ (force a)}
+           → SN 0 {▸̂ a} (▹ t)
+
+    ▹_   : ∀ {a n} {t : Tm Γ (force a)}
+           → (𝒕 : SN n t)
+           → SN (suc n) {▸̂ a} (▹ t)
+
+    exp  : ∀{a n t t′}
+           → (t⇒ : t ⟨ n ⟩⇒ t′) (𝒕′ : SN n t′)
+           → SN n {a} t
 
   -- Strong head reduction
 
   data _⟨_⟩⇒_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
-    β     : ∀{n a b t u} → SN n (u ∶ a)  →   (app (abs t) u ∶ b)     ⟨ n ⟩⇒ subst0 u t
-    β▹    : ∀{n a b t}{u : Tm _ (force a)} → ((t <$> (▹ u)) ∶ (▸̂ b)) ⟨ n ⟩⇒ ▹ (app t u)
-    βfst  : ∀{n a b t u} → SN n u       → fst (pair (t ∶ a) (u ∶ b)) ⟨ n ⟩⇒ t
-    βsnd  : ∀{n a b t u} → SN n t       → snd (pair (t ∶ a) (u ∶ b)) ⟨ n ⟩⇒ u
-    cong  : ∀{n a b}{E} → Ehole {Γ} {a} {b} E →
-            ∀{t t'} → t ⟨ n ⟩⇒ t' →                              E t ⟨ n ⟩⇒ E t'
+
+    β     : ∀ {n a b}{t : Tm (a ∷ Γ) b}{u}
+            → (𝒖 : SN n u)
+            → (app (abs t) u) ⟨ n ⟩⇒ subst0 u t
+
+    β▹    : ∀ {n a∞ b}{t : Tm Γ (force a∞ →̂ b)}{u : Tm Γ (force a∞)}
+            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹ (app t u) ∶ ▸ b)
+
+    βfst  : ∀ {n a b}{t : Tm Γ a}{u : Tm Γ b}
+            → (𝒖 : SN n u)
+            → fst (pair t u) ⟨ n ⟩⇒ t
+
+    βsnd  : ∀ {n a b}{t : Tm Γ a}{u : Tm Γ b}
+            → (𝒕 : SN n t)
+            → snd (pair t u) ⟨ n ⟩⇒ u
+
+    cong  : ∀ {n a b t t'}{E : TmCxt Γ a b}
+            → (𝑬 : Ehole E)
+            → (t⇒ : t ⟨ n ⟩⇒ t')
+            → E t ⟨ n ⟩⇒ E t'
+
+-- Strongly neutrals are closed under application.
+
+sneApp : ∀{n Γ a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
+  SNe n t → SN n u → SNe n (app t u)
+sneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
 
 -- Functoriality of the SN-notions wrt. evaluation depth n.
 
@@ -81,7 +121,7 @@ mutual
 
   map⇒ : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → t ⟨ m ⟩⇒ t'
   map⇒ m≤n (β t∈SN) = β (mapSN m≤n t∈SN)
-  map⇒ m≤n (β▹ {a = a}) = β▹ {a = a}
+  map⇒ m≤n (β▹ {a∞ = a∞}) = β▹ {a∞ = a∞}
   map⇒ m≤n (βfst t∈SN) = βfst (mapSN m≤n t∈SN)
   map⇒ m≤n (βsnd t∈SN) = βsnd (mapSN m≤n t∈SN)
   map⇒ m≤n (cong Eh t→t') = cong Eh (map⇒ m≤n t→t')
@@ -168,7 +208,7 @@ mutual
   subst⇒ {n = n} (σ , σ∈Ne) (β {t = t} {u = u} x) = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⟨ n ⟩⇒ t')
                                                    TODO
                                                    (β {t = subst (lifts σ) t} (substSN (σ , σ∈Ne) x))
-  subst⇒         σ (β▹ {a = a})          = β▹ {a = a}
+  subst⇒         σ (β▹ {a∞ = a∞})        = β▹ {a∞ = a∞}
   subst⇒         σ (βfst t∈SN)           = βfst (substSN σ t∈SN)
   subst⇒         σ (βsnd u∈SN)           = βsnd (substSN σ u∈SN)
   subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t') TODO TODO (cong (substEh (theSubst σ) E∈Eh) (subst⇒ σ t→t'))
@@ -196,3 +236,4 @@ appVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)}{x} → t ∈ SN n → app t (var
 appVarSN (ne t∈SNe)       = ne (elim t∈SNe (appl varSN))
 appVarSN (abs t∈SN)       = exp (β varSN) (substSN (sgs-varSNe _) t∈SN)
 appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) t→t') (appVarSN t'∈SN)
+
