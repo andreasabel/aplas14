@@ -39,7 +39,7 @@ mutual
   lifts : ∀ {m vt Γ Δ a} → RenSub {m} vt Γ Δ → RenSub vt (a ∷ Γ) (a ∷ Δ)
   lifts {vt = `Var} σ zero    = zero
   lifts {vt = `Var} σ (suc x) = suc (σ x)
-  lifts {vt = `Tm}  σ zero    = var zero  
+  lifts {vt = `Tm}  σ zero    = var zero
   lifts {vt = `Tm}  σ (suc x) = subst {vt = `Var} suc (σ x)
 
   -- Performing a substitution
@@ -57,7 +57,7 @@ mutual
   subst σ (var x)     = vt2tm _ (σ x)
 
 -- substitution composition
- 
+
 _•s_ : ∀ {Γ₀ Γ₁ Γ₂}
          {n}{vt2 : VarTm n}(tau   : RenSub vt2 Γ₁ Γ₂)
          {m}{vt1 : VarTm m}(sigma : RenSub vt1 Γ₀ Γ₁) → RenSub (vt1 ∙VT vt2) Γ₀ Γ₂
@@ -92,3 +92,6 @@ _≤_ Γ Δ = RenSub `Var Δ Γ
 
 rename : ∀ {Γ Δ : Cxt} {a : Ty} (η : Γ ≤ Δ) (x : Tm Δ a) → Tm Γ a
 rename = subst
+
+renId : ∀ {Γ a}{t : Tm Γ a} → rename (λ x → x) t ≡ t
+renId = TODO

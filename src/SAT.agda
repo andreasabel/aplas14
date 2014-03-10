@@ -69,7 +69,7 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
   { satSet  = 𝑪
   ; satProp = record
     { satSNe = CSNe
-    ; satSN  = {!!}
+    ; satSN  = CSN
     ; satExp = {!!}
     }
   }
@@ -82,7 +82,7 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
     CSNe 𝒏 ρ 𝒖 = SAT.satSNe 𝓑 (sneApp (renameSNe ρ 𝒏) (SAT.satSN 𝓐 𝒖))
 
     CSN : 𝑪 ⊆ SN _
-    CSN 𝒕 = {!absVarSN {!SAT.satSN 𝓑 ?!}!}
+    CSN 𝒕 = absVarSN (SAT.satSN 𝓑 (𝒕 suc (SAT.satSNe 𝓐 (var zero))))
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 

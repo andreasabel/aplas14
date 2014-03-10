@@ -271,7 +271,9 @@ appVarSN (ne t∈SNe)       = ne (elim ≡.refl t∈SNe (appl varSN))
 appVarSN (abs t∈SN)       = exp (β varSN) (substSN (sgs-varSNe _) t∈SN)
 appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) t→t') (appVarSN t'∈SN)
 
-absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)}{x} → app t (var x) ∈ SNe n → t ∈ SNe n
+absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SNe n → t ∈ SNe n
+absVarSNe = TODO
+{-absVarSNe (elim eq 𝒏 (appl (exp t⇒ 𝒖))) = {!t⇒!}
 absVarSNe {n = n} (elim eq 𝒏 (appl {u = var .x} (ne (var x)))) = ≡app₁ eq (SNe n) 𝒏
 absVarSNe (elim eq 𝒏 (appl {u = var x₁} (ne (elim eq₁ x₂ 𝑬)))) = {!eq!}
 absVarSNe (elim () 𝒏 (appl {u = abs u} (ne (elim eq₁ x₁ 𝑬))))
@@ -286,15 +288,15 @@ absVarSNe (elim () 𝒏 (appl (abs 𝒖)))
 absVarSNe (elim () 𝒏 (appl (pair 𝒖 𝒖₁)))
 absVarSNe (elim () 𝒏 (appl ▹0_))
 absVarSNe (elim () 𝒏 (appl (▹ 𝒖)))
-absVarSNe (elim eq 𝒏 (appl (exp t⇒ 𝒖))) = {!t⇒!}
 absVarSNe (elim () 𝒏 fst)
 absVarSNe (elim () 𝒏 snd)
 absVarSNe (elim () 𝒏 (𝒖 ∗l))
 absVarSNe (elim () 𝒏 (∗r 𝒕))
+-}
 
-absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)}{x} → app t (var x) ∈ SN n → t ∈ SN n
+absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SN n → t ∈ SN n
 absVarSN (ne 𝒖) = ne (absVarSNe 𝒖)
-absVarSN (exp t⇒ 𝒕′) = {!t⇒!} -- exp {!!} (absVarSN {!𝒕′!})
+absVarSN (exp t⇒ 𝒕′) = TODO -- exp {!!} (absVarSN {!𝒕′!})
 -- absVarSN (ne (var ())) = {!𝒏!}
 -- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
 -- absVarSN (exp t⇒ x₁) = {!!}
