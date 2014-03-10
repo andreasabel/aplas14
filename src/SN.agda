@@ -137,31 +137,42 @@ mutual
 -- Evaluation contexts are closed under substitution.
 
 mutual
-  substEh' : ∀ {Γ Δ a b} → (σ : Subst Γ Δ) → ∀ {E : TmCxt Γ a b} → Ehole E → TmCxt Δ a b
+  substEh' : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E : TmCxt Γ a b} → Ehole E → TmCxt Δ a b
   substEh' σ (appl u) t = _
   substEh' σ fst t      = _
   substEh' σ snd t      = _
   substEh' σ (u ∗l) t   = _
   substEh' σ (∗r t) u   = _
 
-  substEh : ∀ {Γ Δ a b} → (σ : Subst Γ Δ) → ∀ {E : TmCxt Γ a b} → (Eh : Ehole E) → Ehole (substEh' σ Eh)
+  substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E : TmCxt Γ a b} → (Eh : Ehole E) → Ehole (substEh' σ Eh)
   substEh σ (appl u) = appl (subst σ u)
   substEh σ fst      = fst
   substEh σ snd      = snd
   substEh σ (u ∗l)   = subst σ u ∗l
   substEh σ (∗r t)   = ∗r subst σ t
 
+  substEh'-subst : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E : TmCxt Γ a b} → (Eh : Ehole E) → (t : Tm Γ a)
+                    → substEh' σ Eh (subst σ t) ≡ subst σ (E t)
+  substEh'-subst σ (appl u) t = ≡.refl
+  substEh'-subst σ fst      t = ≡.refl
+  substEh'-subst σ snd      t = ≡.refl
+  substEh'-subst σ (u ∗l)   t = ≡.refl
+  substEh'-subst σ (∗r t')  t = ≡.refl
+
+
 -- Substituting strongly neutral terms
 
-record SubstSNe (n : ℕ) (Γ Δ : Cxt) : Set where
+record RenSubSNe {i} (vt : VarTm i) (n : ℕ) (Γ Δ : Cxt) : Set where
   constructor _,_
-  field theSubst : Subst Γ Δ
-        isSNe    : ∀ {a} (x : Var Γ a) → SNe n (theSubst x)
-open SubstSNe
+  field theSubst : RenSub vt Γ Δ
+        isSNe    : ∀ {a} (x : Var Γ a) → SNe n (vt2tm _ (theSubst x))
+open RenSubSNe
+
+SubstSNe = RenSubSNe `Tm
 
 -- Substitutions are functorial in the evaluation depth n
 
-mapSubSNe : ∀ {Γ Δ m n} → m ≤ℕ n → SubstSNe n Γ Δ → SubstSNe m Γ Δ
+mapSubSNe : ∀ {i vt Γ Δ m n} → m ≤ℕ n → RenSubSNe {i} vt n Γ Δ → RenSubSNe vt m Γ Δ
 mapSubSNe m≤n (σ , σ∈SNe) = σ , (λ x → mapSNe m≤n (σ∈SNe x))
 
 -- The singleton SNe substitution.
@@ -172,31 +183,25 @@ theSubst (sgs-varSNe x)         = sgs (var x)
 isSNe    (sgs-varSNe x) zero    = var x
 isSNe    (sgs-varSNe x) (suc y) = var y
 
--- Lifting a SNe substitution.
-
-liftsSNe : ∀ {n Γ Δ a} → SubstSNe n Γ Δ → SubstSNe n (a ∷ Γ) (a ∷ Δ)
-theSubst (liftsSNe σ)                   = lifts (theSubst σ)
-isSNe    (liftsSNe (σ , σ∈SNe)) zero    = var zero
-isSNe    (liftsSNe (σ , σ∈SNe)) (suc y) = TODO
 
 -- The SN-notions are closed under SNe substitution.
 
 mutual
-  substSNh' : ∀ {Γ Δ a b n} → (σ : SubstSNe n Γ Δ) → ∀ {E : TmCxt Γ a b} → SNhole n E → TmCxt Δ a b
+  substSNh' : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : TmCxt Γ a b} → SNhole n E → TmCxt Δ a b
   substSNh' σ (appl u) t = _
   substSNh' σ fst t      = _
   substSNh' σ snd t      = _
   substSNh' σ (u ∗l) t   = _
   substSNh' σ (∗r t) u   = _
 
-  substSNh : ∀ {Γ Δ a b n} → (σ : SubstSNe n Γ Δ) → ∀ {E : TmCxt Γ a b} → (SNh : SNhole n E) → SNhole n (substSNh' σ SNh)
+  substSNh : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : TmCxt Γ a b} → (SNh : SNhole n E) → SNhole n (substSNh' σ SNh)
   substSNh σ (appl u) = appl (substSN σ u)
   substSNh σ fst      = fst
   substSNh σ snd      = snd
   substSNh σ (u ∗l)   = substSN σ u ∗l
   substSNh σ (∗r t)   = ∗r substSN σ t
 
-  substSNh'-subst : ∀ {Γ Δ a b n} → (σ : SubstSNe n Γ Δ) → ∀ {E : TmCxt Γ a b} → (SNh : SNhole n E) → (t : Tm Γ a)
+  substSNh'-subst : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : TmCxt Γ a b} → (SNh : SNhole n E) → (t : Tm Γ a)
                     → substSNh' σ SNh (subst (theSubst σ) t) ≡ subst (theSubst σ) (E t)
   substSNh'-subst σ (appl u) t = ≡.refl
   substSNh'-subst σ fst      t = ≡.refl
@@ -204,20 +209,32 @@ mutual
   substSNh'-subst σ (u ∗l)   t = ≡.refl
   substSNh'-subst σ (∗r t)   u = ≡.refl
 
-  subst⇒ : ∀ {Γ Δ a n} (σ : SubstSNe n Γ Δ) {t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → subst (theSubst σ) t ⟨ n ⟩⇒ subst (theSubst σ) t'
+  subst⇒ : ∀ {i vt Γ Δ a n} (σ : RenSubSNe {i} vt n Γ Δ) {t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → subst (theSubst σ) t ⟨ n ⟩⇒ subst (theSubst σ) t'
   subst⇒ {n = n} (σ , σ∈Ne) (β {t = t} {u = u} x) = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⟨ n ⟩⇒ t')
                                                    TODO
                                                    (β {t = subst (lifts σ) t} (substSN (σ , σ∈Ne) x))
   subst⇒         σ (β▹ {a∞ = a∞})        = β▹ {a∞ = a∞}
   subst⇒         σ (βfst t∈SN)           = βfst (substSN σ t∈SN)
   subst⇒         σ (βsnd u∈SN)           = βsnd (substSN σ u∈SN)
-  subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t') TODO TODO (cong (substEh (theSubst σ) E∈Eh) (subst⇒ σ t→t'))
+  subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t') 
+                                             (substEh'-subst (theSubst σ) E∈Eh _)
+                                             (substEh'-subst (theSubst σ) E∈Eh _)
+                                             (cong (substEh (theSubst σ) E∈Eh) (subst⇒ σ t→t'))
 
-  substSNe : ∀ {Γ Δ τ n} → (σ : SubstSNe n Γ Δ) → ∀ {t : Tm Γ τ} → SNe n t → SNe n (subst (theSubst σ) t)
+  -- Lifting a SNe substitution.
+
+  liftsSNe : ∀ {i vt Γ Δ a n} → RenSubSNe {i} vt n Γ Δ → RenSubSNe {i} vt n (a ∷ Γ) (a ∷ Δ)
+  theSubst (liftsSNe σ)                   = lifts (theSubst σ)
+  isSNe    (liftsSNe {vt = `Var} (σ , σ∈SNe)) zero    = var zero
+  isSNe    (liftsSNe {vt = `Var} (σ , σ∈SNe)) (suc y) = var (suc (σ y))
+  isSNe    (liftsSNe {vt = `Tm } (σ , σ∈SNe)) zero    = var zero
+  isSNe    (liftsSNe {vt = `Tm } (σ , σ∈SNe)) (suc y) = substSNe {vt = `Var} (suc , (λ x → var (suc x))) (σ∈SNe y)
+
+  substSNe : ∀ {i vt Γ Δ τ n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {t : Tm Γ τ} → SNe n t → SNe n (subst (theSubst σ) t)
   substSNe σ (var x)            = isSNe σ x
   substSNe σ (elim t∈SNe E∈SNh) = ≡.subst (SNe _) (substSNh'-subst σ E∈SNh _) (elim (substSNe σ t∈SNe) (substSNh σ E∈SNh))
 
-  substSN : ∀ {Γ Δ τ n} → (σ : SubstSNe n Γ Δ) → ∀ {t : Tm Γ τ} → SN n t → SN n (subst (theSubst σ) t)
+  substSN : ∀ {i vt Γ Δ τ n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {t : Tm Γ τ} → SN n t → SN n (subst (theSubst σ) t)
   substSN σ (ne t∈SNe)         = ne (substSNe σ t∈SNe)
   substSN σ (abs t∈SN)         = abs (substSN (liftsSNe σ) t∈SN)
   substSN σ (pair t₁∈SN t₂∈SN) = pair (substSN σ t₁∈SN) (substSN σ t₂∈SN)
