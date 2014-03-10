@@ -34,3 +34,8 @@ caseMax {suc m} {suc n} P pn pm = caseMax (P ∘ suc) (pn ∘ s≤s) (pm ∘ s�
 
 n≤sn : ∀{n} → n ≤ℕ suc n
 n≤sn = (z≤n {1}) +-mono DecTotalOrderℕ.refl
+
+-- TODOs
+
+postulate
+  TODO : ∀ {a}{A : Set a} → A

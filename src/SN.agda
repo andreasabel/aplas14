@@ -10,11 +10,6 @@ open import SizedInfiniteTypes
 open import Terms
 open import Substitution
 
--- TODOs
-
-postulate
-  TODO : ∀ {a}{A : Set a} → A
-
 -- Term contexts which do not include binders.
 
 TmCxt : (Γ : Cxt) (a b : Ty) → Set
@@ -29,6 +24,7 @@ data Ehole {Γ : Cxt} : {a b : Ty} → TmCxt Γ a b → Set where
   _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → Ehole {a = (▸̂ (delay a ⇒ b∞))} (λ t → t ∗ u)
   ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → Ehole (λ u → ((▹ t) ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞)
 
+-- Inductive definition of strong normalization.
 
 mutual
 
