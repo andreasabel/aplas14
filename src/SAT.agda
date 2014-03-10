@@ -55,6 +55,13 @@ record SAT (n : ℕ) : Set₁ where
   open IsSAT satProp public
 open SAT
 
+-- Elementhood for saturated sets.
+
+-- Workaround. Agda does not accept projection satSet directly,
+-- maybe since it is defined in another module.
+satSet' = satSet
+syntax satSet' 𝓐 t = t ∈ 𝓐
+
 -- Semantic types
 
 _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
@@ -71,18 +78,20 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
     𝑩 = satSet 𝓑
     𝑪 = 𝑨 [→] 𝑩
     CSNe : SNe _ ⊆ 𝑪
-    CSNe (var x) ρ 𝓾 = {!!}
-    CSNe (elim ν E) ρ 𝓾 = {!!}
-
-{-
-_⟦×⟧_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
-(𝓐 ⟦×⟧ 𝓑) t = 𝓐 (fst t) × 𝓑 (snd t)
+    CSNe 𝒏 ρ 𝒖 = SAT.satSNe 𝓑 (sneApp {!!} (SAT.satSN 𝓐 𝒖))
 
 -- If 𝓐, 𝓑 ∈ SAT
 -- Lemma: λ x → t ∈ (𝓐 ⟦→⟧ 𝓑)
 
-semAbs : ∀{a b}{𝓐 : TmSet a}{𝓑 : TmSet b}{Γ}{t : Tm (a ∷ Γ) b} →
-  (∀{u} → u ∈ 𝓐 → subst0 u t ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
-semAbs = TODO
--}
+module _ {n}{𝓐 𝓑 : SAT n} where
+  a = SAT.satTy 𝓐
+  b = SAT.satTy 𝓑
+
+  semAbs : ∀{Γ}{t : Tm (a ∷ Γ) b} →
+    (∀{u} → u ∈ 𝓐 → subst0 u t ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
+  semAbs 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) {!!}
+
+
+-- _⟦×⟧_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
+-- (𝓐 ⟦×⟧ 𝓑) t = 𝓐 (fst t) × 𝓑 (snd t)
 
