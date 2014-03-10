@@ -48,7 +48,9 @@ _∗'_ {a∞ = a∞} t u = _∗_ {a = force a∞} (cast (▸̂ (≅delay ≅refl
 _<$>_ : ∀{Γ}{a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
 t <$> u = ▹ t ∗ u
 
-_∶_ : ∀ {Γ} a -> Tm Γ a -> Tm Γ a
-a ∶ t = t
+tmId : ∀ {Γ} a → Tm Γ a → Tm Γ a
+tmId a t = t
+
+syntax tmId a t = t ∶ a
 
 

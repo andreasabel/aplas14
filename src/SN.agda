@@ -27,7 +27,7 @@ data Ehole {Γ : Cxt} : {a b : Ty} → TmCxt Γ a b → Set where
   fst   : ∀ {a b} → Ehole {a = a ×̂ b} fst
   snd   : ∀ {a b} → Ehole {a = a ×̂ b} snd
   _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → Ehole {a = (▸̂ (delay a ⇒ b∞))} (λ t → t ∗ u)
-  ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → Ehole (λ u → ▸̂ b∞ ∶ ((▹ t) ∗ (▸ a ∶ u)))
+  ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → Ehole (λ u → ((▹ t) ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞)
 
 
 mutual
@@ -35,7 +35,7 @@ mutual
 -- Strongly normalizing evaluation contexts
 
   data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → TmCxt Γ a b → Set where
-    appl  : ∀ {a b u} → SN n u     → SNhole n (λ t → b ∶ app t (a ∶ u))
+    appl  : ∀ {a b u} → SN n u     → SNhole n (λ t → app t (u ∶ a) ∶ b)
     fst   : ∀ {a b}                → SNhole n (fst {a = a} {b = b})
     snd   : ∀ {a b}                → SNhole n (snd {a = a} {b = b})
     _∗l   : ∀ {a b∞ u} → SN n u    → SNhole n (λ t → _∗_ {a = a} {b∞} t u)
@@ -60,10 +60,10 @@ mutual
   -- Strong head reduction
 
   data _⟨_⟩⇒_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
-    β     : ∀{n a b t u} → SN n (a ∶ u)  →   (b ∶ app (abs t) u)     ⟨ n ⟩⇒ subst0 u t
-    β▹    : ∀{n a b t}{u : Tm _ (force a)} → ((▸̂ b) ∶ (t <$> (▹ u))) ⟨ n ⟩⇒ ▹ (app t u)
-    βfst  : ∀{n a b t u} → SN n u       → fst (pair (a ∶ t) (b ∶ u)) ⟨ n ⟩⇒ t
-    βsnd  : ∀{n a b t u} → SN n t       → snd (pair (a ∶ t) (b ∶ u)) ⟨ n ⟩⇒ u
+    β     : ∀{n a b t u} → SN n (u ∶ a)  →   (app (abs t) u ∶ b)     ⟨ n ⟩⇒ subst0 u t
+    β▹    : ∀{n a b t}{u : Tm _ (force a)} → ((t <$> (▹ u)) ∶ (▸̂ b)) ⟨ n ⟩⇒ ▹ (app t u)
+    βfst  : ∀{n a b t u} → SN n u       → fst (pair (t ∶ a) (u ∶ b)) ⟨ n ⟩⇒ t
+    βsnd  : ∀{n a b t u} → SN n t       → snd (pair (t ∶ a) (u ∶ b)) ⟨ n ⟩⇒ u
     cong  : ∀{n a b}{E} → Ehole {Γ} {a} {b} E →
             ∀{t t'} → t ⟨ n ⟩⇒ t' →                              E t ⟨ n ⟩⇒ E t'
 

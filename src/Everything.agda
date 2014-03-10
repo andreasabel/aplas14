@@ -8,3 +8,4 @@ import Examples
 
 import Substitution
 import SN
+import SAT
