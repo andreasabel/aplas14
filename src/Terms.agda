@@ -53,4 +53,15 @@ tmId a t = t
 
 syntax tmId a t = t ∶ a
 
+-- Equality of subterms
 
+≡app₁ : ∀ {Γ a a' b}{t : Tm Γ (a →̂ b)}{t' : Tm Γ (a' →̂ b)}{u u'}
+         → app t u ≡ app t' u'
+         → (P : {a : Ty} → Tm Γ a → Set) → P t → P t'
+≡app₁ ≡.refl P x = x
+
+≡appTy : ∀{Γ a a' b}{t : Tm Γ (a →̂ b)}{t' : Tm Γ (a' →̂ b)}{u u'} → app t u ≡ app t' u' → a ≡ a'
+≡appTy ≡.refl = ≡.refl
+
+≡app₁' : ∀{Γ a b}{t t' : Tm Γ (a →̂ b)}{u u'} → app t u ≡ app t' u' → t ≡ t'
+≡app₁' ≡.refl = ≡.refl

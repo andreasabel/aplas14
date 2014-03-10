@@ -32,7 +32,9 @@ mutual
 -- Strongly normalizing evaluation contexts
 
   data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → TmCxt Γ a b → Set where
-    appl  : ∀ {a b u}  (𝒖 : SN n u) → SNhole n (λ t → app t (u ∶ a) ∶ b)
+    appl  : ∀ {a b}{u : Tm Γ a}
+            → (𝒖 : SN n u)
+            → SNhole n (λ (t : Tm Γ (a →̂ b)) → app t u)
     fst   : ∀ {a b}                 → SNhole n (fst {a = a} {b = b})
     snd   : ∀ {a b}                 → SNhole n (snd {a = a} {b = b})
     _∗l   : ∀ {a b∞ u} (𝒖 : SN n u) → SNhole n (λ t → _∗_ {a = a} {b∞} t u)
@@ -44,8 +46,8 @@ mutual
 
   data SNe (n : ℕ) {Γ} {b} : Tm Γ b → Set where
     var  : ∀ x                              → SNe n (var x)
-    elim : ∀ {a} {t : Tm Γ a} {E}
-           → (𝒏 : SNe n t) (𝑬 : SNhole n E) → SNe n (E t)
+    elim : ∀ {a} {t : Tm Γ a} {E} {u : Tm Γ b} (eq : E t ≡ u)
+           → (𝒏 : SNe n t) (𝑬 : SNhole n E) → SNe n u
 
   -- Strongly normalizing terms.
 
@@ -102,14 +104,14 @@ mutual
 
 sneApp : ∀{n Γ a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
   SNe n t → SN n u → SNe n (app t u)
-sneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
+sneApp 𝒏 𝒖 = elim ≡.refl 𝒏 (appl 𝒖)
 
 -- Functoriality of the SN-notions wrt. evaluation depth n.
 
 mutual
   mapSNe : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SNe n t -> SNe m t
   mapSNe m≤n (var x) = var x
-  mapSNe m≤n (elim t∈Ne E∈SNh) = elim (mapSNe m≤n t∈Ne) (mapSNh m≤n E∈SNh)
+  mapSNe m≤n (elim ≡.refl t∈Ne E∈SNh) = elim ≡.refl (mapSNe m≤n t∈Ne) (mapSNh m≤n E∈SNh)
 
   mapSN : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SN n t -> SN m t
   mapSN m≤n (ne u∈SNe) = ne (mapSNe m≤n u∈SNe)
@@ -234,7 +236,7 @@ mutual
 
   substSNe : ∀ {i vt Γ Δ τ n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {t : Tm Γ τ} → SNe n t → SNe n (subst (theSubst σ) t)
   substSNe σ (var x)            = isSNe σ x
-  substSNe σ (elim t∈SNe E∈SNh) = ≡.subst (SNe _) (substSNh'-subst σ E∈SNh _) (elim (substSNe σ t∈SNe) (substSNh σ E∈SNh))
+  substSNe σ (elim ≡.refl t∈SNe E∈SNh) = ≡.subst (SNe _) (substSNh'-subst σ E∈SNh _) (elim ≡.refl (substSNe σ t∈SNe) (substSNh σ E∈SNh))
 
   substSN : ∀ {i vt Γ Δ τ n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {t : Tm Γ τ} → SN n t → SN n (subst (theSubst σ) t)
   substSN σ (ne t∈SNe)         = ne (substSNe σ t∈SNe)
@@ -265,12 +267,34 @@ varSN = ne (var _)
 -- SN is closed under application to variables.
 
 appVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)}{x} → t ∈ SN n → app t (var x) ∈ SN n
-appVarSN (ne t∈SNe)       = ne (elim t∈SNe (appl varSN))
+appVarSN (ne t∈SNe)       = ne (elim ≡.refl t∈SNe (appl varSN))
 appVarSN (abs t∈SN)       = exp (β varSN) (substSN (sgs-varSNe _) t∈SN)
 appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) t→t') (appVarSN t'∈SN)
 
+absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)}{x} → app t (var x) ∈ SNe n → t ∈ SNe n
+absVarSNe {n = n} (elim eq 𝒏 (appl {u = var .x} (ne (var x)))) = ≡app₁ eq (SNe n) 𝒏
+absVarSNe (elim eq 𝒏 (appl {u = var x₁} (ne (elim eq₁ x₂ 𝑬)))) = {!eq!}
+absVarSNe (elim () 𝒏 (appl {u = abs u} (ne (elim eq₁ x₁ 𝑬))))
+absVarSNe (elim () 𝒏 (appl {u = app u u₁} (ne (elim eq₁ x₁ 𝑬))))
+absVarSNe (elim () 𝒏 (appl {u = pair u u₁} (ne (elim eq₁ x₁ 𝑬))))
+absVarSNe (elim () 𝒏 (appl {u = fst u} (ne (elim eq₁ x₁ 𝑬))))
+absVarSNe (elim () 𝒏 (appl {u = snd u} (ne (elim eq₁ x₁ 𝑬))))
+absVarSNe (elim () 𝒏 (appl {u = ▹ u} (ne (elim eq₁ x₁ 𝑬))))
+absVarSNe (elim () 𝒏 (appl {u = u ∗ u₁} (ne (elim eq₁ x₁ 𝑬))))
+absVarSNe (elim () 𝒏 (appl {u = cast eq u} (ne (elim eq₂ x₁ 𝑬))))
+absVarSNe (elim () 𝒏 (appl (abs 𝒖)))
+absVarSNe (elim () 𝒏 (appl (pair 𝒖 𝒖₁)))
+absVarSNe (elim () 𝒏 (appl ▹0_))
+absVarSNe (elim () 𝒏 (appl (▹ 𝒖)))
+absVarSNe (elim eq 𝒏 (appl (exp t⇒ 𝒖))) = {!t⇒!}
+absVarSNe (elim () 𝒏 fst)
+absVarSNe (elim () 𝒏 snd)
+absVarSNe (elim () 𝒏 (𝒖 ∗l))
+absVarSNe (elim () 𝒏 (∗r 𝒕))
+
 absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)}{x} → app t (var x) ∈ SN n → t ∈ SN n
-absVarSN x = TODO
+absVarSN (ne 𝒖) = ne (absVarSNe 𝒖)
+absVarSN (exp t⇒ 𝒕′) = {!t⇒!} -- exp {!!} (absVarSN {!𝒕′!})
 -- absVarSN (ne (var ())) = {!𝒏!}
 -- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
 -- absVarSN (exp t⇒ x₁) = {!!}
