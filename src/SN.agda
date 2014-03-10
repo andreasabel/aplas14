@@ -7,11 +7,14 @@ open import SizedInfiniteTypes
 open import Terms
 open import Substitution
 
+-- Term contexts which do not include binders.
 
+TmCxt : (Γ : Cxt) (a b : Ty) → Set
+TmCxt Γ a b = Tm Γ a → Tm Γ b
 
 -- Evaluation Contexts
 
-data Ehole {Γ : Cxt} : {a b : Ty} → (Tm Γ a → Tm Γ b) → Set where
+data Ehole {Γ : Cxt} : {a b : Ty} → TmCxt Γ a b → Set where
   appl  : ∀ {a b} (u : Tm Γ a)  → Ehole (λ (t : Tm Γ (a →̂ b)) → app t u)
   fst   : ∀ {a b} → Ehole {a = a ×̂ b} fst
   snd   : ∀ {a b} → Ehole {a = a ×̂ b} snd
@@ -23,7 +26,7 @@ mutual
 
 -- Strongly normalizing evaluation contexts
 
-  data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → (Tm Γ a → Tm Γ b) → Set where
+  data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → TmCxt Γ a b → Set where
     appl  : ∀ {a b u} → SN n u     → SNhole n (λ t → b ∶ app t (a ∶ u))
     fst   : ∀ {a b}                → SNhole n (fst {a = a} {b = b})
     snd   : ∀ {a b}                → SNhole n (snd {a = a} {b = b})
@@ -56,6 +59,8 @@ mutual
     cong  : ∀{n a b}{E} → Ehole {Γ} {a} {b} E →
             ∀{t t'} → t ⟨ n ⟩⇒ t' →                              E t ⟨ n ⟩⇒ E t'
 
+-- Functoriality of the SN-notions wrt. evaluation depth n.
+
 mutual
   mapSNe : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SNe n t -> SNe m t
   mapSNe m≤n (var x) = var x
@@ -77,7 +82,7 @@ mutual
   map⇒ m≤n (βsnd t∈SN) = βsnd (mapSN m≤n t∈SN)
   map⇒ m≤n (cong Eh t→t') = cong Eh (map⇒ m≤n t→t')
 
-  mapSNh : ∀ {m n} → m ≤ℕ n → ∀ {Γ a b}{E : Tm Γ a → Tm Γ b} → SNhole n E -> SNhole m E
+  mapSNh : ∀ {m n} → m ≤ℕ n → ∀ {Γ a b}{E : TmCxt Γ a b} → SNhole n E -> SNhole m E
   mapSNh m≤n (appl u∈SN) = appl (mapSN m≤n u∈SN)
   mapSNh m≤n fst = fst
   mapSNh m≤n snd = snd
@@ -85,76 +90,90 @@ mutual
   mapSNh m≤n (∗r t∈SN) = ∗r mapSN m≤n t∈SN
 
 
+-- Evaluation contexts are closed under substitution.
+
 mutual
-  substEh' : ∀ {Γ Δ a b} → (σ : Subst Γ Δ) → ∀ {E : Tm Γ a → Tm Γ b} → Ehole E → Tm Δ a → Tm Δ b
+  substEh' : ∀ {Γ Δ a b} → (σ : Subst Γ Δ) → ∀ {E : TmCxt Γ a b} → Ehole E → TmCxt Δ a b
   substEh' σ (appl u) t = _
   substEh' σ fst t      = _
   substEh' σ snd t      = _
   substEh' σ (u ∗l) t   = _
   substEh' σ (∗r t) u   = _
 
-  substEh : ∀ {Γ Δ a b} → (σ : Subst Γ Δ) → ∀ {E : Tm Γ a → Tm Γ b} → (Eh : Ehole E) → Ehole (substEh' σ Eh)
+  substEh : ∀ {Γ Δ a b} → (σ : Subst Γ Δ) → ∀ {E : TmCxt Γ a b} → (Eh : Ehole E) → Ehole (substEh' σ Eh)
   substEh σ (appl u) = appl (subst σ u)
   substEh σ fst      = fst
   substEh σ snd      = snd
   substEh σ (u ∗l)   = subst σ u ∗l
   substEh σ (∗r t)   = ∗r subst σ t
 
+-- Substituting strongly neutral terms
 
-SubstSNe : ℕ → Cxt → Cxt → Set
-SubstSNe n Γ Δ = Σ (Subst Γ Δ) λ σ → ∀ {a} (x : Var Γ a) -> SNe n (σ x)
+record SubstSNe (n : ℕ) (Γ Δ : Cxt) : Set where
+  constructor _,_
+  field theSubst : Subst Γ Δ
+        isSNe    : ∀ {a} (x : Var Γ a) → SNe n (theSubst x)
+open SubstSNe
+
+-- Substitutions are functorial in the evaluation depth n
 
 mapSubSNe : ∀ {Γ Δ m n} → m ≤ℕ n → SubstSNe n Γ Δ → SubstSNe m Γ Δ
 mapSubSNe m≤n (σ , σ∈SNe) = σ , (λ x → mapSNe m≤n (σ∈SNe x))
 
+-- The singleton SNe substitution.
+-- Replaces the first variable by another variable.
+
 sgs-varSNe : ∀ {n Γ a} → Var Γ a → SubstSNe n (a ∷ Γ) Γ
-proj₁ (sgs-varSNe x) = sgs (var x)
-proj₂ (sgs-varSNe x) zero    = var x
-proj₂ (sgs-varSNe x) (suc y) = var y
+theSubst (sgs-varSNe x)         = sgs (var x)
+isSNe    (sgs-varSNe x) zero    = var x
+isSNe    (sgs-varSNe x) (suc y) = var y
+
+-- Lifting a SNe substitution.
 
 liftsSNe : ∀ {n Γ Δ a} → SubstSNe n Γ Δ → SubstSNe n (a ∷ Γ) (a ∷ Δ)
-proj₁ (liftsSNe σ) = lifts (proj₁ σ)
-proj₂ (liftsSNe (σ , σ∈SNe)) zero    = var zero
-proj₂ (liftsSNe (σ , σ∈SNe)) (suc y) = {!!}
+theSubst (liftsSNe σ)                   = lifts (theSubst σ)
+isSNe    (liftsSNe (σ , σ∈SNe)) zero    = var zero
+isSNe    (liftsSNe (σ , σ∈SNe)) (suc y) = {!!}
 
+-- The SN-notions are closed under SNe substitution.
 
 mutual
-  substSNh' : ∀ {Γ Δ a b n} → (σ : SubstSNe n Γ Δ) → ∀ {E : Tm Γ a → Tm Γ b} → SNhole n E → Tm Δ a → Tm Δ b
+  substSNh' : ∀ {Γ Δ a b n} → (σ : SubstSNe n Γ Δ) → ∀ {E : TmCxt Γ a b} → SNhole n E → TmCxt Δ a b
   substSNh' σ (appl u) t = _
   substSNh' σ fst t      = _
   substSNh' σ snd t      = _
   substSNh' σ (u ∗l) t   = _
   substSNh' σ (∗r t) u   = _
 
-  substSNh : ∀ {Γ Δ a b n} → (σ : SubstSNe n Γ Δ) → ∀ {E : Tm Γ a → Tm Γ b} → (SNh : SNhole n E) → SNhole n (substSNh' σ SNh)
+  substSNh : ∀ {Γ Δ a b n} → (σ : SubstSNe n Γ Δ) → ∀ {E : TmCxt Γ a b} → (SNh : SNhole n E) → SNhole n (substSNh' σ SNh)
   substSNh σ (appl u) = appl (substSN σ u)
   substSNh σ fst      = fst
   substSNh σ snd      = snd
   substSNh σ (u ∗l)   = substSN σ u ∗l
   substSNh σ (∗r t)   = ∗r substSN σ t
 
-  substSNh'-subst : ∀ {Γ Δ a b n} → (σ : SubstSNe n Γ Δ) → ∀ {E : Tm Γ a → Tm Γ b} → (SNh : SNhole n E) → (t : Tm Γ a)
-                    → substSNh' σ SNh (subst (proj₁ σ) t) ≡ subst (proj₁ σ) (E t)
+  substSNh'-subst : ∀ {Γ Δ a b n} → (σ : SubstSNe n Γ Δ) → ∀ {E : TmCxt Γ a b} → (SNh : SNhole n E) → (t : Tm Γ a)
+                    → substSNh' σ SNh (subst (theSubst σ) t) ≡ subst (theSubst σ) (E t)
   substSNh'-subst σ (appl u) t = ≡.refl
   substSNh'-subst σ fst      t = ≡.refl
   substSNh'-subst σ snd      t = ≡.refl
   substSNh'-subst σ (u ∗l)   t = ≡.refl
   substSNh'-subst σ (∗r t)   u = ≡.refl
 
-  subst⇒ : ∀ {Γ Δ a n} (σ : SubstSNe n Γ Δ) {t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → subst (proj₁ σ) t ⟨ n ⟩⇒ subst (proj₁ σ) t'
+  subst⇒ : ∀ {Γ Δ a n} (σ : SubstSNe n Γ Δ) {t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → subst (theSubst σ) t ⟨ n ⟩⇒ subst (theSubst σ) t'
   subst⇒ {n = n} (σ , σ∈Ne) (β {t = t} {u = u} x) = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⟨ n ⟩⇒ t')
                                                    {!!}
                                                    (β {t = subst (lifts σ) t} (substSN (σ , σ∈Ne) x))
   subst⇒         σ (β▹ {a = a})          = β▹ {a = a}
   subst⇒         σ (βfst t∈SN)           = βfst (substSN σ t∈SN)
   subst⇒         σ (βsnd u∈SN)           = βsnd (substSN σ u∈SN)
-  subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t') {!!} {!!} (cong (substEh (proj₁ σ) E∈Eh) (subst⇒ σ t→t'))
+  subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t') {!!} {!!} (cong (substEh (theSubst σ) E∈Eh) (subst⇒ σ t→t'))
 
-  substSNe : ∀ {Γ Δ τ n} → (σ : SubstSNe n Γ Δ) → ∀ {t : Tm Γ τ} → SNe n t → SNe n (subst (proj₁ σ) t)
-  substSNe σ (var x)            = proj₂ σ x
+  substSNe : ∀ {Γ Δ τ n} → (σ : SubstSNe n Γ Δ) → ∀ {t : Tm Γ τ} → SNe n t → SNe n (subst (theSubst σ) t)
+  substSNe σ (var x)            = isSNe σ x
   substSNe σ (elim t∈SNe E∈SNh) = ≡.subst (SNe _) (substSNh'-subst σ E∈SNh _) (elim (substSNe σ t∈SNe) (substSNh σ E∈SNh))
 
-  substSN : ∀ {Γ Δ τ n} → (σ : SubstSNe n Γ Δ) → ∀ {t : Tm Γ τ} → SN n t → SN n (subst (proj₁ σ) t)
+  substSN : ∀ {Γ Δ τ n} → (σ : SubstSNe n Γ Δ) → ∀ {t : Tm Γ τ} → SN n t → SN n (subst (theSubst σ) t)
   substSN σ (ne t∈SNe)         = ne (substSNe σ t∈SNe)
   substSN σ (abs t∈SN)         = abs (substSN (liftsSNe σ) t∈SN)
   substSN σ (pair t₁∈SN t₂∈SN) = pair (substSN σ t₁∈SN) (substSN σ t₂∈SN)
@@ -162,9 +181,12 @@ mutual
   substSN σ (▹ t∈SN)           = ▹ substSN (mapSubSNe n≤sn σ) t∈SN
   substSN σ (exp t→t' t'∈SN)   = exp (subst⇒ σ t→t') (substSN σ t'∈SN)
 
+-- Variables are SN.
 
 varSN : ∀{Γ a n x} → var x ∈ SN {Γ} n {a}
 varSN = ne (var _)
+
+-- SN is closed under application to variables.
 
 appVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)}{x} → t ∈ SN n → app t (var x) ∈ SN n
 appVarSN (ne t∈SNe)       = ne (elim t∈SNe (appl varSN))
