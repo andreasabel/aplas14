@@ -22,62 +22,54 @@ mutual
   --   SNhole n (subst ρ t) (λ t' → subst ρ (E t')) t' → SNhole n t E t'
   -- unRenameSNh = TODO
 
-  unRenameSNe : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} →
-    SNe n (subst ρ t) → SNe n t
-  unRenameSNe {t = var x}     _                = var x
-  unRenameSNe {t = abs _}     (elim 𝒕 ())
-  unRenameSNe {t = app _ _}   (elim 𝒕 (appl 𝒖)) = elim (unRenameSNe 𝒕) (appl (unRenameSN 𝒖))
-  unRenameSNe {t = pair _ _}  (elim 𝒕 ())
-  unRenameSNe {t = fst _}     (elim 𝒕 fst)      = elim (unRenameSNe 𝒕) fst
-  unRenameSNe {t = snd _}     (elim 𝒕 snd)      = elim (unRenameSNe 𝒕) snd
-  unRenameSNe {t = ▹ _}       (elim 𝒕 ())
-  unRenameSNe {t = t ∗ u}     (elim 𝒕 𝑬𝒕)       = {!𝑬𝒕!}
-  unRenameSNe {t = cast eq t} (elim 𝒕 ())
+  unRenameSNe : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a}{t'} → IndRen ρ t t' →
+                SNe n t' → SNe n t
+  unRenameSNe (var x x₁)     (var y)           = var x
+  unRenameSNe (app is is₁)   (elim 𝒏 (appl 𝒖)) = elim (unRenameSNe is 𝒏) (appl (unRenameSN is₁ 𝒖))
+  unRenameSNe (fst is)       (elim 𝒏 fst)      = elim (unRenameSNe is 𝒏) fst
+  unRenameSNe (snd is)       (elim 𝒏 snd)      = elim (unRenameSNe is 𝒏) snd
+  unRenameSNe (is ∗ is₁)     (elim 𝒏 (𝒖 ∗l))   = elim (unRenameSNe is 𝒏) (unRenameSN is₁ 𝒖 ∗l)
+  unRenameSNe ((▹ is) ∗ is₁) (elim 𝒏 (∗r 𝒕))   = elim (unRenameSNe is₁ 𝒏) (∗r unRenameSN (▹ is) 𝒕)
 
-  unRenameSN : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} →
-    SN n (subst ρ t) → SN n t
+  unRenameSN : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t'} → IndRen ρ t t'
+    → SN n t' → SN n t
   -- variable case:
-  unRenameSN {t = var x   } _            = ne (var x)
+  unRenameSN (var x _)    (ne (var y)) = ne (var x)
   -- constructor cases:
-  unRenameSN {t = abs _   } (abs 𝒕)      = abs (unRenameSN 𝒕)
-  unRenameSN {t = pair _ _} (pair 𝒕₁ 𝒕₂) = pair (unRenameSN 𝒕₁) (unRenameSN 𝒕₂)
-  unRenameSN {t = ▹ _     } ▹0           = ▹0
-  unRenameSN {t = ▹ _     } (▹ 𝒕)        = ▹ (unRenameSN 𝒕)
+  unRenameSN (abs t)      (abs 𝒕)      = abs (unRenameSN t 𝒕)
+  unRenameSN (pair t₁ t₂) (pair 𝒕₁ 𝒕₂) = pair (unRenameSN t₁ 𝒕₁) (unRenameSN t₂ 𝒕₂)
+  unRenameSN (▹ _)        ▹0           = ▹0
+  unRenameSN (▹ t)        (▹ 𝒕)        = ▹ (unRenameSN t 𝒕)
   -- neutral cases:
-  unRenameSN                (ne 𝒏)       = ne (unRenameSNe 𝒏)
+  unRenameSN n            (ne 𝒏)       = ne (unRenameSNe n 𝒏)
   -- redex cases:
-  unRenameSN                (exp t⇒ 𝒕)   = unRename⇒ t⇒ 𝒕
+  unRenameSN is           (exp t⇒ 𝒕)   = exp (unRename⇒1 is t⇒) (unRenameSN (proj₂ (unRename⇒0 is t⇒)) 𝒕)
 
-  -- NEEDS generalization, maybe t[ρ] ⇒ t' and E[t'] ∈ SN imply E[t] ∈ SN
-  unRename⇒ : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t' : Tm Δ a} →
-    subst ρ t ⟨ n ⟩⇒ t' → SN n t' → SN n t
-  unRename⇒ {t = var x} _ _ = ne (var x)
-  unRename⇒ {t = abs _} (cong () _ _) _
-  unRename⇒ {t = app (var x) t₁} (cong (appl ._) (appl ._) y) 𝒕 = ne (elim (var x) (appl (unRenameSN (apprSN 𝒕))))
-  unRename⇒ {t = app (abs t) t₁} (β 𝒖) 𝒕 = exp (β (unRenameSN 𝒖)) (unRenameSN {!𝒕!})
-  unRename⇒ {t = app (abs t) t₁}     (cong  (appl ._) (appl ._) (cong () _ _)) 𝒕
-  unRename⇒ {t = app (app t t₁) t₂}  (cong (appl ._) (appl ._) t⇒) 𝒕 = {!!}
-  unRename⇒ {t = app (fst t) t₁}     (cong (appl ._) (appl ._) t⇒) 𝒕 = {!!}
-  unRename⇒ {t = app (snd t) t₁}     (cong (appl ._) (appl ._) t⇒) 𝒕 = {!!}
-  unRename⇒ {t = app (cast eq t) t₁} (cong (appl ._) (appl ._) t⇒) 𝒕 = {!!}
-  unRename⇒ {t = pair _ _} (cong () _ _) _
-  unRename⇒ {t = fst (var x)} _ _ = ne (elim (var x) fst)
-  unRename⇒ {t = fst (pair _ _)} (βfst 𝒖) 𝒕 = exp (βfst (unRenameSN 𝒖)) (unRenameSN 𝒕)
-  unRename⇒ {t = fst (pair _ _)} (cong fst fst (cong () _ _)) _
-  unRename⇒ {t = fst (app _ _ )} (cong fst fst t⇒) 𝒕 = fstSN (unRename⇒ t⇒ (fromFstSN 𝒕))
-  unRename⇒ {t = fst (fst _   )} (cong fst fst t⇒) 𝒕 = fstSN (unRename⇒ t⇒ (fromFstSN 𝒕))
-  unRename⇒ {t = fst (snd _   )} (cong fst fst t⇒) 𝒕 = fstSN (unRename⇒ t⇒ (fromFstSN 𝒕))
-  unRename⇒ {t = fst (cast _ _)} (cong fst fst t⇒) 𝒕 = fstSN (unRename⇒ t⇒ (fromFstSN 𝒕))
-  unRename⇒ {t = snd (var x)} _ _ = ne (elim (var x) snd)
-  unRename⇒ {t = snd (pair _ _)} (βsnd 𝒖) 𝒕 = exp (βsnd (unRenameSN 𝒖)) (unRenameSN 𝒕)
-  unRename⇒ {t = snd (pair _ _)} (cong snd snd (cong () _ _)) _
-  unRename⇒ {t = snd (app _ _ )} (cong snd snd t⇒) 𝒕 = sndSN (unRename⇒ t⇒ (fromSndSN 𝒕))
-  unRename⇒ {t = snd (fst _   )} (cong snd snd t⇒) 𝒕 = sndSN (unRename⇒ t⇒ (fromSndSN 𝒕))
-  unRename⇒ {t = snd (snd _   )} (cong snd snd t⇒) 𝒕 = sndSN (unRename⇒ t⇒ (fromSndSN 𝒕))
-  unRename⇒ {t = snd (cast _ _)} (cong snd snd t⇒) 𝒕 = sndSN (unRename⇒ t⇒ (fromSndSN 𝒕))
-  unRename⇒ {t = ▹ _} (cong () _ _) _
-  unRename⇒ {t = t ∗ t₁} x 𝒕 = {!!}
-  unRename⇒ {t = cast eq t} x 𝒕 = {!!}
+  unRename⇒0 : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t' : Tm Δ a}{tρ} → IndRen ρ t tρ 
+              → tρ ⟨ n ⟩⇒ t' → Σ _ \ s → IndRen ρ s t'
+  unRename⇒0 {ρ = ρ} (app {u = u} (abs {t = t} is) is₁)  (β 𝒖)  = _ , prop→Ind ρ (≡.trans (≡.sym (sgs-lifts-term {σ = ρ} {u = u} {t = t})) 
+                                                                      (≡.cong₂ (λ t₁ u₁ → subst (sgs u₁) t₁) (Ind→prop _ is) (Ind→prop _ is₁)))
+  unRename⇒0 ((▹ is) ∗ (▹ is₁))  β▹    = ▹ app _ _ , (▹ app is is₁)
+  unRename⇒0 (fst (pair is is₁)) (βfst 𝒖) = _ , is
+  unRename⇒0 (snd (pair is is₁)) (βsnd 𝒕) = _ , is₁
+  unRename⇒0 (app is is₁)        (cong (appl u) (appl .u) tρ→t') = let s , iss = unRename⇒0 is tρ→t' in app s _ , app iss is₁
+  unRename⇒0 (fst is)            (cong fst fst tρ→t') = let s , iss = unRename⇒0 is tρ→t' in fst s , fst iss
+  unRename⇒0 (snd is)            (cong snd snd tρ→t') = let s , iss = unRename⇒0 is tρ→t' in snd s , snd iss
+  unRename⇒0 (is ∗ is₁)          (cong (u ∗l) (.u ∗l) tρ→t')   = let s , iss = unRename⇒0 is tρ→t' in s ∗ _ , iss ∗ is₁
+  unRename⇒0 (is ∗ is₁)          (cong (∗r t₂) (∗r .t₂) tρ→t') = let s , iss = unRename⇒0 is₁ tρ→t' in _ ∗ s , is ∗ iss
+
+  unRename⇒1 : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t' : Tm Δ a}{tρ} → (is : IndRen ρ t tρ)
+              → (t⇒ : tρ ⟨ n ⟩⇒ t') → t ⟨ n ⟩⇒ proj₁ (unRename⇒0 is t⇒)
+  unRename⇒1 (app (abs is) is₁) (β 𝒖) = β (unRenameSN is₁ 𝒖) 
+  unRename⇒1 ((▹ is) ∗ (▹ is₁))  β▹   = β▹
+  unRename⇒1 (fst (pair is is₁)) (βfst 𝒖) = βfst (unRenameSN is₁ 𝒖)
+  unRename⇒1 (snd (pair is is₁)) (βsnd 𝒕) = βsnd (unRenameSN is 𝒕)
+  unRename⇒1 (app is is₁)        (cong (appl u) (appl .u) tρ→t') = cong (appl _) (appl _) (unRename⇒1 is tρ→t')
+  unRename⇒1 (fst is)            (cong fst fst tρ→t') = cong fst fst (unRename⇒1 is tρ→t')
+  unRename⇒1 (snd is)            (cong snd snd tρ→t') = cong snd snd (unRename⇒1 is tρ→t')
+  unRename⇒1 (is ∗ is₁)          (cong (u ∗l) (.u ∗l) tρ→t')   = cong (_ ∗l) (_ ∗l) (unRename⇒1 is tρ→t')
+  unRename⇒1 ((▹ is) ∗ is₁)      (cong (∗r t₂) (∗r .t₂) tρ→t') = cong (∗r _) (∗r _) (unRename⇒1 is₁ tρ→t')
+
 
 -- Extensionality of SN for function types:
 -- If t x ∈ SN then t ∈ SN.
@@ -87,7 +79,7 @@ absVarSNe (elim 𝒏 (appl 𝒖)) = 𝒏
 
 absVarSN : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var zero) ∈ SN n → t ∈ SN n
 absVarSN (ne 𝒖)                                                   = ne (absVarSNe 𝒖)
-absVarSN (exp (β 𝒖) 𝒕′)                                           = abs {!unRenameSN 𝒕′!}
+absVarSN (exp (β {t = t} 𝒖) 𝒕′)                                   = abs (unRenameSN (prop→Ind contract (subst-ext contract-sgs t)) 𝒕′) 
 absVarSN (exp (cong (appl .(var zero)) (appl .(var zero)) t⇒) 𝒕′) = exp t⇒ (absVarSN 𝒕′)
 
 -- absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SNe n → t ∈ SNe n

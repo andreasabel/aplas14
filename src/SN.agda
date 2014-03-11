@@ -235,9 +235,7 @@ mutual
 
   subst⇒ : ∀ {i vt Γ Δ a n} (σ : RenSubSNe {i} vt n Γ Δ) {t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → subst (theSubst σ) t ⟨ n ⟩⇒ subst (theSubst σ) t'
   subst⇒ {n = n} (σ , σ∈Ne) (β {t = t} {u = u} x) = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⟨ n ⟩⇒ t')
-                                                   (≡.trans (≡.sym (subst-∙ (sgs (subst σ u)) (lifts σ) t))
-                                                   (≡.trans (subst-ext sgs-lifts t)
-                                                   (subst-∙ σ (sgs u) t)))
+                                                   (sgs-lifts-term {σ = σ} {u} {t})
                                                    (β {t = subst (lifts σ) t} (substSN (σ , σ∈Ne) x))
 
   subst⇒         σ (β▹ {a = a})        = β▹ {a = a}
