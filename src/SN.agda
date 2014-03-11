@@ -97,7 +97,7 @@ mutual
            → (𝒕 : SN n t) (𝒖 : SN n u)
            → SN n {a ×̂ b} (pair t u)
 
-    ▹0_  : ∀ {a∞} {t : Tm Γ (force a∞)}
+    ▹0   : ∀ {a∞} {t : Tm Γ (force a∞)}
            → SN 0 {▸̂ a∞} (▹ t)
 
     ▹_   : ∀ {a∞ n} {t : Tm Γ (force a∞)}
@@ -176,8 +176,8 @@ mutual
   mapSN m≤n (ne u∈SNe) = ne (mapSNe m≤n u∈SNe)
   mapSN m≤n (abs t∈SN) = abs (mapSN m≤n t∈SN)
   mapSN m≤n (pair t∈SN u∈SN) = pair (mapSN m≤n t∈SN) (mapSN m≤n u∈SN)
-  mapSN z≤n ▹0_ = ▹0_
-  mapSN z≤n (▹ t∈SN) = ▹0_
+  mapSN z≤n ▹0 = ▹0
+  mapSN z≤n (▹ t∈SN) = ▹0
   mapSN (s≤s m≤n) (▹ t∈SN) = ▹ mapSN m≤n t∈SN
   mapSN m≤n (exp t→t' t∈SN) = exp (map⇒ m≤n t→t') (mapSN m≤n t∈SN)
 
@@ -262,7 +262,7 @@ mutual
   substSN σ (ne t∈SNe)         = ne (substSNe σ t∈SNe)
   substSN σ (abs t∈SN)         = abs (substSN (liftsSNe σ) t∈SN)
   substSN σ (pair t₁∈SN t₂∈SN) = pair (substSN σ t₁∈SN) (substSN σ t₂∈SN)
-  substSN σ ▹0_                = ▹0_
+  substSN σ ▹0                 = ▹0
   substSN σ (▹ t∈SN)           = ▹ substSN (mapSubSNe n≤sn σ) t∈SN
   substSN σ (exp t→t' t'∈SN)   = exp (subst⇒ σ t→t') (substSN σ t'∈SN)
 
@@ -280,19 +280,6 @@ renameSN : ∀{n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
   SN n t → SN n (rename ρ t)
 renameSN ρ = substSN (renSN ρ)
 
--- Converse direction: One can cancel a substitution from an SN term.
-
-mutual
-
-  unsubstSNe : ∀{n a m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) {t : Tm Γ a} →
-    SNe n (subst σ t) → SNe n t
-  unsubstSNe = TODO
-
-  unsubstSN : ∀{n a m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) {t : Tm Γ a} →
-    SN n (subst σ t) → SN n t
-  unsubstSN = TODO
-
-
 -- Variables are SN.
 
 varSN : ∀{Γ a n x} → var x ∈ SN {Γ} n {a}
@@ -305,26 +292,17 @@ appVarSN (ne t∈SNe)       = ne (elim t∈SNe (appl varSN))
 appVarSN (abs t∈SN)       = exp (β varSN) (substSN (sgs-varSNe _) t∈SN)
 appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) (appl (var _)) t→t') (appVarSN t'∈SN)
 
--- Extensionality of SN for function types:
--- If t x ∈ SN then t ∈ SN.
+-- Closure under projections
 
-absVarSNe : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var zero) ∈ SNe n → t ∈ SNe n
-absVarSNe (elim 𝒏 (appl 𝒖)) = 𝒏
+fstSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (fst t)
+fstSN (ne 𝒏)       = ne (elim 𝒏 fst)
+fstSN (pair 𝒕₁ 𝒕₂) = exp (βfst 𝒕₂) 𝒕₁
+fstSN (exp t⇒ 𝒕)   = exp (cong fst fst t⇒) (fstSN 𝒕)
 
-absVarSN : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var zero) ∈ SN n → t ∈ SN n
-absVarSN (ne 𝒖)                                                   = ne (absVarSNe 𝒖)
-absVarSN (exp (β 𝒖) 𝒕′)                                           = abs (unsubstSN _ 𝒕′)
-absVarSN (exp (cong (appl .(var zero)) (appl .(var zero)) t⇒) 𝒕′) = exp t⇒ (absVarSN 𝒕′)
-
--- absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SNe n → t ∈ SNe n
--- absVarSNe (elim 𝒏 (appl 𝒖)) = unsubstSNe _ 𝒏
-
--- absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SN n → t ∈ SN n
--- absVarSN (ne 𝒖) = ne (absVarSNe 𝒖)
--- absVarSN (exp t⇒ 𝒕′) = {! t⇒!} -- exp {!!} (absVarSN {!𝒕′!})
--- -- absVarSN (ne (var ())) = {!𝒏!}
--- -- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
--- -- absVarSN (exp t⇒ x₁) = {!!}
+sndSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (snd t)
+sndSN (ne 𝒏)       = ne (elim 𝒏 snd)
+sndSN (pair 𝒕₁ 𝒕₂) = exp (βsnd 𝒕₁) 𝒕₂
+sndSN (exp t⇒ 𝒕)   = exp (cong snd snd t⇒) (sndSN 𝒕)
 
 -- Extensionality of SN for product type:
 -- If fst t ∈ SN and snd t ∈ SN then t ∈ SN.
