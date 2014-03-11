@@ -85,7 +85,7 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
     CSN 𝒕 = absVarSN (SAT.satSN 𝓑 (𝒕 suc (SAT.satSNe 𝓐 (var zero))))
 
     CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
-    CExp t⇒ 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (cong (appl _) (subst⇒ (renSN ρ) t⇒)) (𝒕 ρ 𝒖)
+    CExp t⇒ 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (cong (appl _) (appl _) (subst⇒ (renSN ρ) t⇒)) (𝒕 ρ 𝒖)
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
@@ -99,7 +99,16 @@ module _ {n}{𝓐 𝓑 : SAT n} where
 
 bothProjSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} →
   (𝒕₁ : SN n (fst t)) (𝒕₂ : SN n (snd t)) → SN n t
-bothProjSN 𝒕₁ 𝒕₂ = TODO
+bothProjSN (ne (elim 𝒏 fst)) 𝒕₂ = ne 𝒏
+bothProjSN (exp (βfst 𝒕₂) 𝒕₁) _  = pair 𝒕₁ 𝒕₂
+{-
+bothProjSN (exp (βfst 𝒖) 𝒕₁) (ne (elim 𝒏 snd)) = ne 𝒏
+bothProjSN (exp (βfst 𝒖) 𝒕₁) (exp (βsnd 𝒕) 𝒕₂) = pair 𝒕₁ 𝒕₂
+bothProjSN (exp (βfst 𝒖) 𝒕₁) (exp (cong 𝑬𝒕 𝑬𝒕' t⇒) 𝒕₂) = pair 𝒕₁ 𝒖
+-}
+bothProjSN (exp (cong _ _ _) _) (ne (elim 𝒏 snd)) = ne 𝒏
+bothProjSN (exp (cong _ _ _) _) (exp (βsnd 𝒕₁) 𝒕₂) = pair 𝒕₁ 𝒕₂
+bothProjSN (exp (cong fst fst t⇒) 𝒕₁) (exp (cong snd snd t⇒₁) 𝒕₂) = {!bothProjSN 𝒕₁ 𝒕₂!}
 {-
 bothProjSN (ne (elim () 𝒏 (appl 𝒖))) (ne 𝒏₁)
 bothProjSN (ne (elim eq 𝒏 fst)) (ne 𝒏₁) = {!!}
@@ -127,13 +136,13 @@ _⟦×⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
     𝑪 = 𝑨 [×] 𝑩
 
     CSNe : SNe _ ⊆ 𝑪
-    CSNe 𝒏 = (SAT.satSNe 𝓐 (elim ≡.refl 𝒏 fst))
-           , (SAT.satSNe 𝓑 (elim ≡.refl 𝒏 snd))
+    CSNe 𝒏 = (SAT.satSNe 𝓐 (elim  𝒏 fst))
+           , (SAT.satSNe 𝓑 (elim  𝒏 snd))
 
     CSN : 𝑪 ⊆ SN _
     CSN (𝒕₁ , 𝒕₂) = bothProjSN (SAT.satSN 𝓐 𝒕₁) (SAT.satSN 𝓑 𝒕₂)
 
     CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
-    CExp t⇒ (𝒕₁ , 𝒕₂) = (SAT.satExp 𝓐 (cong fst t⇒) 𝒕₁)
-                     , (SAT.satExp 𝓑 (cong snd t⇒) 𝒕₂)
+    CExp t⇒ (𝒕₁ , 𝒕₂) = (SAT.satExp 𝓐 (cong fst fst t⇒) 𝒕₁)
+                     , (SAT.satExp 𝓑 (cong snd snd t⇒) 𝒕₂)
 

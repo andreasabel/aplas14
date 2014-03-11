@@ -1,5 +1,6 @@
 {-# OPTIONS --copatterns --sized-types #-}
 {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --show-implicit #-}
 {-# OPTIONS --no-termination-check #-} -- too slow
 
 module SN where
@@ -16,7 +17,7 @@ open import Substitution
 
 data ECxt (Γ : Cxt) : (a b : Ty) → Set where
   appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
-  fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a 
+  fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a
   snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
   _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → ECxt Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞)
   ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → ECxt Γ (▸ a) (▸̂ b∞)
@@ -40,7 +41,7 @@ substEC σ snd      = snd
 substEC σ (u ∗l)   = subst σ u ∗l
 substEC σ (∗r t₁)  = ∗r subst σ t₁
 
-substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E}{Et : Tm Γ b}{t : Tm Γ a} → (Eh : Ehole Et E t) 
+substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E}{Et : Tm Γ b}{t : Tm Γ a} → (Eh : Ehole Et E t)
             → Ehole (subst σ Et) (substEC σ E) (subst σ t)
 substEh σ (appl u) = appl (subst σ u)
 substEh σ fst      = fst
@@ -57,8 +58,8 @@ mutual
 
   data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
 
-    appl  : ∀ {a b t u} 
-            → (𝒖 : SN n u)  
+    appl  : ∀ {a b t u}
+            → (𝒖 : SN n u)
             → SNhole n (app t u) (appl u) (t ∶ (a →̂ b))
 
     fst   : ∀ {a b t}                 → SNhole n (fst {a = a} {b = b} t) fst t
@@ -68,7 +69,7 @@ mutual
     _∗l   : ∀ {a b∞ t u} (𝒖 : SN n u) → SNhole n (_∗_ {a = a} {b∞} t u) (u ∗l) t
 
     ∗r_   : ∀ {a : Ty}{b∞}{u t}
-              (𝒕 : SN n (▹_ {a∞ = delay (a →̂ force b∞)} t)) 
+              (𝒕 : SN n (▹_ {a∞ = delay (a →̂ force b∞)} t))
                                       → SNhole n (_<$>_ {a = a} {b∞} t u) (∗r t) u
 
   -- Strongly neutral terms.
@@ -96,12 +97,12 @@ mutual
            → (𝒕 : SN n t) (𝒖 : SN n u)
            → SN n {a ×̂ b} (pair t u)
 
-    ▹0_  : ∀ {a} {t : Tm Γ (force a)}
-           → SN 0 {▸̂ a} (▹ t)
+    ▹0_  : ∀ {a∞} {t : Tm Γ (force a∞)}
+           → SN 0 {▸̂ a∞} (▹ t)
 
-    ▹_   : ∀ {a n} {t : Tm Γ (force a)}
+    ▹_   : ∀ {a∞ n} {t : Tm Γ (force a∞)}
            → (𝒕 : SN n t)
-           → SN (suc n) {▸̂ a} (▹ t)
+           → SN (suc n) {▸̂ a∞} (▹ t)
 
     exp  : ∀{a n t t′}
            → (t⇒ : t ⟨ n ⟩⇒ t′) (𝒕′ : SN n t′)
@@ -115,8 +116,21 @@ mutual
             → (𝒖 : SN n u)
             → (app (abs t) u) ⟨ n ⟩⇒ subst0 u t
 
-    β▹    : ∀ {n a∞ b}{t : Tm Γ (force a∞ →̂ b)}{u : Tm Γ (force a∞)}
-            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹ (app t u) ∶ ▸ b)
+    β▹    : ∀ {n a b}{t : Tm Γ (force a →̂ force b)}{u : Tm Γ (force a)}
+            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b} (app t u))
+
+
+--     β▹    : ∀ {n a∞ b∞}{t : Tm Γ (force a∞ →̂ force b∞)}{u : Tm Γ (force a∞)}
+--             → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b∞} (app t u))
+-- --            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
+
+--     β▹    : ∀ {n a∞ b}{t : Tm Γ (force a∞ →̂ b)}{u : Tm Γ (force a∞)}
+--             → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
+-- --            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
+
+--     β▹    : ∀ {n a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a}
+--             → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
+-- --            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
 
     βfst  : ∀ {n a b}{t : Tm Γ a}{u : Tm Γ b}
             → (𝒖 : SN n u)
@@ -132,7 +146,29 @@ mutual
             → (t⇒ : t ⟨ n ⟩⇒ t')
             → Et ⟨ n ⟩⇒ Et'
 
+-- Strong head reduction is deterministic.
 
+det⇒ : ∀ {n a Γ} {t t₁ t₂ : Tm Γ a}
+       → (t⇒₁ : t ⟨ n ⟩⇒ t₁) (t⇒₂ : t ⟨ n ⟩⇒ t₂) → t₁ ≡ t₂
+det⇒ (β _) (β _)                                              = ≡.refl
+det⇒ (β _) (cong (appl u) (appl .u) (cong () _ _))
+det⇒ (β▹ {a = a}) y                                                     = {!y!}
+det⇒ (βfst _) (βfst _)                                        = ≡.refl
+det⇒ (βfst _) (cong fst fst (cong () _ _))
+det⇒ (βsnd _) (βsnd _)                                        = ≡.refl
+det⇒ (βsnd 𝒕) (cong snd snd (cong () _ _))
+det⇒ (cong (appl u) (appl .u) (cong () _ _)) (β _)
+det⇒ (cong (._ ∗l) (._ ∗l) (cong () _ _)) β▹
+det⇒ (cong (∗r t₁) (∗r .t₁) (cong () _ _)) β▹
+det⇒ (cong fst fst (cong () _ _ )) (βfst _)
+det⇒ (cong snd snd (cong () _ _ )) (βsnd _)
+det⇒ (cong (appl u) (appl .u) x) (cong (appl .u) (appl .u) y) = ≡.cong (λ t → app t u) (det⇒ x y)
+det⇒ (cong fst fst x) (cong fst fst y)                        = ≡.cong fst             (det⇒ x y)
+det⇒ (cong snd snd x) (cong snd snd y)                        = ≡.cong snd             (det⇒ x y)
+det⇒ (cong (u ∗l) (.u ∗l) x) (cong (.u ∗l) (.u ∗l) y)         = ≡.cong (λ t → t ∗ u)   (det⇒ x y)
+det⇒ (cong (∗r t) (∗r .t) x) (cong (∗r .t) (∗r .t) y)         = ≡.cong (_∗_ (▹ t))     (det⇒ x y)
+det⇒ (cong (u ∗l) (.u ∗l) x) (cong (∗r t) (∗r .t) y) = {!!}
+det⇒ (cong (∗r t₁) (∗r .t₁) x) (cong (t ∗l) (.t ∗l) y) = {!!}
 
 -- Strongly neutrals are closed under application.
 
@@ -158,7 +194,7 @@ mutual
 
   map⇒ : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → t ⟨ m ⟩⇒ t'
   map⇒ m≤n (β t∈SN) = β (mapSN m≤n t∈SN)
-  map⇒ m≤n (β▹ {a∞ = a∞}) = β▹ {a∞ = a∞}
+  map⇒ m≤n (β▹ {a = a}) = β▹ {a = a}
   map⇒ m≤n (βfst t∈SN) = βfst (mapSN m≤n t∈SN)
   map⇒ m≤n (βsnd t∈SN) = βsnd (mapSN m≤n t∈SN)
   map⇒ m≤n (cong Et Et' t→t') = cong Et Et' (map⇒ m≤n t→t')
@@ -200,7 +236,7 @@ isSNe    (sgs-varSNe x) (suc y) = var y
 -- The SN-notions are closed under SNe substitution.
 
 mutual
-  substSNh : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : ECxt Γ a b}{Et t} → (SNh : SNhole n Et E t) 
+  substSNh : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : ECxt Γ a b}{Et t} → (SNh : SNhole n Et E t)
                                 → SNhole n (subst (theSubst σ) Et) (substEC (theSubst σ) E) (subst (theSubst σ) t)
   substSNh σ (appl u) = appl (substSN σ u)
   substSNh σ fst      = fst
@@ -212,7 +248,7 @@ mutual
   subst⇒ {n = n} (σ , σ∈Ne) (β {t = t} {u = u} x) = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⟨ n ⟩⇒ t')
                                                    TODO
                                                    (β {t = subst (lifts σ) t} (substSN (σ , σ∈Ne) x))
-  subst⇒         σ (β▹ {a∞ = a∞})        = β▹ {a∞ = a∞}
+  subst⇒         σ (β▹ {a = a})        = β▹ {a = a}
   subst⇒         σ (βfst t∈SN)           = βfst (substSN σ t∈SN)
   subst⇒         σ (βsnd u∈SN)           = βsnd (substSN σ u∈SN)
   subst⇒ {n = n} σ (cong Eh Eh' t→t')    = cong (substEh (theSubst σ) Eh) (substEh (theSubst σ) Eh') (subst⇒ σ t→t')
@@ -265,7 +301,7 @@ appVarSN (abs t∈SN)       = exp (β varSN) (substSN (sgs-varSNe _) t∈SN)
 appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) (appl (var _)) t→t') (appVarSN t'∈SN)
 
 absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SNe n → t ∈ SNe n
-absVarSNe (elim 𝒏 (appl 𝒖)) = TODO 
+absVarSNe (elim 𝒏 (appl 𝒖)) = TODO
 
 absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SN n → t ∈ SN n
 absVarSN (ne 𝒖) = ne (absVarSNe 𝒖)

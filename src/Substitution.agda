@@ -1,4 +1,5 @@
 {-# OPTIONS --copatterns --sized-types #-}
+{-# OPTIONS --no-termination-check #-} -- too slow
 
 module Substitution where
 
@@ -163,5 +164,5 @@ mutual
 
 
 renId : ∀ {Γ a}{t : Tm Γ a} → rename (λ x → x) t ≡ t
-renId = subst-id _ 
+renId = subst-id _
 
