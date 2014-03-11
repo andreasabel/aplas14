@@ -99,25 +99,11 @@ module _ {n}{𝓐 𝓑 : SAT n} where
 
 bothProjSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} →
   (𝒕₁ : SN n (fst t)) (𝒕₂ : SN n (snd t)) → SN n t
-bothProjSN (ne (elim 𝒏 fst)) 𝒕₂ = ne 𝒏
-bothProjSN (exp (βfst 𝒕₂) 𝒕₁) _  = pair 𝒕₁ 𝒕₂
-{-
-bothProjSN (exp (βfst 𝒖) 𝒕₁) (ne (elim 𝒏 snd)) = ne 𝒏
-bothProjSN (exp (βfst 𝒖) 𝒕₁) (exp (βsnd 𝒕) 𝒕₂) = pair 𝒕₁ 𝒕₂
-bothProjSN (exp (βfst 𝒖) 𝒕₁) (exp (cong 𝑬𝒕 𝑬𝒕' t⇒) 𝒕₂) = pair 𝒕₁ 𝒖
--}
-bothProjSN (exp (cong _ _ _) _) (ne (elim 𝒏 snd)) = ne 𝒏
+bothProjSN (ne (elim 𝒏 fst))    _                 = ne 𝒏
+bothProjSN (exp (βfst 𝒕₂) 𝒕₁)    _                 = pair 𝒕₁ 𝒕₂
+bothProjSN (exp (cong _ _ _) _) (ne (elim 𝒏 snd))  = ne 𝒏
 bothProjSN (exp (cong _ _ _) _) (exp (βsnd 𝒕₁) 𝒕₂) = pair 𝒕₁ 𝒕₂
-bothProjSN (exp (cong fst fst t⇒) 𝒕₁) (exp (cong snd snd t⇒₁) 𝒕₂) = {!bothProjSN 𝒕₁ 𝒕₂!}
-{-
-bothProjSN (ne (elim () 𝒏 (appl 𝒖))) (ne 𝒏₁)
-bothProjSN (ne (elim eq 𝒏 fst)) (ne 𝒏₁) = {!!}
-bothProjSN (ne (elim () 𝒏 snd)) (ne 𝒏₁)
-bothProjSN (ne (elim () 𝒏 (𝒖 ∗l))) (ne 𝒏₁)
-bothProjSN (ne (elim () 𝒏 (∗r 𝒕))) (ne 𝒏₁)
-bothProjSN (ne 𝒏) (exp t⇒ 𝒕₂) = {!!}
-bothProjSN (exp t⇒ 𝒕₁) 𝒕₂ = {!!}
--}
+bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕₂) rewrite det⇒ t⇒₁ t⇒₂ = exp t⇒₂ (bothProjSN 𝒕₁ 𝒕₂)
 
 -- Semantic product type
 

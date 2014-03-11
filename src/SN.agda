@@ -1,6 +1,6 @@
 {-# OPTIONS --copatterns --sized-types #-}
 {-# OPTIONS --allow-unsolved-metas #-}
-{-# OPTIONS --show-implicit #-}
+-- {-# OPTIONS --show-implicit #-}
 {-# OPTIONS --no-termination-check #-} -- too slow
 
 module SN where
@@ -152,7 +152,7 @@ det⇒ : ∀ {n a Γ} {t t₁ t₂ : Tm Γ a}
        → (t⇒₁ : t ⟨ n ⟩⇒ t₁) (t⇒₂ : t ⟨ n ⟩⇒ t₂) → t₁ ≡ t₂
 det⇒ (β _) (β _)                                              = ≡.refl
 det⇒ (β _) (cong (appl u) (appl .u) (cong () _ _))
-det⇒ (β▹ {a = a}) y                                                     = {!y!}
+det⇒ (β▹ {a = a}) y                                                     = TODO
 det⇒ (βfst _) (βfst _)                                        = ≡.refl
 det⇒ (βfst _) (cong fst fst (cong () _ _))
 det⇒ (βsnd _) (βsnd _)                                        = ≡.refl
@@ -167,8 +167,8 @@ det⇒ (cong fst fst x) (cong fst fst y)                        = ≡.cong fst  
 det⇒ (cong snd snd x) (cong snd snd y)                        = ≡.cong snd             (det⇒ x y)
 det⇒ (cong (u ∗l) (.u ∗l) x) (cong (.u ∗l) (.u ∗l) y)         = ≡.cong (λ t → t ∗ u)   (det⇒ x y)
 det⇒ (cong (∗r t) (∗r .t) x) (cong (∗r .t) (∗r .t) y)         = ≡.cong (_∗_ (▹ t))     (det⇒ x y)
-det⇒ (cong (u ∗l) (.u ∗l) x) (cong (∗r t) (∗r .t) y) = {!!}
-det⇒ (cong (∗r t₁) (∗r .t₁) x) (cong (t ∗l) (.t ∗l) y) = {!!}
+det⇒ (cong (u ∗l) (.u ∗l) (cong () _ _)) (cong (∗r t) (∗r .t) _)
+det⇒ (cong (∗r t) (∗r .t) _) (cong (u ∗l) (.u ∗l) (cong () _ _))
 
 -- Strongly neutrals are closed under application.
 
