@@ -304,6 +304,7 @@ sndSN (ne 𝒏)       = ne (elim 𝒏 snd)
 sndSN (pair 𝒕₁ 𝒕₂) = exp (βsnd 𝒕₁) 𝒕₂
 sndSN (exp t⇒ 𝒕)   = exp (cong snd snd t⇒) (sndSN 𝒕)
 
+{-
 -- Extensionality of SN for product type:
 -- If fst t ∈ SN and snd t ∈ SN then t ∈ SN.
 
@@ -314,3 +315,27 @@ bothProjSN (exp (βfst 𝒕₂) 𝒕₁)    _                 = pair 𝒕₁ �
 bothProjSN (exp (cong _ _ _) _) (ne (elim 𝒏 snd))  = ne 𝒏
 bothProjSN (exp (cong _ _ _) _) (exp (βsnd 𝒕₁) 𝒕₂) = pair 𝒕₁ 𝒕₂
 bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕₂) rewrite det⇒ t⇒₁ t⇒₂ = exp t⇒₂ (bothProjSN 𝒕₁ 𝒕₂)
+-}
+
+-- Subterm properties of SN
+
+-- If fst t ∈ SN then t ∈ SN.
+
+fromFstSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n (fst t) → SN n t
+fromFstSN (ne (elim 𝒏 fst))         = ne 𝒏
+fromFstSN (exp (βfst 𝒕₂) 𝒕₁)        = pair 𝒕₁ 𝒕₂
+fromFstSN (exp (cong fst fst t⇒) 𝒕) = exp t⇒ (fromFstSN 𝒕)
+
+-- If snd t ∈ SN then t ∈ SN.
+
+fromSndSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n (snd t) → SN n t
+fromSndSN (ne (elim 𝒏 snd))         = ne 𝒏
+fromSndSN (exp (βsnd 𝒕₁) 𝒕₂)        = pair 𝒕₁ 𝒕₂
+fromSndSN (exp (cong snd snd t⇒) 𝒕) = exp t⇒ (fromSndSN 𝒕)
+
+-- If app t u ∈ SN then u ∈ SN.
+
+apprSN : ∀{n a b Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} → SN n (app t u) → SN n u
+apprSN (ne (elim 𝒏 (appl 𝒖)))               = 𝒖
+apprSN (exp (β 𝒖) 𝒕)                        = 𝒖
+apprSN (exp (cong (appl u) (appl .u) t⇒) 𝒕) = apprSN 𝒕
