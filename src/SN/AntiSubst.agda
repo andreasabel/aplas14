@@ -45,12 +45,19 @@ mutual
 
   unSubstSN : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a} →
     SN n (subst σ t) → SN n t
-  unSubstSN {t = var x} _               = ne (var x)
+  -- variable case:
+  unSubstSN {t = var x}    _            = ne (var x)
   -- constructor cases:
   unSubstSN {t = abs _   } (abs 𝒕)      = abs (unSubstSN 𝒕)
   unSubstSN {t = pair _ _} (pair 𝒕₁ 𝒕₂) = pair (unSubstSN 𝒕₁) (unSubstSN 𝒕₂)
   unSubstSN {t = ▹ _     } ▹0           = ▹0
   unSubstSN {t = ▹ _     } (▹ 𝒕)        = ▹ (unSubstSN 𝒕)
+  -- neutral cases:
+  unSubstSN                (ne 𝒏)       = ne (unSubstSNe 𝒏)
+  -- redex cases:
+  unSubstSN                (exp t⇒ 𝒕)   = unSubst⇒ t⇒ 𝒕
+
+{- LONG VERSION:
   -- neutral cases:
   unSubstSN {t = app _ _} (ne 𝒏)        = ne (unSubstSNe 𝒏)
   unSubstSN {t = fst _} (ne 𝒏)          = ne (unSubstSNe 𝒏)
@@ -71,6 +78,7 @@ mutual
   unSubstSN {t = abs _   } (exp (cong () _ _) _)
   unSubstSN {t = pair _ _} (exp (cong () _ _) _)
   unSubstSN {t = ▹ _     } (exp (cong () _ _) _)
+-}
 
   unSubst⇒ : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a} {t' : Tm Δ a} →
     subst σ t ⟨ n ⟩⇒ t' → SN n t' → SN n t
