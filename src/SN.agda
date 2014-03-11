@@ -116,21 +116,8 @@ mutual
             → (𝒖 : SN n u)
             → (app (abs t) u) ⟨ n ⟩⇒ subst0 u t
 
-    β▹    : ∀ {n a b}{t : Tm Γ (force a →̂ force b)}{u : Tm Γ (force a)}
-            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b} (app t u))
-
-
---     β▹    : ∀ {n a∞ b∞}{t : Tm Γ (force a∞ →̂ force b∞)}{u : Tm Γ (force a∞)}
---             → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b∞} (app t u))
--- --            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
-
---     β▹    : ∀ {n a∞ b}{t : Tm Γ (force a∞ →̂ b)}{u : Tm Γ (force a∞)}
---             → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
--- --            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
-
---     β▹    : ∀ {n a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a}
---             → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
--- --            → (t <$> ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = delay b} (app t u))
+    β▹    : ∀ {n a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
+             → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b∞} (app t u))
 
     βfst  : ∀ {n a b}{t : Tm Γ a}{u : Tm Γ b}
             → (𝒖 : SN n u)
@@ -152,7 +139,9 @@ det⇒ : ∀ {n a Γ} {t t₁ t₂ : Tm Γ a}
        → (t⇒₁ : t ⟨ n ⟩⇒ t₁) (t⇒₂ : t ⟨ n ⟩⇒ t₂) → t₁ ≡ t₂
 det⇒ (β _) (β _)                                              = ≡.refl
 det⇒ (β _) (cong (appl u) (appl .u) (cong () _ _))
-det⇒ (β▹ {a = a}) y                                                     = TODO
+det⇒ β▹ β▹ = ≡.refl
+det⇒ β▹ (cong (._ ∗l) (._ ∗l) (cong () _ _))
+det⇒ β▹ (cong (∗r t) (∗r .t) (cong () _ _ ))
 det⇒ (βfst _) (βfst _)                                        = ≡.refl
 det⇒ (βfst _) (cong fst fst (cong () _ _))
 det⇒ (βsnd _) (βsnd _)                                        = ≡.refl
@@ -312,3 +301,4 @@ absVarSN (exp t⇒ 𝒕′) = TODO -- exp {!!} (absVarSN {!𝒕′!})
 -- absVarSN (ne (var ())) = {!𝒏!}
 -- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
 -- absVarSN (exp t⇒ x₁) = {!!}
+
