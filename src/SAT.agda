@@ -62,7 +62,7 @@ open SAT
 satSet' = satSet
 syntax satSet' 𝓐 t = t ∈ 𝓐
 
--- Semantic types
+-- Semantic function type.
 
 _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
 𝓐 ⟦→⟧ 𝓑 = record
@@ -70,7 +70,7 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
   ; satProp = record
     { satSNe = CSNe
     ; satSN  = CSN
-    ; satExp = {!!}
+    ; satExp = CExp
     }
   }
   where
@@ -84,6 +84,9 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
     CSN : 𝑪 ⊆ SN _
     CSN 𝒕 = absVarSN (SAT.satSN 𝓑 (𝒕 suc (SAT.satSNe 𝓐 (var zero))))
 
+    CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
+    CExp t⇒ 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (cong (appl _) (subst⇒ (renSN ρ) t⇒)) (𝒕 ρ 𝒖)
+
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
 module _ {n}{𝓐 𝓑 : SAT n} where
@@ -94,7 +97,29 @@ module _ {n}{𝓐 𝓑 : SAT n} where
     (∀{Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} → u ∈ 𝓐 → subst0 u (subst (lifts ρ) t) ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
   semAbs 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) (𝒕 ρ 𝒖)
 
+-- Semantic product type
 
--- _⟦×⟧_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
--- (𝓐 ⟦×⟧ 𝓑) t = 𝓐 (fst t) × 𝓑 (snd t)
+_⟦×⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
+𝓐 ⟦×⟧ 𝓑 = record
+  { satSet   = 𝑪
+  ; satProp  = record
+    { satSNe = CSNe
+    ; satSN  = {!!}
+    ; satExp = {!!}
+    }
+  }
+  where
+    𝑨 = satSet 𝓐
+    𝑩 = satSet 𝓑
+    𝑪 = 𝑨 [×] 𝑩
+
+    CSNe : SNe _ ⊆ 𝑪
+    CSNe 𝒏 = (SAT.satSNe 𝓐 (elim ≡.refl 𝒏 fst)) , ((SAT.satSNe 𝓑 (elim ≡.refl 𝒏 snd)))
+
+    CSN : 𝑪 ⊆ SN _
+    CSN 𝒕 = {!!}
+
+    CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
+    CExp t⇒ 𝒕 = {!!}
+
 
