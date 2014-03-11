@@ -11,43 +11,74 @@ open import SizedInfiniteTypes
 open import Terms
 open import Substitution
 
--- Term contexts which do not include binders.
 
-TmCxt : (Γ : Cxt) (a b : Ty) → Set
-TmCxt Γ a b = Tm Γ a → Tm Γ b
+-- Evaluation contexts.
 
--- Evaluation Contexts
+data ECxt (Γ : Cxt) : (a b : Ty) → Set where
+  appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
+  fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a 
+  snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
+  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → ECxt Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞)
+  ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → ECxt Γ (▸ a) (▸̂ b∞)
 
-data Ehole {Γ : Cxt} : {a b : Ty} → TmCxt Γ a b → Set where
-  appl  : ∀ {a b} (u : Tm Γ a)  → Ehole (λ (t : Tm Γ (a →̂ b)) → app t u)
-  fst   : ∀ {a b} → Ehole {a = a ×̂ b} fst
-  snd   : ∀ {a b} → Ehole {a = a ×̂ b} snd
-  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → Ehole {a = (▸̂ (delay a ⇒ b∞))} (λ t → t ∗ u)
-  ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → Ehole (λ u → ((▹ t) ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞)
+-- Ehole Et E t ~~ Et = E[t]
+
+data Ehole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
+  appl  : ∀ {a b t} (u : Tm Γ a)  → Ehole (app t u) (appl u) (t ∶ (a →̂ b))
+  fst   : ∀ {a b t} → Ehole {a = a ×̂ b} (fst t) fst t
+  snd   : ∀ {a b t} → Ehole {a = a ×̂ b} (snd t) snd t
+  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a)) → Ehole {a = (▸̂ (delay a ⇒ b∞))} (t ∗ u) (u ∗l) t
+  ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (a →̂ force b∞)) → Ehole (((▹ t) ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
+
+
+-- Evaluation contexts are closed under substitution.
+
+substEC : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ECxt Γ a b → ECxt Δ a b
+substEC σ (appl u) = appl (subst σ u)
+substEC σ fst      = fst
+substEC σ snd      = snd
+substEC σ (u ∗l)   = subst σ u ∗l
+substEC σ (∗r t₁)  = ∗r subst σ t₁
+
+substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E}{Et : Tm Γ b}{t : Tm Γ a} → (Eh : Ehole Et E t) 
+            → Ehole (subst σ Et) (substEC σ E) (subst σ t)
+substEh σ (appl u) = appl (subst σ u)
+substEh σ fst      = fst
+substEh σ snd      = snd
+substEh σ (u ∗l)   = subst σ u ∗l
+substEh σ (∗r t₁)  = ∗r subst σ t₁
+
 
 -- Inductive definition of strong normalization.
 
 mutual
 
--- Strongly normalizing evaluation contexts
+  -- Strongly normalizing evaluation contexts
 
-  data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → TmCxt Γ a b → Set where
-    appl  : ∀ {a b}{u : Tm Γ a}
-            → (𝒖 : SN n u)
-            → SNhole n (λ (t : Tm Γ (a →̂ b)) → app t u)
-    fst   : ∀ {a b}                 → SNhole n (fst {a = a} {b = b})
-    snd   : ∀ {a b}                 → SNhole n (snd {a = a} {b = b})
-    _∗l   : ∀ {a b∞ u} (𝒖 : SN n u) → SNhole n (λ t → _∗_ {a = a} {b∞} t u)
-    ∗r_   : ∀ {a : Ty}{b∞ t}
-              (𝒕 : SN n (▹_ {a∞ = delay (a →̂ force b∞)} t))
-                                    → SNhole n (λ u → _<$>_ {a = a} {b∞} t u)
+  data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
+
+    appl  : ∀ {a b t u} 
+            → (𝒖 : SN n u)  
+            → SNhole n (app t u) (appl u) (t ∶ (a →̂ b))
+
+    fst   : ∀ {a b t}                 → SNhole n (fst {a = a} {b = b} t) fst t
+
+    snd   : ∀ {a b t}                 → SNhole n (snd {a = a} {b = b} t) snd t
+
+    _∗l   : ∀ {a b∞ t u} (𝒖 : SN n u) → SNhole n (_∗_ {a = a} {b∞} t u) (u ∗l) t
+
+    ∗r_   : ∀ {a : Ty}{b∞}{u t}
+              (𝒕 : SN n (▹_ {a∞ = delay (a →̂ force b∞)} t)) 
+                                      → SNhole n (_<$>_ {a = a} {b∞} t u) (∗r t) u
 
   -- Strongly neutral terms.
 
   data SNe (n : ℕ) {Γ} {b} : Tm Γ b → Set where
+
     var  : ∀ x                              → SNe n (var x)
-    elim : ∀ {a} {t : Tm Γ a} {E} {u : Tm Γ b} (eq : E t ≡ u)
-           → (𝒏 : SNe n t) (𝑬 : SNhole n E) → SNe n u
+
+    elim : ∀ {a} {t : Tm Γ a} {E Et}
+           → (𝒏 : SNe n t) (𝑬𝒕 : SNhole n Et E t) → SNe n Et
 
   -- Strongly normalizing terms.
 
@@ -95,23 +126,26 @@ mutual
             → (𝒕 : SN n t)
             → snd (pair t u) ⟨ n ⟩⇒ u
 
-    cong  : ∀ {n a b t t'}{E : TmCxt Γ a b}
-            → (𝑬 : Ehole E)
+    cong  : ∀ {n a b t t' Et Et'}{E : ECxt Γ a b}
+            → (𝑬𝒕 : Ehole Et E t)
+            → (𝑬𝒕' : Ehole Et' E t')
             → (t⇒ : t ⟨ n ⟩⇒ t')
-            → E t ⟨ n ⟩⇒ E t'
+            → Et ⟨ n ⟩⇒ Et'
+
+
 
 -- Strongly neutrals are closed under application.
 
 sneApp : ∀{n Γ a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
   SNe n t → SN n u → SNe n (app t u)
-sneApp 𝒏 𝒖 = elim ≡.refl 𝒏 (appl 𝒖)
+sneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
 
 -- Functoriality of the SN-notions wrt. evaluation depth n.
 
 mutual
   mapSNe : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SNe n t -> SNe m t
   mapSNe m≤n (var x) = var x
-  mapSNe m≤n (elim ≡.refl t∈Ne E∈SNh) = elim ≡.refl (mapSNe m≤n t∈Ne) (mapSNh m≤n E∈SNh)
+  mapSNe m≤n (elim t∈Ne E∈SNh) = elim (mapSNe m≤n t∈Ne) (mapSNh m≤n E∈SNh)
 
   mapSN : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SN n t -> SN m t
   mapSN m≤n (ne u∈SNe) = ne (mapSNe m≤n u∈SNe)
@@ -127,40 +161,15 @@ mutual
   map⇒ m≤n (β▹ {a∞ = a∞}) = β▹ {a∞ = a∞}
   map⇒ m≤n (βfst t∈SN) = βfst (mapSN m≤n t∈SN)
   map⇒ m≤n (βsnd t∈SN) = βsnd (mapSN m≤n t∈SN)
-  map⇒ m≤n (cong Eh t→t') = cong Eh (map⇒ m≤n t→t')
+  map⇒ m≤n (cong Et Et' t→t') = cong Et Et' (map⇒ m≤n t→t')
 
-  mapSNh : ∀ {m n} → m ≤ℕ n → ∀ {Γ a b}{E : TmCxt Γ a b} → SNhole n E -> SNhole m E
+  mapSNh : ∀ {m n} → m ≤ℕ n → ∀ {Γ a b}{E : ECxt Γ a b}{Et t} → SNhole n Et E t -> SNhole m Et E t
   mapSNh m≤n (appl u∈SN) = appl (mapSN m≤n u∈SN)
   mapSNh m≤n fst = fst
   mapSNh m≤n snd = snd
   mapSNh m≤n (u∈SN ∗l) = mapSN m≤n u∈SN ∗l
   mapSNh m≤n (∗r t∈SN) = ∗r mapSN m≤n t∈SN
 
-
--- Evaluation contexts are closed under substitution.
-
-mutual
-  substEh' : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E : TmCxt Γ a b} → Ehole E → TmCxt Δ a b
-  substEh' σ (appl u) t = _
-  substEh' σ fst t      = _
-  substEh' σ snd t      = _
-  substEh' σ (u ∗l) t   = _
-  substEh' σ (∗r t) u   = _
-
-  substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E : TmCxt Γ a b} → (Eh : Ehole E) → Ehole (substEh' σ Eh)
-  substEh σ (appl u) = appl (subst σ u)
-  substEh σ fst      = fst
-  substEh σ snd      = snd
-  substEh σ (u ∗l)   = subst σ u ∗l
-  substEh σ (∗r t)   = ∗r subst σ t
-
-  substEh'-subst : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E : TmCxt Γ a b} → (Eh : Ehole E) → (t : Tm Γ a)
-                    → substEh' σ Eh (subst σ t) ≡ subst σ (E t)
-  substEh'-subst σ (appl u) t = ≡.refl
-  substEh'-subst σ fst      t = ≡.refl
-  substEh'-subst σ snd      t = ≡.refl
-  substEh'-subst σ (u ∗l)   t = ≡.refl
-  substEh'-subst σ (∗r t')  t = ≡.refl
 
 
 -- Substituting strongly neutral terms
@@ -191,27 +200,13 @@ isSNe    (sgs-varSNe x) (suc y) = var y
 -- The SN-notions are closed under SNe substitution.
 
 mutual
-  substSNh' : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : TmCxt Γ a b} → SNhole n E → TmCxt Δ a b
-  substSNh' σ (appl u) t = _
-  substSNh' σ fst t      = _
-  substSNh' σ snd t      = _
-  substSNh' σ (u ∗l) t   = _
-  substSNh' σ (∗r t) u   = _
-
-  substSNh : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : TmCxt Γ a b} → (SNh : SNhole n E) → SNhole n (substSNh' σ SNh)
+  substSNh : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : ECxt Γ a b}{Et t} → (SNh : SNhole n Et E t) 
+                                → SNhole n (subst (theSubst σ) Et) (substEC (theSubst σ) E) (subst (theSubst σ) t)
   substSNh σ (appl u) = appl (substSN σ u)
   substSNh σ fst      = fst
   substSNh σ snd      = snd
   substSNh σ (u ∗l)   = substSN σ u ∗l
   substSNh σ (∗r t)   = ∗r substSN σ t
-
-  substSNh'-subst : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : TmCxt Γ a b} → (SNh : SNhole n E) → (t : Tm Γ a)
-                    → substSNh' σ SNh (subst (theSubst σ) t) ≡ subst (theSubst σ) (E t)
-  substSNh'-subst σ (appl u) t = ≡.refl
-  substSNh'-subst σ fst      t = ≡.refl
-  substSNh'-subst σ snd      t = ≡.refl
-  substSNh'-subst σ (u ∗l)   t = ≡.refl
-  substSNh'-subst σ (∗r t)   u = ≡.refl
 
   subst⇒ : ∀ {i vt Γ Δ a n} (σ : RenSubSNe {i} vt n Γ Δ) {t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → subst (theSubst σ) t ⟨ n ⟩⇒ subst (theSubst σ) t'
   subst⇒ {n = n} (σ , σ∈Ne) (β {t = t} {u = u} x) = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⟨ n ⟩⇒ t')
@@ -220,10 +215,7 @@ mutual
   subst⇒         σ (β▹ {a∞ = a∞})        = β▹ {a∞ = a∞}
   subst⇒         σ (βfst t∈SN)           = βfst (substSN σ t∈SN)
   subst⇒         σ (βsnd u∈SN)           = βsnd (substSN σ u∈SN)
-  subst⇒ {n = n} σ (cong E∈Eh t→t')      = ≡.subst₂ (λ t t' → t ⟨ n ⟩⇒ t')
-                                             (substEh'-subst (theSubst σ) E∈Eh _)
-                                             (substEh'-subst (theSubst σ) E∈Eh _)
-                                             (cong (substEh (theSubst σ) E∈Eh) (subst⇒ σ t→t'))
+  subst⇒ {n = n} σ (cong Eh Eh' t→t')    = cong (substEh (theSubst σ) Eh) (substEh (theSubst σ) Eh') (subst⇒ σ t→t')
 
   -- Lifting a SNe substitution.
 
@@ -236,7 +228,7 @@ mutual
 
   substSNe : ∀ {i vt Γ Δ τ n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {t : Tm Γ τ} → SNe n t → SNe n (subst (theSubst σ) t)
   substSNe σ (var x)            = isSNe σ x
-  substSNe σ (elim ≡.refl t∈SNe E∈SNh) = ≡.subst (SNe _) (substSNh'-subst σ E∈SNh _) (elim ≡.refl (substSNe σ t∈SNe) (substSNh σ E∈SNh))
+  substSNe σ (elim t∈SNe E∈SNh) = elim (substSNe σ t∈SNe) (substSNh σ E∈SNh)
 
   substSN : ∀ {i vt Γ Δ τ n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {t : Tm Γ τ} → SN n t → SN n (subst (theSubst σ) t)
   substSN σ (ne t∈SNe)         = ne (substSNe σ t∈SNe)
@@ -245,6 +237,7 @@ mutual
   substSN σ ▹0_                = ▹0_
   substSN σ (▹ t∈SN)           = ▹ substSN (mapSubSNe n≤sn σ) t∈SN
   substSN σ (exp t→t' t'∈SN)   = exp (subst⇒ σ t→t') (substSN σ t'∈SN)
+
 
 -- SN is closed under renaming.
 
@@ -267,32 +260,12 @@ varSN = ne (var _)
 -- SN is closed under application to variables.
 
 appVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)}{x} → t ∈ SN n → app t (var x) ∈ SN n
-appVarSN (ne t∈SNe)       = ne (elim ≡.refl t∈SNe (appl varSN))
+appVarSN (ne t∈SNe)       = ne (elim t∈SNe (appl varSN))
 appVarSN (abs t∈SN)       = exp (β varSN) (substSN (sgs-varSNe _) t∈SN)
-appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) t→t') (appVarSN t'∈SN)
+appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) (appl (var _)) t→t') (appVarSN t'∈SN)
 
 absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SNe n → t ∈ SNe n
-absVarSNe = TODO
-{-absVarSNe (elim eq 𝒏 (appl (exp t⇒ 𝒖))) = {!t⇒!}
-absVarSNe {n = n} (elim eq 𝒏 (appl {u = var .x} (ne (var x)))) = ≡app₁ eq (SNe n) 𝒏
-absVarSNe (elim eq 𝒏 (appl {u = var x₁} (ne (elim eq₁ x₂ 𝑬)))) = {!eq!}
-absVarSNe (elim () 𝒏 (appl {u = abs u} (ne (elim eq₁ x₁ 𝑬))))
-absVarSNe (elim () 𝒏 (appl {u = app u u₁} (ne (elim eq₁ x₁ 𝑬))))
-absVarSNe (elim () 𝒏 (appl {u = pair u u₁} (ne (elim eq₁ x₁ 𝑬))))
-absVarSNe (elim () 𝒏 (appl {u = fst u} (ne (elim eq₁ x₁ 𝑬))))
-absVarSNe (elim () 𝒏 (appl {u = snd u} (ne (elim eq₁ x₁ 𝑬))))
-absVarSNe (elim () 𝒏 (appl {u = ▹ u} (ne (elim eq₁ x₁ 𝑬))))
-absVarSNe (elim () 𝒏 (appl {u = u ∗ u₁} (ne (elim eq₁ x₁ 𝑬))))
-absVarSNe (elim () 𝒏 (appl {u = cast eq u} (ne (elim eq₂ x₁ 𝑬))))
-absVarSNe (elim () 𝒏 (appl (abs 𝒖)))
-absVarSNe (elim () 𝒏 (appl (pair 𝒖 𝒖₁)))
-absVarSNe (elim () 𝒏 (appl ▹0_))
-absVarSNe (elim () 𝒏 (appl (▹ 𝒖)))
-absVarSNe (elim () 𝒏 fst)
-absVarSNe (elim () 𝒏 snd)
-absVarSNe (elim () 𝒏 (𝒖 ∗l))
-absVarSNe (elim () 𝒏 (∗r 𝒕))
--}
+absVarSNe (elim 𝒏 (appl 𝒖)) = TODO 
 
 absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SN n → t ∈ SN n
 absVarSN (ne 𝒖) = ne (absVarSNe 𝒖)
