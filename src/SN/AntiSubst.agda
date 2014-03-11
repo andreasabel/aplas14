@@ -46,7 +46,7 @@ mutual
   unSubstSN : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a} →
     SN n (subst σ t) → SN n t
   -- variable case:
-  unSubstSN {t = var x}    _            = ne (var x)
+  unSubstSN {t = var x   } _            = ne (var x)
   -- constructor cases:
   unSubstSN {t = abs _   } (abs 𝒕)      = abs (unSubstSN 𝒕)
   unSubstSN {t = pair _ _} (pair 𝒕₁ 𝒕₂) = pair (unSubstSN 𝒕₁) (unSubstSN 𝒕₂)
@@ -80,11 +80,15 @@ mutual
   unSubstSN {t = ▹ _     } (exp (cong () _ _) _)
 -}
 
+  -- NEEDS generalization, maybe t[σ] ⇒ t' and E[t'] ∈ SN imply E[t] ∈ SN
   unSubst⇒ : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a} {t' : Tm Δ a} →
     subst σ t ⟨ n ⟩⇒ t' → SN n t' → SN n t
   unSubst⇒ {t = var x} _ _ = ne (var x)
   unSubst⇒ {t = abs _} (cong () _ _) _
-  unSubst⇒ {t = app (var x) t₁} x₁ 𝒕 = ne (elim (var x) (appl {!!}))
+  unSubst⇒ {vt = `Var} {t = app (var x) t₁} (cong (appl ._) (appl ._) y) 𝒕 = ne (elim (var x) (appl (unSubstSN (apprSN 𝒕))))
+  unSubst⇒ {vt = `Tm} {σ = σ} {t = app (var x) _} _ 𝒕 with σ x
+  unSubst⇒ {vt = `Tm} {t = app (var x) _} (β 𝒖) 𝒕                    | abs _ = ne (elim (var x) (appl (unSubstSN 𝒖)))
+  unSubst⇒ {vt = `Tm} {t = app (var x) _} (cong (appl ._) (appl ._) _) 𝒕 | _ = ne (elim (var x) (appl (unSubstSN (apprSN 𝒕))))
   unSubst⇒ {t = app (abs t) t₁} (β 𝒖) 𝒕 = exp (β (unSubstSN 𝒖)) (unSubstSN {!𝒕!})
   unSubst⇒ {t = app (abs t) t₁}     (cong  (appl ._) (appl ._) (cong () _ _)) 𝒕
   unSubst⇒ {t = app (app t t₁) t₂}  (cong (appl ._) (appl ._) t⇒) 𝒕 = {!!}
