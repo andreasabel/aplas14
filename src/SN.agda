@@ -280,6 +280,19 @@ renameSN : ∀{n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
   SN n t → SN n (rename ρ t)
 renameSN ρ = substSN (renSN ρ)
 
+-- Converse direction: One can cancel a substitution from an SN term.
+
+mutual
+
+  unsubstSNe : ∀{n a m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) {t : Tm Γ a} →
+    SNe n (subst σ t) → SNe n t
+  unsubstSNe = TODO
+
+  unsubstSN : ∀{n a m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) {t : Tm Γ a} →
+    SN n (subst σ t) → SN n t
+  unsubstSN = TODO
+
+
 -- Variables are SN.
 
 varSN : ∀{Γ a n x} → var x ∈ SN {Γ} n {a}
@@ -295,15 +308,23 @@ appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) (appl (var _)) t→t') 
 -- Extensionality of SN for function types:
 -- If t x ∈ SN then t ∈ SN.
 
-absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SNe n → t ∈ SNe n
-absVarSNe (elim 𝒏 (appl 𝒖)) = TODO
+absVarSNe : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var zero) ∈ SNe n → t ∈ SNe n
+absVarSNe (elim 𝒏 (appl 𝒖)) = 𝒏
 
-absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SN n → t ∈ SN n
-absVarSN (ne 𝒖) = ne (absVarSNe 𝒖)
-absVarSN (exp t⇒ 𝒕′) = TODO -- exp {!!} (absVarSN {!𝒕′!})
--- absVarSN (ne (var ())) = {!𝒏!}
--- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
--- absVarSN (exp t⇒ x₁) = {!!}
+absVarSN : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var zero) ∈ SN n → t ∈ SN n
+absVarSN (ne 𝒖)                                                   = ne (absVarSNe 𝒖)
+absVarSN (exp (β 𝒖) 𝒕′)                                           = abs (unsubstSN _ 𝒕′)
+absVarSN (exp (cong (appl .(var zero)) (appl .(var zero)) t⇒) 𝒕′) = exp t⇒ (absVarSN 𝒕′)
+
+-- absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SNe n → t ∈ SNe n
+-- absVarSNe (elim 𝒏 (appl 𝒖)) = unsubstSNe _ 𝒏
+
+-- absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SN n → t ∈ SN n
+-- absVarSN (ne 𝒖) = ne (absVarSNe 𝒖)
+-- absVarSN (exp t⇒ 𝒕′) = {! t⇒!} -- exp {!!} (absVarSN {!𝒕′!})
+-- -- absVarSN (ne (var ())) = {!𝒏!}
+-- -- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
+-- -- absVarSN (exp t⇒ x₁) = {!!}
 
 -- Extensionality of SN for product type:
 -- If fst t ∈ SN and snd t ∈ SN then t ∈ SN.
