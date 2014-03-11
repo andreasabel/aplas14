@@ -97,14 +97,6 @@ module _ {n}{𝓐 𝓑 : SAT n} where
     (∀{Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} → u ∈ 𝓐 → subst0 u (subst (lifts ρ) t) ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
   semAbs 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) (𝒕 ρ 𝒖)
 
-bothProjSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} →
-  (𝒕₁ : SN n (fst t)) (𝒕₂ : SN n (snd t)) → SN n t
-bothProjSN (ne (elim 𝒏 fst))    _                 = ne 𝒏
-bothProjSN (exp (βfst 𝒕₂) 𝒕₁)    _                 = pair 𝒕₁ 𝒕₂
-bothProjSN (exp (cong _ _ _) _) (ne (elim 𝒏 snd))  = ne 𝒏
-bothProjSN (exp (cong _ _ _) _) (exp (βsnd 𝒕₁) 𝒕₂) = pair 𝒕₁ 𝒕₂
-bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕₂) rewrite det⇒ t⇒₁ t⇒₂ = exp t⇒₂ (bothProjSN 𝒕₁ 𝒕₂)
-
 -- Semantic product type
 
 _⟦×⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n

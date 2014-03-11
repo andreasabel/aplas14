@@ -292,6 +292,9 @@ appVarSN (ne t∈SNe)       = ne (elim t∈SNe (appl varSN))
 appVarSN (abs t∈SN)       = exp (β varSN) (substSN (sgs-varSNe _) t∈SN)
 appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) (appl (var _)) t→t') (appVarSN t'∈SN)
 
+-- Extensionality of SN for function types:
+-- If t x ∈ SN then t ∈ SN.
+
 absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SNe n → t ∈ SNe n
 absVarSNe (elim 𝒏 (appl 𝒖)) = TODO
 
@@ -302,3 +305,13 @@ absVarSN (exp t⇒ 𝒕′) = TODO -- exp {!!} (absVarSN {!𝒕′!})
 -- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
 -- absVarSN (exp t⇒ x₁) = {!!}
 
+-- Extensionality of SN for product type:
+-- If fst t ∈ SN and snd t ∈ SN then t ∈ SN.
+
+bothProjSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} →
+  (𝒕₁ : SN n (fst t)) (𝒕₂ : SN n (snd t)) → SN n t
+bothProjSN (ne (elim 𝒏 fst))    _                 = ne 𝒏
+bothProjSN (exp (βfst 𝒕₂) 𝒕₁)    _                 = pair 𝒕₁ 𝒕₂
+bothProjSN (exp (cong _ _ _) _) (ne (elim 𝒏 snd))  = ne 𝒏
+bothProjSN (exp (cong _ _ _) _) (exp (βsnd 𝒕₁) 𝒕₂) = pair 𝒕₁ 𝒕₂
+bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕₂) rewrite det⇒ t⇒₁ t⇒₂ = exp t⇒₂ (bothProjSN 𝒕₁ 𝒕₂)
