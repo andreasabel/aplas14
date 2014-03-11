@@ -97,6 +97,19 @@ module _ {n}{𝓐 𝓑 : SAT n} where
     (∀{Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} → u ∈ 𝓐 → subst0 u (subst (lifts ρ) t) ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
   semAbs 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) (𝒕 ρ 𝒖)
 
+bothProjSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} →
+  (𝒕₁ : SN n (fst t)) (𝒕₂ : SN n (snd t)) → SN n t
+bothProjSN 𝒕₁ 𝒕₂ = TODO
+{-
+bothProjSN (ne (elim () 𝒏 (appl 𝒖))) (ne 𝒏₁)
+bothProjSN (ne (elim eq 𝒏 fst)) (ne 𝒏₁) = {!!}
+bothProjSN (ne (elim () 𝒏 snd)) (ne 𝒏₁)
+bothProjSN (ne (elim () 𝒏 (𝒖 ∗l))) (ne 𝒏₁)
+bothProjSN (ne (elim () 𝒏 (∗r 𝒕))) (ne 𝒏₁)
+bothProjSN (ne 𝒏) (exp t⇒ 𝒕₂) = {!!}
+bothProjSN (exp t⇒ 𝒕₁) 𝒕₂ = {!!}
+-}
+
 -- Semantic product type
 
 _⟦×⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
@@ -104,8 +117,8 @@ _⟦×⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
   { satSet   = 𝑪
   ; satProp  = record
     { satSNe = CSNe
-    ; satSN  = {!!}
-    ; satExp = {!!}
+    ; satSN  = CSN
+    ; satExp = CExp
     }
   }
   where
@@ -114,12 +127,13 @@ _⟦×⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
     𝑪 = 𝑨 [×] 𝑩
 
     CSNe : SNe _ ⊆ 𝑪
-    CSNe 𝒏 = (SAT.satSNe 𝓐 (elim ≡.refl 𝒏 fst)) , ((SAT.satSNe 𝓑 (elim ≡.refl 𝒏 snd)))
+    CSNe 𝒏 = (SAT.satSNe 𝓐 (elim ≡.refl 𝒏 fst))
+           , (SAT.satSNe 𝓑 (elim ≡.refl 𝒏 snd))
 
     CSN : 𝑪 ⊆ SN _
-    CSN 𝒕 = {!!}
+    CSN (𝒕₁ , 𝒕₂) = bothProjSN (SAT.satSN 𝓐 𝒕₁) (SAT.satSN 𝓑 𝒕₂)
 
     CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
-    CExp t⇒ 𝒕 = {!!}
-
+    CExp t⇒ (𝒕₁ , 𝒕₂) = (SAT.satExp 𝓐 (cong fst t⇒) 𝒕₁)
+                     , (SAT.satExp 𝓑 (cong snd t⇒) 𝒕₂)
 
