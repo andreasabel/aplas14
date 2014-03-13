@@ -27,21 +27,7 @@ mutual
   applSN (ne (elim 𝒏 (appl 𝒖)))               = ne 𝒏
   applSN (exp (β 𝒖) 𝒕)                        = abs (unSubstSN (prop→IndS _ ≡.refl) 𝒕)
   applSN (exp (cong (appl u) (appl .u) t⇒) 𝒕) = exp t⇒ (applSN 𝒕)
-  
-  
-  delaySN : ∀ {n a∞ b∞ Γ Δ}{t1 : Tm Γ (force a∞)}{t2 : Tm Δ (force b∞)} → (∀ {n} → SN n t1 → SN n t2) → SN n (▹_ {a∞ = a∞} t1) → SN n (▹_ {a∞ = b∞} t2)
-  delaySN f (ne (elim 𝒏 ()))
-  delaySN f ▹0 = ▹0
-  delaySN f (▹ 𝒕) = ▹ f 𝒕
-  delaySN f (exp (cong () 𝑬𝒕' t⇒) 𝒕)
 
-  ∗rSN  : ∀{Γ}{a : Ty}{b∞} {t : Tm Γ (▸̂ (delay a ⇒ b∞))}
-                       {u : Tm Γ (▸ a)} → ∀ {n} → SN n (t ∗ u) → SN n u
-  ∗rSN (ne (elim 𝒏 (𝒖 ∗l))) = 𝒖
-  ∗rSN (ne (elim 𝒏 (∗r 𝒕))) = ne 𝒏
-  ∗rSN (exp β▹ z) = delaySN apprSN z
-  ∗rSN (exp (cong (u ∗l) (.u ∗l) t⇒) z) = ∗rSN z
-  ∗rSN (exp (cong (∗r t) (∗r .t) t⇒) z) = exp t⇒ (∗rSN z)
 
   unSubstSNe : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a}{tσ} → IndSubst σ t tσ
                → SNe n tσ → SNe n t
@@ -67,6 +53,8 @@ mutual
   -- redex cases:
   unSubstSN is           (exp t⇒ 𝒕)   = [ (λ x → let p = proj₂ x in exp (proj₂ p) (unSubstSN (proj₁ p) 𝒕) ) , ne ]′ (unSubst⇒0 is t⇒ 𝒕)
 
+  -- If E t ∈ SN then t ∈ SN.
+
   unEholeSN : ∀ {n Γ a b} → {t : Tm Γ a} {E : ECxt Γ b a} {t' : Tm Γ b} → Ehole t E t' → SN n t → SN n t'
   unEholeSN (appl u) 𝒕 = applSN 𝒕
   unEholeSN fst 𝒕 = fromFstSN 𝒕
@@ -77,8 +65,8 @@ mutual
   unEholeSN (u ∗l) (exp (cong (.u ∗l) (.u ∗l) t⇒) 𝒕) = exp t⇒ (unEholeSN (_ ∗l) 𝒕)
   unEholeSN (u ∗l) (exp (cong (∗r t) (∗r .t) t⇒) 𝒕) = unEholeSN (_ ∗l) 𝒕
   unEholeSN (∗r t) tx  = ∗rSN tx
-  
-  unSubst⇒0 : ∀{n m vt a Γ Δ} {σ : RenSub {m} vt Γ Δ}  {t : Tm Γ a} {t' : Tm Δ a}{tρ} → IndSubst σ t tρ 
+
+  unSubst⇒0 : ∀{n m vt a Γ Δ} {σ : RenSub {m} vt Γ Δ}  {t : Tm Γ a} {t' : Tm Δ a}{tρ} → IndSubst σ t tρ
               → tρ ⟨ n ⟩⇒ t' → SN n t' → (Σ _ \ s → IndSubst σ s t' × t ⟨ n ⟩⇒ s) ⊎ SNe n t
   unSubst⇒0 {σ = ρ} (app {u = u} (abs {t = t} is) is₁) (β 𝒖) 𝒕 = inj₁ (_ , (prop→IndS ρ
                                                                                (≡.trans (≡.sym (sgs-lifts-term {σ = ρ} {u = u} {t = t}))
@@ -88,20 +76,21 @@ mutual
   unSubst⇒0 ((▹ is) ∗ (▹ is₁))  β▹        𝒕 = inj₁ (▹ app _ _ , (▹ app is is₁) , β▹)
   unSubst⇒0 (fst (pair is is₁)) (βfst 𝒖)  𝒕 = inj₁ (_ , is , βfst (unSubstSN is₁ 𝒖))
   unSubst⇒0 (snd (pair is is₁)) (βsnd 𝒕') 𝒕 = inj₁ (_ , is₁ , βsnd (unSubstSN is 𝒕'))
-  unSubst⇒0 (app is is₁)        (cong (appl u') (appl .u') tρ→t') 𝒕 
-    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+  unSubst⇒0 (app is is₁)        (cong (appl u') (appl .u') tρ→t') 𝒕
+--    = Data.Sum.map (λ x → let s , is , t→s = x in
+    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in
       (app s _) , ((app is is₁) , (cong (appl _) (appl _) t→s))) (λ x → elim x (appl (unSubstSN is₁ (apprSN 𝒕)))) (unSubst⇒0 is tρ→t' (unEholeSN (appl u') 𝒕))
-  unSubst⇒0 (fst is)            (cong fst fst tρ→t') 𝒕 
-    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+  unSubst⇒0 (fst is)            (cong fst fst tρ→t') 𝒕
+    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in
       (fst s) , ((fst is) , (cong fst fst t→s))) (λ x → elim x fst) (unSubst⇒0 is tρ→t' (unEholeSN fst 𝒕))
-  unSubst⇒0 (snd is)            (cong snd snd tρ→t') 𝒕 
-    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+  unSubst⇒0 (snd is)            (cong snd snd tρ→t') 𝒕
+    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in
       (snd s) , ((snd is) , (cong snd snd t→s))) (λ x → elim x snd) (unSubst⇒0 is tρ→t' (unEholeSN snd 𝒕))
   unSubst⇒0 (is ∗ is₁)          (cong (u ∗l) (.u ∗l) tρ→t')  𝒕
-    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in
       (s ∗ _) , (is ∗ is₁) , (cong (_ ∗l) (_ ∗l) t→s)) (λ x → elim x (unSubstSN is₁ (∗rSN 𝒕) ∗l)) (unSubst⇒0 is tρ→t' (unEholeSN (u ∗l) 𝒕))
   unSubst⇒0 ((▹ is₀) ∗ is₁)     (cong (∗r t₂) (∗r .t₂) tρ→t') 𝒕
-    = Data.Sum.map ((λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+    = Data.Sum.map ((λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in
       _ ∗ s , (▹ is₀) ∗ is , cong (∗r _) (∗r _) t→s)) (λ x → elim x (∗r (delaySN (unSubstSN is₀) (unEholeSN (_ ∗l) 𝒕)))) (unSubst⇒0 is₁ tρ→t' (unEholeSN (∗r t₂) 𝒕))
   unSubst⇒0 (var x x₁)          t⇒                            𝒕 = inj₂ ((var x))
   unSubst⇒0 (app (var x x₁) u₁) (β 𝒖)                         𝒕 = inj₂ ((elim (var x) (appl (unSubstSN u₁ 𝒖))))

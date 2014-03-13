@@ -11,6 +11,7 @@ open import Terms
 open import Substitution
 open import SN
 open import SN.AntiSubst
+open import SN.AntiRename
 
 -- Kripke predicates on well-typed terms.
 
@@ -36,6 +37,12 @@ _[→]_ : ∀{a b} → TmSet a → TmSet b → TmSet (a →̂ b)
 
 _[×]_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
 (𝓐 [×] 𝓑) t = 𝓐 (fst t) × 𝓑 (snd t)
+
+data [▸] {a∞} (𝑨 : TmSet (force a∞)) {Γ} : (n : ℕ) → Tm Γ (▸̂ a∞) → Set where
+  ▹0_ : ∀   {t    : Tm Γ (force a∞)}                                     → [▸] 𝑨 zero (▹ t)
+  ▹_  : ∀{n}{t    : Tm Γ (force a∞)} (𝒕 : 𝑨 t)                           → [▸] 𝑨 (suc n) (▹ t)
+  ne  : ∀{n}{t    : Tm Γ (▸̂ a∞)}     (𝒏 : SNe n t)                       → [▸] 𝑨 n t
+  exp : ∀{n}{t t' : Tm Γ (▸̂ a∞)}     (t⇒ : t ⟨ n ⟩⇒ t') (𝒕 : [▸] 𝑨 n t') → [▸] 𝑨 n t
 
 -- Saturated term sets.
 
@@ -83,7 +90,7 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
     CSNe 𝒏 ρ 𝒖 = SAT.satSNe 𝓑 (sneApp (renameSNe ρ 𝒏) (SAT.satSN 𝓐 𝒖))
 
     CSN : 𝑪 ⊆ SN _
-    CSN 𝒕 = unSubstSN (absVarSN (SAT.satSN 𝓑 (𝒕 suc (SAT.satSNe 𝓐 (var zero)))))
+    CSN 𝒕 = unRenameSN (prop→Ind suc ≡.refl) (absVarSN (SAT.satSN 𝓑 (𝒕 suc (SAT.satSNe 𝓐 (var zero)))))
 
     CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
     CExp t⇒ 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (cong (appl _) (appl _) (subst⇒ (renSN ρ) t⇒)) (𝒕 ρ 𝒖)
@@ -91,8 +98,9 @@ _⟦→⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
 module _ {n}{𝓐 𝓑 : SAT n} where
-  a = SAT.satTy 𝓐
-  b = SAT.satTy 𝓑
+  private
+    a = SAT.satTy 𝓐
+    b = SAT.satTy 𝓑
 
   semAbs : ∀{Γ}{t : Tm (a ∷ Γ) b} →
     (∀{Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} → u ∈ 𝓐 → subst0 u (subst (lifts ρ) t) ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
@@ -125,3 +133,18 @@ _⟦×⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
     CExp t⇒ (𝒕₁ , 𝒕₂) = (SAT.satExp 𝓐 (cong fst fst t⇒) 𝒕₁)
                      , (SAT.satExp 𝓑 (cong snd snd t⇒) 𝒕₂)
 
+-- Semantic delay type
+
+⟦▸⟧_ : ∀{n} (𝓐 : SAT n) → SAT (suc n)
+⟦▸⟧_ {n} 𝓐 = record
+  { satSet = 𝑪
+  ; satProp = record
+    { satSNe = {!!}
+    ; satSN  = {!!}
+    ; satExp = {!!}
+    }
+  }
+  where
+    a = satTy 𝓐
+    𝑪 : TmSet (▸ a)
+    𝑪 = [▸] (satSet 𝓐) n

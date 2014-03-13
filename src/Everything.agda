@@ -8,4 +8,6 @@ import Examples
 
 import Substitution
 import SN
+import SN.AntiRename
+import SN.AntiSubst
 import SAT

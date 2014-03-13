@@ -45,9 +45,9 @@ mutual
   -- redex cases:
   unRenameSN is           (exp t⇒ 𝒕)   = exp (unRename⇒1 is t⇒) (unRenameSN (proj₂ (unRename⇒0 is t⇒)) 𝒕)
 
-  unRename⇒0 : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t' : Tm Δ a}{tρ} → IndRen ρ t tρ 
+  unRename⇒0 : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t' : Tm Δ a}{tρ} → IndRen ρ t tρ
               → tρ ⟨ n ⟩⇒ t' → Σ _ \ s → IndRen ρ s t'
-  unRename⇒0 {ρ = ρ} (app {u = u} (abs {t = t} is) is₁)  (β 𝒖)  = _ , prop→Ind ρ (≡.trans (≡.sym (sgs-lifts-term {σ = ρ} {u = u} {t = t})) 
+  unRename⇒0 {ρ = ρ} (app {u = u} (abs {t = t} is) is₁)  (β 𝒖)  = _ , prop→Ind ρ (≡.trans (≡.sym (sgs-lifts-term {σ = ρ} {u = u} {t = t}))
                                                                       (≡.cong₂ (λ t₁ u₁ → subst (sgs u₁) t₁) (Ind→prop _ is) (Ind→prop _ is₁)))
   unRename⇒0 ((▹ is) ∗ (▹ is₁))  β▹    = ▹ app _ _ , (▹ app is is₁)
   unRename⇒0 (fst (pair is is₁)) (βfst 𝒖) = _ , is
@@ -60,7 +60,7 @@ mutual
 
   unRename⇒1 : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t' : Tm Δ a}{tρ} → (is : IndRen ρ t tρ)
               → (t⇒ : tρ ⟨ n ⟩⇒ t') → t ⟨ n ⟩⇒ proj₁ (unRename⇒0 is t⇒)
-  unRename⇒1 (app (abs is) is₁) (β 𝒖) = β (unRenameSN is₁ 𝒖) 
+  unRename⇒1 (app (abs is) is₁) (β 𝒖) = β (unRenameSN is₁ 𝒖)
   unRename⇒1 ((▹ is) ∗ (▹ is₁))  β▹   = β▹
   unRename⇒1 (fst (pair is is₁)) (βfst 𝒖) = βfst (unRenameSN is₁ 𝒖)
   unRename⇒1 (snd (pair is is₁)) (βsnd 𝒕) = βsnd (unRenameSN is 𝒕)
@@ -79,15 +79,5 @@ absVarSNe (elim 𝒏 (appl 𝒖)) = 𝒏
 
 absVarSN : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var zero) ∈ SN n → t ∈ SN n
 absVarSN (ne 𝒖)                                                   = ne (absVarSNe 𝒖)
-absVarSN (exp (β {t = t} 𝒖) 𝒕′)                                   = abs (unRenameSN (prop→Ind contract (subst-ext contract-sgs t)) 𝒕′) 
+absVarSN (exp (β {t = t} 𝒖) 𝒕′)                                   = abs (unRenameSN (prop→Ind contract (subst-ext contract-sgs t)) 𝒕′)
 absVarSN (exp (cong (appl .(var zero)) (appl .(var zero)) t⇒) 𝒕′) = exp t⇒ (absVarSN 𝒕′)
-
--- absVarSNe : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SNe n → t ∈ SNe n
--- absVarSNe (elim 𝒏 (appl 𝒖)) = unRenameSNe 𝒏
-
--- absVarSN : ∀{Γ a b n}{t : Tm Γ (a →̂ b)} → app (rename suc t) (var zero) ∈ SN n → t ∈ SN n
--- absVarSN (ne 𝒖) = ne (absVarSNe 𝒖)
--- absVarSN (exp t⇒ 𝒕′) = {! t⇒!} -- exp {!!} (absVarSN {!𝒕′!})
--- -- absVarSN (ne (var ())) = {!𝒏!}
--- -- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
--- -- absVarSN (exp t⇒ x₁) = {!!}

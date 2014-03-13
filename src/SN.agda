@@ -337,3 +337,21 @@ apprSN : ∀{n a b Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} → SN n (app t u) �
 apprSN (ne (elim 𝒏 (appl 𝒖)))               = 𝒖
 apprSN (exp (β 𝒖) 𝒕)                        = 𝒖
 apprSN (exp (cong (appl u) (appl .u) t⇒) 𝒕) = apprSN 𝒕
+
+delaySN : ∀ {n a∞ b∞ Γ Δ}{t1 : Tm Γ (force a∞)}{t2 : Tm Δ (force b∞)}
+          → (∀ {n} → SN n t1 → SN n t2)
+          → SN n (▹_ {a∞ = a∞} t1) → SN n (▹_ {a∞ = b∞} t2)
+delaySN f (ne (elim 𝒏 ()))
+delaySN f ▹0    = ▹0
+delaySN f (▹ 𝒕) = ▹ f 𝒕
+delaySN f (exp (cong () 𝑬𝒕' t⇒) 𝒕)
+
+-- If t ∗ u ∈ SN then u ∈ SN.
+
+∗rSN  : ∀{Γ}{a : Ty}{b∞} {t : Tm Γ (▸̂ (delay a ⇒ b∞))}
+                     {u : Tm Γ (▸ a)} → ∀ {n} → SN n (t ∗ u) → SN n u
+∗rSN (ne (elim 𝒏 (𝒖 ∗l))) = 𝒖
+∗rSN (ne (elim 𝒏 (∗r 𝒕))) = ne 𝒏
+∗rSN (exp β▹ z) = delaySN apprSN z
+∗rSN (exp (cong (u ∗l) (.u ∗l) t⇒) z) = ∗rSN z
+∗rSN (exp (cong (∗r t) (∗r .t) t⇒) z) = exp t⇒ (∗rSN z)
