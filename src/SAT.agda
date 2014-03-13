@@ -52,7 +52,7 @@ record IsSAT (n : ℕ) {a} (𝑨 : TmSet a) : Set where
     satSNe  : SNe n ⊆ 𝑨
     satSN   : 𝑨 ⊆ SN n
     satExp  : Closed n 𝑨
-open IsSAT
+--open IsSAT
 
 record SAT (n : ℕ) : Set₁ where
   -- constructor sat
@@ -135,16 +135,23 @@ _⟦×⟧_ : ∀{n} (𝓐 𝓑 : SAT n) → SAT n
 
 -- Semantic delay type
 
-⟦▸⟧_ : ∀{n} (𝓐 : SAT n) → SAT (suc n)
-⟦▸⟧_ {n} 𝓐 = record
-  { satSet = 𝑪
-  ; satProp = record
-    { satSNe = {!!}
-    ; satSN  = {!!}
-    ; satExp = {!!}
+module _ where
+  private 
+    𝑪 : ∀{n} (𝓐 : SAT (pred n)) → TmSet (▸ _)
+    𝑪 {n} 𝓐 = [▸] (satSet 𝓐) n
+
+    CSN : ∀ {n} (𝓐 : SAT (pred n)) → 𝑪 {n} 𝓐  ⊆ SN n
+    CSN 𝓐  ▹0_        = ▹0
+    CSN 𝓐  (▹ 𝒕)      = ▹ satSN 𝓐 𝒕
+    CSN 𝓐  (ne 𝒏)     = ne 𝒏
+    CSN 𝓐  (exp t⇒ 𝒕) = exp t⇒ (CSN 𝓐 𝒕)
+
+  ⟦▸⟧_ : ∀{n} (𝓐 : SAT (pred n)) → SAT n
+  ⟦▸⟧_ {n} 𝓐 = record
+    { satSet = 𝑪 𝓐
+    ; satProp = record
+      { satSNe = ne
+      ; satSN  = CSN 𝓐
+      ; satExp = exp
+      }
     }
-  }
-  where
-    a = satTy 𝓐
-    𝑪 : TmSet (▸ a)
-    𝑪 = [▸] (satSet 𝓐) n
