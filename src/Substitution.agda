@@ -88,6 +88,31 @@ data IndRen {Γ Δ} (σ : RenSub `Var Γ Δ) : ∀ {τ} → Tm Γ τ → Tm Δ �
 
   cast : ∀{a b} (eq : a ≅ b) {t : Tm Γ a}{t'} → IndRen σ t t'      → IndRen σ (cast eq t) (cast eq t')
 
+IndS→prop : ∀ {m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) {τ} {t : Tm Γ τ} {t' : Tm Δ τ} → IndSubst σ t t' → subst σ t ≡ t'
+IndS→prop σ (var x ≡.refl) = ≡.refl
+IndS→prop σ (abs t)     = ≡.cong abs (IndS→prop (lifts σ) t)
+IndS→prop σ (app t t₁)  = ≡.cong₂ app (IndS→prop σ t) (IndS→prop σ t₁)
+IndS→prop σ (pair t t₁) = ≡.cong₂ pair (IndS→prop σ t) (IndS→prop σ t₁)
+IndS→prop σ (fst t)     = ≡.cong fst (IndS→prop σ t)
+IndS→prop σ (snd t)     = ≡.cong snd (IndS→prop σ t)
+IndS→prop σ (▹ t)       = ≡.cong ▹_ (IndS→prop σ t)
+IndS→prop σ (t ∗ t₁)    = ≡.cong₂ _∗_ (IndS→prop σ t) (IndS→prop σ t₁)
+IndS→prop σ (cast eq t) = ≡.cong (cast eq) (IndS→prop σ t)
+
+prop→IndS' : ∀ {m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) {τ} (t : Tm Γ τ) → IndSubst σ t (subst σ t)
+prop→IndS' σ (var x) = var x ≡.refl 
+prop→IndS' σ (abs t)     = abs (prop→IndS' (lifts σ) t)
+prop→IndS' σ (app t u)   = app (prop→IndS' σ t) (prop→IndS' σ u)
+prop→IndS' σ (▹ t)       = ▹ (prop→IndS' σ t)
+prop→IndS' σ (t ∗ u)     = (prop→IndS' σ t) ∗ (prop→IndS' σ u)
+prop→IndS' σ (pair t u)  = pair (prop→IndS' σ t) (prop→IndS' σ u)
+prop→IndS' σ (fst t)     = fst (prop→IndS' σ t)
+prop→IndS' σ (snd t)     = snd (prop→IndS' σ t)
+prop→IndS' σ (cast eq t) = cast eq (prop→IndS' σ t)
+
+prop→IndS : ∀ {m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) {τ} {t : Tm Γ τ} {t' : Tm Δ τ} → subst σ t ≡ t' → IndSubst σ t t'
+prop→IndS _ ≡.refl = prop→IndS' _ _
+
 
 Ind→prop : ∀ {Γ Δ} (σ : RenSub `Var Γ Δ) {τ} {t : Tm Γ τ} {t' : Tm Δ τ} → IndRen σ t t' → subst σ t ≡ t'
 Ind→prop σ (var x ≡.refl) = ≡.refl

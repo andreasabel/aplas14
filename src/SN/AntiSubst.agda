@@ -8,10 +8,14 @@ module SN.AntiSubst where
 open import Relation.Unary using (_∈_; _⊆_)
 
 open import Library
+open import Data.Sum
 open import SizedInfiniteTypes
 open import Terms
 open import Substitution
 open import SN
+
+
+
 
 
 mutual
@@ -19,101 +23,96 @@ mutual
   -- Subterm properties of SN (continued).
 
   -- If app t u ∈ SN then t ∈ SN.
-
   applSN : ∀{n a b Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} → SN n (app t u) → SN n t
   applSN (ne (elim 𝒏 (appl 𝒖)))               = ne 𝒏
-  applSN (exp (β 𝒖) 𝒕)                        = abs (unSubstSN 𝒕)
+  applSN (exp (β 𝒖) 𝒕)                        = abs (unSubstSN (prop→IndS _ ≡.refl) 𝒕)
   applSN (exp (cong (appl u) (appl .u) t⇒) 𝒕) = exp t⇒ (applSN 𝒕)
+  
+  
+  delaySN : ∀ {n a∞ b∞ Γ Δ}{t1 : Tm Γ (force a∞)}{t2 : Tm Δ (force b∞)} → (∀ {n} → SN n t1 → SN n t2) → SN n (▹_ {a∞ = a∞} t1) → SN n (▹_ {a∞ = b∞} t2)
+  delaySN f (ne (elim 𝒏 ()))
+  delaySN f ▹0 = ▹0
+  delaySN f (▹ 𝒕) = ▹ f 𝒕
+  delaySN f (exp (cong () 𝑬𝒕' t⇒) 𝒕)
 
-  -- To formulate this, we need heterogeneous SNholes, going from Γ to Δ
+  ∗rSN  : ∀{Γ}{a : Ty}{b∞} {t : Tm Γ (▸̂ (delay a ⇒ b∞))}
+                       {u : Tm Γ (▸ a)} → ∀ {n} → SN n (t ∗ u) → SN n u
+  ∗rSN (ne (elim 𝒏 (𝒖 ∗l))) = 𝒖
+  ∗rSN (ne (elim 𝒏 (∗r 𝒕))) = ne 𝒏
+  ∗rSN (exp β▹ z) = delaySN apprSN z
+  ∗rSN (exp (cong (u ∗l) (.u ∗l) t⇒) z) = ∗rSN z
+  ∗rSN (exp (cong (∗r t) (∗r .t) t⇒) z) = exp t⇒ (∗rSN z)
 
-  -- unSubstSNh : ∀{n a b m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) {t : Tm Γ b} {E : ECxt Γ a b} {t' : Tm Γ a} →
-  --   SNhole n (subst σ t) (λ t' → subst σ (E t')) t' → SNhole n t E t'
-  -- unSubstSNh = TODO
+  unSubstSNe : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a}{tσ} → IndSubst σ t tσ
+               → SNe n tσ → SNe n t
+  unSubstSNe (var x x₁)     (var y)           = var x
+  unSubstSNe (app is is₁)   (elim 𝒏 (appl 𝒖)) = elim (unSubstSNe is 𝒏) (appl (unSubstSN is₁ 𝒖))
+  unSubstSNe (fst is)       (elim 𝒏 fst)      = elim (unSubstSNe is 𝒏) fst
+  unSubstSNe (snd is)       (elim 𝒏 snd)      = elim (unSubstSNe is 𝒏) snd
+  unSubstSNe (is ∗ is₁)     (elim 𝒏 (𝒖 ∗l))   = elim (unSubstSNe is 𝒏) (unSubstSN is₁ 𝒖 ∗l)
+  unSubstSNe ((▹ is) ∗ is₁) (elim 𝒏 (∗r 𝒕))   = elim (unSubstSNe is₁ 𝒏) (∗r unSubstSN (▹ is) 𝒕)
+  unSubstSNe (var x x₁)     (elim 𝒏 _)           = var x
+  unSubstSNe ((var x x₁) ∗ is₁) (elim 𝒏 (∗r 𝒕)) = elim (var x) (ne (unSubstSNe is₁ 𝒏) ∗l)
 
-  unSubstSNe : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a} →
-    SNe n (subst σ t) → SNe n t
-  unSubstSNe {t = var x}     _                = var x
-  unSubstSNe {t = abs _}     (elim 𝒕 ())
-  unSubstSNe {t = app _ _}   (elim 𝒕 (appl 𝒖)) = elim (unSubstSNe 𝒕) (appl (unSubstSN 𝒖))
-  unSubstSNe {t = pair _ _}  (elim 𝒕 ())
-  unSubstSNe {t = fst _}     (elim 𝒕 fst)      = elim (unSubstSNe 𝒕) fst
-  unSubstSNe {t = snd _}     (elim 𝒕 snd)      = elim (unSubstSNe 𝒕) snd
-  unSubstSNe {t = ▹ _}       (elim 𝒕 ())
-  unSubstSNe {t = t ∗ u}     (elim 𝒕 𝑬𝒕)       = {!𝑬𝒕!}
-  unSubstSNe {t = cast eq t} (elim 𝒕 ())
-
-  unSubstSN : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a} →
-    SN n (subst σ t) → SN n t
-  -- variable case:
-  unSubstSN {t = var x   } _            = ne (var x)
+  unSubstSN : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a}{tσ} → IndSubst σ t tσ
+               → SN n tσ → SN n t
+  unSubstSN (var x x₁)      _      = ne (var x)
   -- constructor cases:
-  unSubstSN {t = abs _   } (abs 𝒕)      = abs (unSubstSN 𝒕)
-  unSubstSN {t = pair _ _} (pair 𝒕₁ 𝒕₂) = pair (unSubstSN 𝒕₁) (unSubstSN 𝒕₂)
-  unSubstSN {t = ▹ _     } ▹0           = ▹0
-  unSubstSN {t = ▹ _     } (▹ 𝒕)        = ▹ (unSubstSN 𝒕)
+  unSubstSN (abs t)      (abs 𝒕)      = abs (unSubstSN t 𝒕)
+  unSubstSN (pair t₁ t₂) (pair 𝒕₁ 𝒕₂) = pair (unSubstSN t₁ 𝒕₁) (unSubstSN t₂ 𝒕₂)
+  unSubstSN (▹ _)        ▹0           = ▹0
+  unSubstSN (▹ t)        (▹ 𝒕)        = ▹ (unSubstSN t 𝒕)
   -- neutral cases:
-  unSubstSN                (ne 𝒏)       = ne (unSubstSNe 𝒏)
+  unSubstSN n            (ne 𝒏)       = ne (unSubstSNe n 𝒏)
   -- redex cases:
-  unSubstSN                (exp t⇒ 𝒕)   = unSubst⇒ t⇒ 𝒕
+  unSubstSN is           (exp t⇒ 𝒕)   = [ (λ x → let p = proj₂ x in exp (proj₂ p) (unSubstSN (proj₁ p) 𝒕) ) , ne ]′ (unSubst⇒0 is t⇒ 𝒕)
 
-{- LONG VERSION:
-  -- neutral cases:
-  unSubstSN {t = app _ _} (ne 𝒏)        = ne (unSubstSNe 𝒏)
-  unSubstSN {t = fst _} (ne 𝒏)          = ne (unSubstSNe 𝒏)
-  unSubstSN {t = snd _} (ne 𝒏)          = ne (unSubstSNe 𝒏)
-  unSubstSN {t = _ ∗ _} (ne 𝒏)          = ne (unSubstSNe 𝒏)
-  unSubstSN {t = cast eq t} (ne 𝒏)      = ne (unSubstSNe 𝒏)
-  -- redex cases:
-  unSubstSN {t = app _ _ } (exp t⇒ 𝒕)   = unSubst⇒ t⇒ 𝒕
-  unSubstSN {t = fst _   } (exp t⇒ 𝒕)   = unSubst⇒ t⇒ 𝒕
-  unSubstSN {t = snd _   } (exp t⇒ 𝒕)   = unSubst⇒ t⇒ 𝒕
-  unSubstSN {t = _ ∗ _   } (exp t⇒ 𝒕)   = unSubst⇒ t⇒ 𝒕
-  unSubstSN {t = cast _ _} (exp t⇒ 𝒕)   = unSubst⇒ t⇒ 𝒕
-  -- impossible: constructor becomes neutral
-  unSubstSN {t = abs _   } (ne (elim _ ()))
-  unSubstSN {t = pair _ _} (ne (elim 𝒏 ()))
-  unSubstSN {t = ▹ _     } (ne (elim 𝒏 ()))
-  -- impossible: constructor becomes redex
-  unSubstSN {t = abs _   } (exp (cong () _ _) _)
-  unSubstSN {t = pair _ _} (exp (cong () _ _) _)
-  unSubstSN {t = ▹ _     } (exp (cong () _ _) _)
--}
+  unEholeSN : ∀ {n Γ a b} → {t : Tm Γ a} {E : ECxt Γ b a} {t' : Tm Γ b} → Ehole t E t' → SN n t → SN n t'
+  unEholeSN (appl u) 𝒕 = applSN 𝒕
+  unEholeSN fst 𝒕 = fromFstSN 𝒕
+  unEholeSN snd 𝒕 = fromSndSN 𝒕
+  unEholeSN (u ∗l) (ne (elim 𝒏 (𝒖 ∗l))) = ne 𝒏
+  unEholeSN (u ∗l) (ne (elim 𝒏 (∗r 𝒕))) = delaySN (λ x → x) 𝒕
+  unEholeSN (._ ∗l) (exp β▹ 𝒕) = delaySN applSN 𝒕
+  unEholeSN (u ∗l) (exp (cong (.u ∗l) (.u ∗l) t⇒) 𝒕) = exp t⇒ (unEholeSN (_ ∗l) 𝒕)
+  unEholeSN (u ∗l) (exp (cong (∗r t) (∗r .t) t⇒) 𝒕) = unEholeSN (_ ∗l) 𝒕
+  unEholeSN (∗r t) tx  = ∗rSN tx
+  
+  unSubst⇒0 : ∀{n m vt a Γ Δ} {σ : RenSub {m} vt Γ Δ}  {t : Tm Γ a} {t' : Tm Δ a}{tρ} → IndSubst σ t tρ 
+              → tρ ⟨ n ⟩⇒ t' → SN n t' → (Σ _ \ s → IndSubst σ s t' × t ⟨ n ⟩⇒ s) ⊎ SNe n t
+  unSubst⇒0 {σ = ρ} (app {u = u} (abs {t = t} is) is₁) (β 𝒖) 𝒕 = inj₁ (_ , (prop→IndS ρ
+                                                                               (≡.trans (≡.sym (sgs-lifts-term {σ = ρ} {u = u} {t = t}))
+                                                                                (≡.cong₂ (λ t₁ u₁ → subst (sgs u₁) t₁) (IndS→prop _ is)
+                                                                                 (IndS→prop _ is₁)))
+                                                                         , β (unSubstSN is₁ 𝒖)))
+  unSubst⇒0 ((▹ is) ∗ (▹ is₁))  β▹        𝒕 = inj₁ (▹ app _ _ , (▹ app is is₁) , β▹)
+  unSubst⇒0 (fst (pair is is₁)) (βfst 𝒖)  𝒕 = inj₁ (_ , is , βfst (unSubstSN is₁ 𝒖))
+  unSubst⇒0 (snd (pair is is₁)) (βsnd 𝒕') 𝒕 = inj₁ (_ , is₁ , βsnd (unSubstSN is 𝒕'))
+  unSubst⇒0 (app is is₁)        (cong (appl u') (appl .u') tρ→t') 𝒕 
+    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+      (app s _) , ((app is is₁) , (cong (appl _) (appl _) t→s))) (λ x → elim x (appl (unSubstSN is₁ (apprSN 𝒕)))) (unSubst⇒0 is tρ→t' (unEholeSN (appl u') 𝒕))
+  unSubst⇒0 (fst is)            (cong fst fst tρ→t') 𝒕 
+    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+      (fst s) , ((fst is) , (cong fst fst t→s))) (λ x → elim x fst) (unSubst⇒0 is tρ→t' (unEholeSN fst 𝒕))
+  unSubst⇒0 (snd is)            (cong snd snd tρ→t') 𝒕 
+    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+      (snd s) , ((snd is) , (cong snd snd t→s))) (λ x → elim x snd) (unSubst⇒0 is tρ→t' (unEholeSN snd 𝒕))
+  unSubst⇒0 (is ∗ is₁)          (cong (u ∗l) (.u ∗l) tρ→t')  𝒕
+    = Data.Sum.map (λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+      (s ∗ _) , (is ∗ is₁) , (cong (_ ∗l) (_ ∗l) t→s)) (λ x → elim x (unSubstSN is₁ (∗rSN 𝒕) ∗l)) (unSubst⇒0 is tρ→t' (unEholeSN (u ∗l) 𝒕))
+  unSubst⇒0 ((▹ is₀) ∗ is₁)     (cong (∗r t₂) (∗r .t₂) tρ→t') 𝒕
+    = Data.Sum.map ((λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in 
+      _ ∗ s , (▹ is₀) ∗ is , cong (∗r _) (∗r _) t→s)) (λ x → elim x (∗r (delaySN (unSubstSN is₀) (unEholeSN (_ ∗l) 𝒕)))) (unSubst⇒0 is₁ tρ→t' (unEholeSN (∗r t₂) 𝒕))
+  unSubst⇒0 (var x x₁)          t⇒                            𝒕 = inj₂ ((var x))
+  unSubst⇒0 (app (var x x₁) u₁) (β 𝒖)                         𝒕 = inj₂ ((elim (var x) (appl (unSubstSN u₁ 𝒖))))
+  unSubst⇒0 ((▹ t₂) ∗ var x x₁) β▹                            𝒕 = inj₂ ((elim (var x) (∗r unSubstSN (▹ t₂) (delaySN applSN 𝒕))))
+  unSubst⇒0 (var x x₁ ∗ u₂)     β▹                            𝒕 = inj₂ ((elim (var x) (unSubstSN u₂ (delaySN apprSN 𝒕) ∗l)))
+  unSubst⇒0 (var x x₁ ∗ is₁)    (cong (∗r t₂) (∗r .t₂) tρ→t') 𝒕 = inj₂ (elim (var x) (unSubstSN is₁ (exp tρ→t' (∗rSN 𝒕)) ∗l))
+  unSubst⇒0 (fst (var x is₁))   (βfst 𝒖)                      𝒕 = inj₂ (elim (var x) fst)
+  unSubst⇒0 (snd (var x is₁))   (βsnd 𝒕')                     𝒕 = inj₂ (elim (var x) snd)
 
-  -- NEEDS generalization, maybe t[σ] ⇒ t' and E[t'] ∈ SN imply E[t] ∈ SN
-  unSubst⇒ : ∀{n a m vt Γ Δ} {σ : RenSub {m} vt Γ Δ} {t : Tm Γ a} {t' : Tm Δ a} →
-    subst σ t ⟨ n ⟩⇒ t' → SN n t' → SN n t
-  unSubst⇒ {t = var x} _ _ = ne (var x)
-  unSubst⇒ {t = abs _} (cong () _ _) _
-  unSubst⇒ {vt = `Var} {t = app (var x) t₁} (cong (appl ._) (appl ._) y) 𝒕 = ne (elim (var x) (appl (unSubstSN (apprSN 𝒕))))
-  unSubst⇒ {vt = `Tm} {σ = σ} {t = app (var x) _} _ 𝒕 with σ x
-  unSubst⇒ {vt = `Tm} {t = app (var x) _} (β 𝒖) 𝒕                    | abs _ = ne (elim (var x) (appl (unSubstSN 𝒖)))
-  unSubst⇒ {vt = `Tm} {t = app (var x) _} (cong (appl ._) (appl ._) _) 𝒕 | _ = ne (elim (var x) (appl (unSubstSN (apprSN 𝒕))))
-  unSubst⇒ {t = app (abs t) t₁} (β 𝒖) 𝒕 = exp (β (unSubstSN 𝒖)) (unSubstSN {!𝒕!})
-  unSubst⇒ {t = app (abs t) t₁}     (cong  (appl ._) (appl ._) (cong () _ _)) 𝒕
-  unSubst⇒ {t = app (app t t₁) t₂}  (cong (appl ._) (appl ._) t⇒) 𝒕 = {!!}
-  unSubst⇒ {t = app (fst t) t₁}     (cong (appl ._) (appl ._) t⇒) 𝒕 = {!!}
-  unSubst⇒ {t = app (snd t) t₁}     (cong (appl ._) (appl ._) t⇒) 𝒕 = {!!}
-  unSubst⇒ {t = app (cast eq t) t₁} (cong (appl ._) (appl ._) t⇒) 𝒕 = {!!}
-  unSubst⇒ {t = pair _ _} (cong () _ _) _
-  unSubst⇒ {t = fst (var x)} _ _ = ne (elim (var x) fst)
-  unSubst⇒ {t = fst (pair _ _)} (βfst 𝒖) 𝒕 = exp (βfst (unSubstSN 𝒖)) (unSubstSN 𝒕)
-  unSubst⇒ {t = fst (pair _ _)} (cong fst fst (cong () _ _)) _
-  unSubst⇒ {t = fst (app _ _ )} (cong fst fst t⇒) 𝒕 = fstSN (unSubst⇒ t⇒ (fromFstSN 𝒕))
-  unSubst⇒ {t = fst (fst _   )} (cong fst fst t⇒) 𝒕 = fstSN (unSubst⇒ t⇒ (fromFstSN 𝒕))
-  unSubst⇒ {t = fst (snd _   )} (cong fst fst t⇒) 𝒕 = fstSN (unSubst⇒ t⇒ (fromFstSN 𝒕))
-  unSubst⇒ {t = fst (cast _ _)} (cong fst fst t⇒) 𝒕 = fstSN (unSubst⇒ t⇒ (fromFstSN 𝒕))
-  unSubst⇒ {t = snd (var x)} _ _ = ne (elim (var x) snd)
-  unSubst⇒ {t = snd (pair _ _)} (βsnd 𝒖) 𝒕 = exp (βsnd (unSubstSN 𝒖)) (unSubstSN 𝒕)
-  unSubst⇒ {t = snd (pair _ _)} (cong snd snd (cong () _ _)) _
-  unSubst⇒ {t = snd (app _ _ )} (cong snd snd t⇒) 𝒕 = sndSN (unSubst⇒ t⇒ (fromSndSN 𝒕))
-  unSubst⇒ {t = snd (fst _   )} (cong snd snd t⇒) 𝒕 = sndSN (unSubst⇒ t⇒ (fromSndSN 𝒕))
-  unSubst⇒ {t = snd (snd _   )} (cong snd snd t⇒) 𝒕 = sndSN (unSubst⇒ t⇒ (fromSndSN 𝒕))
-  unSubst⇒ {t = snd (cast _ _)} (cong snd snd t⇒) 𝒕 = sndSN (unSubst⇒ t⇒ (fromSndSN 𝒕))
-  unSubst⇒ {t = ▹ _} (cong () _ _) _
-  unSubst⇒ {t = t ∗ t₁} x 𝒕 = {!!}
-  unSubst⇒ {t = cast eq t} x 𝒕 = {!!}
 
+{-
 -- Extensionality of SN for function types:
 -- If t x ∈ SN then t ∈ SN.
 
@@ -134,3 +133,4 @@ absVarSN (exp (cong (appl .(var zero)) (appl .(var zero)) t⇒) 𝒕′) = exp t
 -- -- absVarSN (ne (var ())) = {!𝒏!}
 -- -- absVarSN (ne (elim {E = .(λ u → app u (var _))} 𝒏 (appl y))) = {!𝒏!}
 -- -- absVarSN (exp t⇒ x₁) = {!!}
+-}

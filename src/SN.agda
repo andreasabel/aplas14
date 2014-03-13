@@ -302,7 +302,7 @@ sndSN (ne 𝒏)       = ne (elim 𝒏 snd)
 sndSN (pair 𝒕₁ 𝒕₂) = exp (βsnd 𝒕₁) 𝒕₂
 sndSN (exp t⇒ 𝒕)   = exp (cong snd snd t⇒) (sndSN 𝒕)
 
-{-
+
 -- Extensionality of SN for product type:
 -- If fst t ∈ SN and snd t ∈ SN then t ∈ SN.
 
@@ -313,7 +313,7 @@ bothProjSN (exp (βfst 𝒕₂) 𝒕₁)    _                 = pair 𝒕₁ �
 bothProjSN (exp (cong _ _ _) _) (ne (elim 𝒏 snd))  = ne 𝒏
 bothProjSN (exp (cong _ _ _) _) (exp (βsnd 𝒕₁) 𝒕₂) = pair 𝒕₁ 𝒕₂
 bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕₂) rewrite det⇒ t⇒₁ t⇒₂ = exp t⇒₂ (bothProjSN 𝒕₁ 𝒕₂)
--}
+
 
 -- Subterm properties of SN
 
