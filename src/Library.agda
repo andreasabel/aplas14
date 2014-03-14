@@ -13,7 +13,7 @@ open import Data.Nat
 open import Data.Nat.Properties using (_+-mono_) public
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂) renaming (map to map×) public
 
-open import Function using (_∘_) public
+open import Function using (id; _∘_) public
 
 open import Induction.WellFounded using (Acc; acc) public
 

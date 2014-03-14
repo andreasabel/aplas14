@@ -100,7 +100,7 @@ IndS→prop σ (t ∗ t₁)    = ≡.cong₂ _∗_ (IndS→prop σ t) (IndS→pr
 IndS→prop σ (cast eq t) = ≡.cong (cast eq) (IndS→prop σ t)
 
 prop→IndS' : ∀ {m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) {τ} (t : Tm Γ τ) → IndSubst σ t (subst σ t)
-prop→IndS' σ (var x) = var x ≡.refl 
+prop→IndS' σ (var x) = var x ≡.refl
 prop→IndS' σ (abs t)     = abs (prop→IndS' (lifts σ) t)
 prop→IndS' σ (app t u)   = app (prop→IndS' σ t) (prop→IndS' σ u)
 prop→IndS' σ (▹ t)       = ▹ (prop→IndS' σ t)
@@ -126,7 +126,7 @@ Ind→prop σ (t ∗ t₁)    = ≡.cong₂ _∗_ (Ind→prop σ t) (Ind→prop 
 Ind→prop σ (cast eq t) = ≡.cong (cast eq) (Ind→prop σ t)
 
 prop→Ind' : ∀ {Γ Δ} (σ : RenSub `Var Γ Δ) {τ} (t : Tm Γ τ) → IndRen σ t (subst σ t)
-prop→Ind' σ (var x) = var x ≡.refl 
+prop→Ind' σ (var x) = var x ≡.refl
 prop→Ind' σ (abs t)     = abs (prop→Ind' (lifts σ) t)
 prop→Ind' σ (app t u)   = app (prop→Ind' σ t) (prop→Ind' σ u)
 prop→Ind' σ (▹ t)       = ▹ (prop→Ind' σ t)
@@ -153,18 +153,22 @@ _•s_ : ∀ {Γ₀ Γ₁ Γ₂}
 _•s_ tau {vt1 = `Var} sigma x = tau (sigma x)
 _•s_ tau {vt1 = `Tm } sigma x = subst tau (sigma x)
 
-
 -- Term substitution
 
 Subst : Cxt → Cxt → Set
 Subst Γ Δ = ∀ {a : Ty} → Var Γ a → Tm Δ a
 
 
+-- Extending a substitution
+
+_∷s_ : ∀ {Γ Δ a} → Tm Γ a → Subst Δ Γ → Subst (a ∷ Δ) Γ
+(t ∷s σ) zero    = t
+(t ∷s σ) (suc x) = σ x
+
 -- Substitution for 0th variable
 
 sgs : ∀ {Γ a} → Tm Γ a → Subst (a ∷ Γ) Γ
-sgs t zero    = t
-sgs t (suc x) = var x
+sgs t = t ∷s ids
 
 -- Substituting for the 0th variable [u/0]t
 
@@ -177,6 +181,12 @@ _≤_ Γ Δ = RenSub `Var Δ Γ
 
 rename : ∀ {Γ Δ : Cxt} {a : Ty} (η : Γ ≤ Δ) (x : Tm Δ a) → Tm Γ a
 rename = subst
+
+-- Weakening substitution
+
+weaks : ∀{n}{vt : VarTm n}{a Γ Δ} (σ : RenSub vt Γ Δ) → RenSub vt (Γ) (a ∷ Δ)
+weaks {vt = `Var} σ x = suc (σ x)
+weaks {vt = `Tm} σ x = rename suc (σ x)
 
 -- Properties
 
@@ -197,10 +207,10 @@ mutual
 
   lifts-ext : ∀ {Γ Δ b} {m n vt1 vt2} {f : RenSub {m} vt1 Γ Δ}{g : RenSub {n} vt2 Γ Δ} → f ≡s g → lifts {a = b} f ≡s lifts g
   lifts-ext {vt1 = `Var} {`Var} f≐g zero = ≡.refl
-  lifts-ext {vt1 = `Var} {`Var} {f} {g} f≐g (suc x) with f x | g x | f≐g x 
+  lifts-ext {vt1 = `Var} {`Var} {f} {g} f≐g (suc x) with f x | g x | f≐g x
   lifts-ext {Γ} {Δ} {b} {._} {._} {`Var} {`Var} f≐g (suc x) | z | .z | ≡.refl = ≡.refl
   lifts-ext {vt1 = `Var} {`Tm} f≐g zero = ≡.refl
-  lifts-ext {vt1 = `Var} {`Tm} f≐g (suc x) rewrite ≡.sym (f≐g x) = ≡.refl 
+  lifts-ext {vt1 = `Var} {`Tm} f≐g (suc x) rewrite ≡.sym (f≐g x) = ≡.refl
   lifts-ext {vt1 = `Tm} {`Var} f≐g zero = ≡.refl
   lifts-ext {vt1 = `Tm} {`Var} f≐g (suc x) rewrite (f≐g x) = ≡.refl
   lifts-ext {vt1 = `Tm} {`Tm} f≐g zero = ≡.refl
@@ -254,9 +264,9 @@ mutual
 
 sgs-lifts : ∀ {m vt Γ Δ a} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a} → (sgs (subst σ u) •s lifts σ) ≡s (σ •s sgs u)
 sgs-lifts {vt = `Var} = (λ { {._} zero → ≡.refl ; (suc x) → ≡.refl })
-sgs-lifts {vt = `Tm} {σ = σ} {u} = (λ { {._} zero → ≡.refl ; (suc x) → ≡.sym (≡.trans (≡.sym (subst-id (σ x))) 
+sgs-lifts {vt = `Tm} {σ = σ} {u} = (λ { {._} zero → ≡.refl ; (suc x) → ≡.sym (≡.trans (≡.sym (subst-id (σ x)))
                                                                                (subst-∙ (sgs (subst σ u)) {vt1 = `Var} suc (σ x))) })
-sgs-lifts-term : ∀ {m vt Γ Δ a b} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a}{t : Tm (a ∷ Γ) b} 
+sgs-lifts-term : ∀ {m vt Γ Δ a b} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a}{t : Tm (a ∷ Γ) b}
                  → subst (sgs (subst σ u)) (subst (lifts σ) t) ≡ subst σ (subst (sgs u) t)
 sgs-lifts-term {σ = σ} {u} {t} = (≡.trans (≡.sym (subst-∙ (sgs (subst σ u)) (lifts σ) t))
                                  (≡.trans (subst-ext sgs-lifts t)

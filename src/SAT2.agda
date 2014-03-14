@@ -63,11 +63,17 @@ record SAT (a : Ty) (n : ℕ) : Set₁ where
 open SAT
 
 -- Elementhood for saturated sets.
+-- We use a record to instead of just application to help Agda's unifier.
 
--- Workaround. Agda does not accept projection satSet directly,
--- maybe since it is defined in another module.
-satSet' = satSet
-syntax satSet' 𝓐 t = t ∈ 𝓐
+record _∈_ {a n Γ} (t : Tm Γ a) (𝓐 : SAT a n) : Set where
+  constructor ↿_
+  field       ⇃_ : satSet 𝓐 t
+open _∈_ public
+
+-- -- Workaround. Agda does not accept projection satSet directly,
+-- -- maybe since it is defined in another module.
+-- satSet' = satSet
+-- syntax satSet' 𝓐 t = t ∈ 𝓐
 
 -- Semantic function type.
 
@@ -96,9 +102,15 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
-semAbs : ∀{n a b}{𝓐 : SAT a n}{𝓑 : SAT b n}{Γ}{t : Tm (a ∷ Γ) b} →
+⟦abs⟧ : ∀{n a b}{𝓐 : SAT a n}{𝓑 : SAT b n}{Γ}{t : Tm (a ∷ Γ) b} →
     (∀{Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} → u ∈ 𝓐 → subst0 u (subst (lifts ρ) t) ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
-semAbs {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) (𝒕 ρ 𝒖)
+(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) ρ 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) (⇃ 𝒕 ρ (↿ 𝒖))
+
+-- Lemma: If 𝓐, 𝓑 ∈ SAT and t ∈ 𝓐 ⟦→⟧ 𝓑 and u ∈ 𝓐, then app t u ∈ 𝓑
+
+⟦app⟧ : ∀ {n a b}{𝓐 : SAT a n}{𝓑 : SAT b n}{Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a}
+        → t ∈ (𝓐 ⟦→⟧ 𝓑) → u ∈ 𝓐 → app t u ∈ 𝓑
+⟦app⟧ (↿ 𝒕) (↿ 𝒖) = ≡.subst (λ t → app t _ ∈ _) renId (↿ 𝒕 id 𝒖)
 
 -- Semantic product type
 
@@ -127,9 +139,21 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
     CExp t⇒ (𝒕₁ , 𝒕₂) = (SAT.satExp 𝓐 (cong fst fst t⇒) 𝒕₁)
                      , (SAT.satExp 𝓑 (cong snd snd t⇒) 𝒕₂)
 
-semPair : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
-          → t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ 𝓐 ⟦×⟧ 𝓑
-semPair 𝓐 𝓑 𝒕₁ 𝒕₂ = satExp 𝓐 (βfst (satSN 𝓑 𝒕₂)) 𝒕₁ , satExp 𝓑 (βsnd (satSN 𝓐 𝒕₁)) 𝒕₂
+-- Lemma (introduction):  If t₁ ∈ 𝓐 and t₂ ∈ 𝓑 then pair t₁ t₂ ∈ 𝓐 ⟦×⟧ 𝓑
+
+⟦pair⟧ : ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
+          → t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
+⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} (↿ 𝒕₁) (↿ 𝒕₂) = satExp 𝓐 (βfst (satSN 𝓑 𝒕₂)) 𝒕₁ , satExp 𝓑 (βsnd (satSN 𝓐 𝒕₁)) 𝒕₂
+
+-- Lemma (elimination):  If t ∈ 𝓐 ⟦×⟧ 𝓑 then t₁ ∈ 𝓐 and t₂ ∈ 𝓑.
+
+⟦fst⟧ : ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂  b)}
+        → t ∈ (𝓐 ⟦×⟧ 𝓑) → fst t ∈ 𝓐
+⟦fst⟧ 𝒕 =  ↿ (proj₁ (⇃ 𝒕))
+
+⟦snd⟧ : ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂  b)}
+        → t ∈ (𝓐 ⟦×⟧ 𝓑) → snd t ∈ 𝓑
+⟦snd⟧ 𝒕 =  ↿ (proj₂ (⇃ 𝒕))
 
 -- Any term set is saturated at level -1
 
