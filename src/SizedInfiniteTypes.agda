@@ -46,7 +46,7 @@ mutual
     coinductive
     constructor ≅delay
     field       ≅force : force a∞ ≅ force b∞
-open _∞≅_
+open _∞≅_ public
 
 mutual
   ≅refl  : ∀{a} → a ≅ a

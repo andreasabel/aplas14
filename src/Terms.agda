@@ -15,8 +15,8 @@ Cxt = List Ty
 -- Variables
 
 data Var : (Γ : Cxt) (a : Ty) → Set where
-  zero : ∀{Γ a}             → Var (a ∷ Γ) a
-  suc  : ∀{Γ a b} → Var Γ a → Var (b ∷ Γ) a
+  zero : ∀{Γ a b}  (eq : a ≅ b) → Var (a ∷ Γ) b
+  suc  : ∀{Γ a b} (x : Var Γ a) → Var (b ∷ Γ) a
 
 
 -- Well-typed terms
@@ -34,10 +34,27 @@ data Tm (Γ : Cxt) : (a : Ty) → Set where
   _∗_  : ∀{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
                        (u : Tm Γ (▸ a))                → Tm Γ (▸̂ b∞)
 
-  cast : ∀{a b}        (eq : a ≅ b)  (t : Tm Γ a)      → Tm Γ b
+_≅C_ : Cxt → Cxt → Set
+_≅C_ = ≅L _≅_
+
+castVar : ∀{Γ Δ a b} → (eqC : Γ ≅C Δ) (eq : a ≅ b)  (t : Var Γ a) → Var Δ b
+castVar (x∼y ∷ eqC) eq (zero eq₁) = zero TODO
+castVar (x∼y ∷ eqC) eq (suc x₁) = suc (castVar eqC eq x₁)
+
+castC : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  (t : Tm Γ a)      → Tm Δ b
+castC eqC eq (var x) = var (castVar eqC eq x)
+castC eqC (eq →̂ eq₁) (abs t) = abs (castC (eq ∷ eqC) eq₁ t)
+castC eqC eq (app t t₁) = app (castC eqC (≅refl →̂ eq) t) (castC eqC ≅refl t₁)
+castC eqC (eq ×̂ eq₁) (pair t t₁) = pair (castC eqC eq t) (castC eqC eq₁ t₁)
+castC eqC eq (fst t) = fst (castC eqC (eq ×̂ ≅refl) t)
+castC eqC eq (snd t) = snd (castC eqC (≅refl ×̂ eq) t)
+castC eqC (▸̂ a≅) (▹ t) = ▹ (castC eqC (≅force a≅) t)
+castC eqC (▸̂ a≅) (t ∗ t₁) = (castC eqC (▸̂ (≅delay (≅refl →̂ (≅force a≅)))) t) ∗ (castC eqC ≅refl t₁)
+
+cast : ∀{Γ a b} (eq : a ≅ b) (t : Tm Γ a) → Tm Γ b
+cast = castC (≅L.refl ≅refl) 
 
 -- A more flexible version of _∗_
-
 ▹app : ∀{Γ c∞ b∞}{a : Ty} (eq : c∞ ∞≅ (delay a ⇒ b∞))
                           (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
 ▹app eq t u = cast (▸̂ eq) t ∗ u

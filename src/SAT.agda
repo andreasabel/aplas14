@@ -103,7 +103,7 @@ _⟦→⟧_ : (𝓐 𝓑 : SAT) → SAT
 
     CSN : ∀ {n} → 𝑪 n ⊆ SN n
     CSN 𝒕 = unRenameSN (prop→Ind suc ≡.refl)
-              (absVarSN (satSN 𝓑 (𝒕 ≤ℕ.refl suc (satSNe 𝓐 (var zero)))))
+              (absVarSN (satSN 𝓑 (𝒕 ≤ℕ.refl suc (satSNe 𝓐 (var (zero ≅refl))))))
 
     CExp : ∀{n}{Γ}{t t' : Tm Γ _} → t ⟨ n ⟩⇒ t' → 𝑪 n t' → 𝑪 n t 
     CExp t⇒ 𝒕 m≤n ρ 𝒖 = satExp 𝓑 (cong (appl _) (appl _) (subst⇒ (renSN ρ) (map⇒ m≤n t⇒))) (𝒕 m≤n ρ 𝒖)
@@ -182,4 +182,11 @@ semPair {𝓐} {𝓑} 𝒕 𝒖 = satExp 𝓐 (βfst (satSN 𝓑 𝒖)) 𝒕 , s
 
 sem∗ : ∀ {𝓐 𝓑 : SAT} → let a = satTy 𝓐; b = satTy 𝓑 in
        ∀ {Γ}{t : Tm Γ  _}{u : Tm Γ (▸ a)} → ∀ {n} → t ∈ ⟦▸⟧ (𝓐 ⟦→⟧ 𝓑) at n → u ∈ ⟦▸⟧ 𝓐 at n → ▹app (≅delay ≅refl) t u ∈ ⟦▸⟧ 𝓑 at n
-sem∗ 𝒕 𝒖 = {!!}
+sem∗ ▹0_ ▹0_ = exp β▹ ▹0_
+sem∗ ▹0_ (ne 𝒏) = {!!}
+sem∗ ▹0_ (exp t⇒ 𝒖) = {!!}
+sem∗ (▹ 𝒕) (▹ 𝒕₁) = exp β▹ (▹ {!𝒕!})
+sem∗ (▹ 𝒕) (ne 𝒏) = {!!}
+sem∗ (▹ 𝒕) (exp t⇒ 𝒖) = exp (cong (∗r _) (∗r _) t⇒) (sem∗ {{!!}} {{!!}} {{!!}} {{!!}} {{!!}} {{!!}} {! (▹ 𝒕) !} {! 𝒖 !})
+sem∗ (ne 𝒏) 𝒖 = {!!}
+sem∗ (exp t⇒ 𝒕) 𝒖 = {!!}

@@ -17,9 +17,10 @@ open import Function using (_∘_) public
 open import Induction.WellFounded using (Acc; acc) public
 
 open import Relation.Binary using (module DecTotalOrder)
+open import Relation.Binary.List.Pointwise as ListEq using ([]; _∷_) renaming (Rel to ≅L) public
+module ≅L = ListEq
 open import Relation.Binary.PropositionalEquality as PropEq using (_≡_) public
-module ≡ = PropEq
-
+module ≡ = PropEq 
 open import Size public
 
 module DecTotalOrderℕ = DecTotalOrder decTotalOrderℕ
