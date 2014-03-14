@@ -2,6 +2,8 @@
 
 module Library where
 
+-- open import Level using () renaming (suc to lsuc) public
+
 open import Data.Fin using (Fin; zero; suc) public
 open import Data.List using (List; []; _∷_; map) public
 open import Data.Nat
@@ -10,7 +12,6 @@ open import Data.Nat
   public
 open import Data.Nat.Properties using (_+-mono_) public
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂) renaming (map to map×) public
-open import Data.Unit using (⊤) public
 
 open import Function using (_∘_) public
 
@@ -36,6 +37,8 @@ caseMax {suc m} {suc n} P pn pm = caseMax (P ∘ suc) (pn ∘ s≤s) (pm ∘ s�
 
 n≤sn : ∀{n} → n ≤ℕ suc n
 n≤sn = (z≤n {1}) +-mono DecTotalOrderℕ.refl
+
+record ⊤ {a} : Set a where
 
 -- TODOs
 
