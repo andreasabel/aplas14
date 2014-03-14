@@ -27,12 +27,12 @@ open import SAT2
 ⟦ Γ ⟧C n σ = ∀ {a} (x : Var Γ a) → σ x ∈ ⟦ a ⟧ n
 
 Lift : ∀ {a n Γ Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → ⟦ a ∷ Γ ⟧C n (lifts σ)
-Lift {a} θ zero    = ↿ SAT.satSNe (⟦ a ⟧ _) (var (zero))
-Lift {a} θ (suc x) = {! θ x !}  -- TODO: semantic types closed under renaming
+Lift θ (zero eq) = ↿ SAT.satSNe (⟦ _ ⟧ _) (var (zero eq))
+Lift θ (suc x)   = {! θ x !}  -- TODO: semantic types closed under renaming
 
 Ext : ∀ {a n Δ Γ} {t : Tm Δ a} (𝒕 : t ∈ ⟦ a ⟧ n) →
       ∀ {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → ⟦ a ∷ Γ ⟧C n (t ∷s σ)
-Ext {a} 𝒕 θ zero    = 𝒕
+Ext {a} 𝒕 θ (zero eq) = {! 𝒕 !} -- need to cast
 Ext {a} 𝒕 θ (suc x) = θ x
 
 -- Soundness
@@ -48,4 +48,4 @@ sound (snd t) θ = ↿ (proj₂ (⇃ (sound t θ)))
 -- sound (snd t) θ = ⟦snd⟧ (sound t θ)
 sound (▹ t) θ = ↿ {!!}
 sound (t ∗ t₁) θ = {!!}
-sound (cast eq t) θ = {!!}
+

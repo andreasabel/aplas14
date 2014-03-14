@@ -218,7 +218,7 @@ mapSubSNe m≤n (σ , σ∈SNe) = σ , (λ x → mapSNe m≤n (σ∈SNe x))
 
 sgs-varSNe : ∀ {n Γ a} → Var Γ a → SubstSNe n (a ∷ Γ) Γ
 theSubst (sgs-varSNe x)         = sgs (var x)
-isSNe    (sgs-varSNe x) zero    = var x
+isSNe    (sgs-varSNe x) (zero eq)   = (var (castVar _ eq x))
 isSNe    (sgs-varSNe x) (suc y) = var y
 
 
@@ -247,9 +247,9 @@ mutual
 
   liftsSNe : ∀ {i vt Γ Δ a n} → RenSubSNe {i} vt n Γ Δ → RenSubSNe {i} vt n (a ∷ Γ) (a ∷ Δ)
   theSubst (liftsSNe σ)                   = lifts (theSubst σ)
-  isSNe    (liftsSNe {vt = `Var} (σ , σ∈SNe)) zero    = var zero
+  isSNe    (liftsSNe {vt = `Var} (σ , σ∈SNe)) (zero eq)    = var (zero eq)
   isSNe    (liftsSNe {vt = `Var} (σ , σ∈SNe)) (suc y) = var (suc (σ y))
-  isSNe    (liftsSNe {vt = `Tm } (σ , σ∈SNe)) zero    = var zero
+  isSNe    (liftsSNe {vt = `Tm } (σ , σ∈SNe)) (zero eq)    = var (zero eq)
   isSNe    (liftsSNe {vt = `Tm } (σ , σ∈SNe)) (suc y) = substSNe {vt = `Var} (suc , (λ x → var (suc x))) (σ∈SNe y)
 
   substSNe : ∀ {i vt Γ Δ τ n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {t : Tm Γ τ} → SNe n t → SNe n (subst (theSubst σ) t)

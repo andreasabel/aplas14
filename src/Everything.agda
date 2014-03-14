@@ -10,4 +10,7 @@ import Substitution
 import SN
 import SN.AntiRename
 import SN.AntiSubst
+import SAT2
+import Soundness
 import SAT
+

@@ -74,10 +74,10 @@ mutual
 -- Extensionality of SN for function types:
 -- If t x ∈ SN then t ∈ SN.
 
-absVarSNe : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var zero) ∈ SNe n → t ∈ SNe n
+absVarSNe : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var (zero ≅refl)) ∈ SNe n → t ∈ SNe n
 absVarSNe (elim 𝒏 (appl 𝒖)) = 𝒏
 
-absVarSN : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var zero) ∈ SN n → t ∈ SN n
+absVarSN : ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → app t (var (zero ≅refl)) ∈ SN n → t ∈ SN n
 absVarSN (ne 𝒖)                                                   = ne (absVarSNe 𝒖)
 absVarSN (exp (β {t = t} 𝒖) 𝒕′)                                   = abs (unRenameSN (prop→Ind contract (subst-ext contract-sgs t)) 𝒕′)
-absVarSN (exp (cong (appl .(var zero)) (appl .(var zero)) t⇒) 𝒕′) = exp t⇒ (absVarSN 𝒕′)
+absVarSN (exp (cong (appl ._) (appl ._) t⇒) 𝒕′) = exp t⇒ (absVarSN 𝒕′)

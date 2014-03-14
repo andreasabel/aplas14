@@ -21,8 +21,8 @@ omega x = ▹app (≅delay ≅refl) x (▹ x)
 Y : ∀{Γ A} → Tm Γ ((▸ A →̂ A) →̂ A)
 Y = abs (app L (▹ L))
   where
-    f = var (suc zero)
-    x = var zero
+    f = var (suc v₀)
+    x = var v₀
     L = abs (app f (omega x))
 
 -- Alternative definition of omega
@@ -61,16 +61,16 @@ tail s = cast (▸̂ (≅delay ≅refl)) (snd s)
 -- repeat = λ a → Y λ f → cons a f
 
 repeat : ∀{Γ A} → Tm Γ (A →̂ Stream A)
-repeat = abs (app Y (abs (cons (var (suc zero)) (var zero))))
+repeat = abs (app Y (abs (cons (var (suc v₀)) (var v₀))))
 
 -- smap f s = cons (f (head s)) (smap f (tail s))
 -- smap = λ f → Y λ map → λ s → (f (head s), map <*> tail s)
 
 smap : ∀{Γ A B} → Tm Γ ((A →̂ B) →̂ (Stream A →̂ Stream B))
 smap = abs (app Y (abs (abs
-  (let f   = var (suc (suc zero))
-       map = var (suc zero)
-       s   = var zero
+  (let f   = var (suc (suc v₀))
+       map = var (suc v₀)
+       s   = var v₀
    in pair (app f (head s)) (▹app (≅delay ≅refl) map (tail s))))))
 
 -- zipWith f s t = cons (f (head s) (head t)) (zipWith f (tail s) (tail t))
@@ -79,10 +79,10 @@ smap = abs (app Y (abs (abs
 
 zipWith : ∀{Γ A B C} → Tm Γ ((A →̂ (B →̂ C)) →̂ (Stream A →̂ (Stream B →̂ Stream C)))
 zipWith = abs (app Y (abs (abs (abs
-  (let f   = var (suc (suc (suc zero)))
-       zw  = var (suc (suc zero))
-       s   = var (suc zero)
-       t   = var zero
+  (let f   = var (suc (suc (suc v₀)))
+       zw  = var (suc (suc v₀))
+       s   = var (suc v₀)
+       t   = var v₀
    in pair (app (app f (head s)) (head t))
            (▹app {c∞ = Stream∞ _ ⇒ Stream∞ _} (≅delay ≅refl)
                  (▹app (≅delay ≅refl) zw (tail s))
@@ -101,15 +101,15 @@ module Fib (N : Ty) (n0 n1 : ∀{Γ} → Tm Γ N) (plus : ∀{Γ} → Tm Γ (N �
   fib : ∀{Γ} → Tm Γ (Stream N)
   fib {Γ} = app Y (abs
     (let fib  : Tm (_ ∷ Γ) (▸ Stream N)
-         fib  = var zero
+         fib  = var v₀
          fib₁  : Tm (_ ∷ _ ∷ Γ) (▸ Stream N)
-         fib₁  = var (suc zero)
+         fib₁  = var (suc v₀)
          adds : Tm (_ ∷ _ ∷ Γ) (Stream N →̂ (Stream N →̂ Stream N))
          adds = app zipWith plus
          addf :  Tm (_ ∷ _ ∷ Γ) (▸ (Stream N →̂ Stream N))
          addf = adds <$> fib₁
          tf   : Tm (_ ∷ Γ) (▸ ▸ Stream N)
-         tf   = abs (tail (var zero)) <$> fib
+         tf   = abs (tail (var v₀)) <$> fib
          aftf : Tm (_ ∷ Γ) (▸ ▸ Stream N)
-         aftf = abs (▹app (≅delay ≅refl) addf (var zero)) <$> tf
-     in  cons n0 (abs (cons n1 (var zero)) <$> aftf)))
+         aftf = abs (▹app (≅delay ≅refl) addf (var v₀)) <$> tf
+     in  cons n0 (abs (cons n1 (var v₀)) <$> aftf)))
