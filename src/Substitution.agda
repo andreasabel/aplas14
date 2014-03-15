@@ -148,10 +148,10 @@ ids {vt = `Tm } x = var x
 -- substitution composition
 
 _•s_ : ∀ {Γ₀ Γ₁ Γ₂}
-         {n}{vt2 : VarTm n}(tau   : RenSub vt2 Γ₁ Γ₂)
-         {m}{vt1 : VarTm m}(sigma : RenSub vt1 Γ₀ Γ₁) → RenSub (vt1 ∙VT vt2) Γ₀ Γ₂
-_•s_ tau {vt1 = `Var} sigma x = tau (sigma x)
-_•s_ tau {vt1 = `Tm } sigma x = subst tau (sigma x)
+         {n}{vt2 : VarTm n}(τ : RenSub vt2 Γ₁ Γ₂)
+         {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁) → RenSub (vt1 ∙VT vt2) Γ₀ Γ₂
+_•s_ τ {vt1 = `Var} σ x = τ (σ x)
+_•s_ τ {vt1 = `Tm } σ x = subst τ (σ x)
 
 -- Term substitution
 
@@ -175,12 +175,21 @@ sgs t = t ∷s ids
 subst0 : ∀ {Γ a b} → Tm Γ a → Tm (a ∷ Γ) b → Tm Γ b
 subst0 u = subst (sgs u)
 
+-- Renamings
+
+Ren : (Γ Δ : Cxt) → Set
+Ren = RenSub `Var
 
 _≤_  : (Γ Δ : Cxt) → Set
 _≤_ Γ Δ = RenSub `Var Δ Γ
 
 rename : ∀ {Γ Δ : Cxt} {a : Ty} (η : Γ ≤ Δ) (x : Tm Δ a) → Tm Γ a
 rename = subst
+
+-- Weakening renaming
+
+weak : ∀{Γ a} → (a ∷ Γ) ≤ Γ
+weak = suc
 
 -- Weakening substitution
 
@@ -232,7 +241,7 @@ mutual
 --  subst-∙ τ σ (cast eq t) = ≡.cong (cast eq) (subst-∙ τ σ t)
 
   lifts-∙ : ∀ {Γ₀ Γ₁ Γ₂}
-         {n}{vt2 : VarTm n}(τ   : RenSub vt2 Γ₁ Γ₂)
+         {n}{vt2 : VarTm n}(τ : RenSub vt2 Γ₁ Γ₂)
          {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁) → ∀ {a} → lifts {a = a} (τ •s σ) ≡s (lifts τ •s lifts σ)
   lifts-∙ {vt2 = `Var} τ {vt1 = `Var} σ (zero _)    = ≡.refl
   lifts-∙ {vt2 = `Tm}  τ {vt1 = `Var} σ (zero _)    = ≡.refl
@@ -285,3 +294,22 @@ contract-sgs : ∀ {a Γ} → contract {a} {Γ} ≡s sgs (var (zero ≅refl))
 contract-sgs (zero _)    = TODO
 contract-sgs (suc x) = ≡.refl
 
+sgs-weak₀ : ∀ {Γ a} {u : Tm Γ a} {b} (x : Var Γ b) → sgs u (suc x) ≡ var x
+sgs-weak₀ x = ≡.refl
+
+sgs-weak₁ : ∀ {Γ a} {u : Tm Γ a} → (sgs u ∘ suc) ≡s (ids {vt = `Tm})
+sgs-weak₁ x = ≡.refl
+
+sgs-weak : ∀ {Γ a} {u : Tm Γ a} → (sgs u •s weak) ≡s (ids {vt = `Tm})
+sgs-weak x = ≡.refl
+
+cons-to-sgs :  ∀ {Γ Δ a} (u : Tm Δ a) (σ : Subst Γ Δ)
+               → (u ∷s σ) ≡s (sgs u •s lifts σ)
+cons-to-sgs u σ (zero eq) = ≡.refl
+cons-to-sgs u σ (suc x) = begin
+    σ x                               ≡⟨ ≡.sym (subst-id (σ x)) ⟩
+    subst (ids {vt = `Tm}) (σ x)      ≡⟨ subst-ext (λ _ → ≡.refl) (σ x) ⟩
+    subst (sgs u •s weak) (σ x)       ≡⟨ subst-∙ (sgs u) weak (σ x) ⟩
+    subst (sgs u) (subst suc (σ x))
+  ∎
+  where open ≡-Reasoning
