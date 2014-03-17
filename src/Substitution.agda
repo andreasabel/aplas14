@@ -1,5 +1,5 @@
 {-# OPTIONS --copatterns --sized-types #-}
-{-# OPTIONS --no-termination-check #-} -- too slow
+-- {-# OPTIONS --no-termination-check #-} -- too slow
 
 module Substitution where
 
@@ -8,7 +8,7 @@ open import SizedInfiniteTypes
 open import Terms
 
 -- VarTm n specifies whether the substitution produces variables or terms.
--- The index is used to impose and order on the constructors
+-- The index is used to impose an order on the constructors
 -- and so pass termination checking in lift/subst.
 data VarTm : ℕ → Set where
   `Var : VarTm 0
@@ -282,7 +282,7 @@ sgs-lifts-term {σ = σ} {u} {t} = (≡.trans (≡.sym (subst-∙ (sgs (subst σ
                                           (subst-∙ σ (sgs u) t)))
 
 
-renId : ∀ {Γ a}{t : Tm Γ a} → rename (λ x → x) t ≡ t
+renId : ∀ {Γ a}{t : Tm Γ a} → rename id t ≡ t
 renId = subst-id _
 
 contract : ∀ {a Γ} → RenSub `Var (a ∷ a ∷ Γ) (a ∷ Γ)
