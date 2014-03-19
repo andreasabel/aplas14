@@ -9,8 +9,9 @@ open import Library
 open import SizedInfiniteTypes
 open import Terms
 open import Substitution
+open import Reduction
 open import SN
-open import SN.AntiSubst
+--open import SN.AntiSubst
 open import SN.AntiRename
 
 -- Kripke predicates on well-typed terms.
@@ -20,6 +21,9 @@ TmSet a = {Γ : Cxt} (t : Tm Γ a) → Set
 
 _⊆_ : ∀{a} (𝑨 𝑨′ : TmSet a) → Set
 𝑨 ⊆ 𝑨′ = ∀{Γ}{t : Tm Γ _} → 𝑨 t → 𝑨′ t
+
+βClosed : ∀ {a} (𝑨 : TmSet a) → Set
+βClosed 𝑨 = ∀{Γ}{t t' : Tm Γ _} → t ⇒β t' → 𝑨 t → 𝑨 t'
 
 -- Closure by strong head expansion
 
@@ -52,6 +56,7 @@ record IsSAT (n : ℕ) {a} (𝑨 : TmSet a) : Set where
     satSNe  : SNe n ⊆ 𝑨
     satSN   : 𝑨 ⊆ SN n
     satExp  : Closed n 𝑨
+    satRed  : βClosed 𝑨
 --open IsSAT
 
 record SAT (a : Ty) (n : ℕ) : Set₁ where
@@ -84,6 +89,7 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
     { satSNe = CSNe
     ; satSN  = CSN
     ; satExp = CExp
+    ; satRed = CRed
     }
   }
   where
@@ -99,6 +105,9 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
 
     CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
     CExp t⇒ 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (cong (appl _) (appl _) (subst⇒ (renSN ρ) t⇒)) (𝒕 ρ 𝒖)
+    
+    CRed : βClosed 𝑪
+    CRed t→t' 𝒕 ρ 𝒖 = satRed 𝓑 (cong (appl _) (appl _) (subst⇒β ρ t→t')) (𝒕 ρ 𝒖)
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
@@ -121,6 +130,7 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
     { satSNe = CSNe
     ; satSN  = CSN
     ; satExp = CExp
+    ; satRed = CRed
     }
   }
   where
@@ -138,6 +148,9 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
     CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
     CExp t⇒ (𝒕₁ , 𝒕₂) = (SAT.satExp 𝓐 (cong fst fst t⇒) 𝒕₁)
                      , (SAT.satExp 𝓑 (cong snd snd t⇒) 𝒕₂)
+
+    CRed : βClosed 𝑪
+    CRed t⇒ (𝒕₁ , 𝒕₂) = satRed 𝓐 (cong fst fst t⇒) 𝒕₁ , satRed 𝓑 (cong snd snd t⇒) 𝒕₂
 
 -- Lemma (introduction):  If t₁ ∈ 𝓐 and t₂ ∈ 𝓑 then pair t₁ t₂ ∈ 𝓐 ⟦×⟧ 𝓑
 
@@ -181,6 +194,12 @@ module _ {a∞ : ∞Ty} where
     CSN 𝓐  (ne 𝒏)     = ne 𝒏
     CSN 𝓐  (exp t⇒ 𝒕) = exp t⇒ (CSN 𝓐 𝒕)
 
+    CRed : ∀ {n} (𝓐 : SATpred a n) → βClosed (𝑪 {n} 𝓐)
+    CRed 𝓐 (cong ▹_ ▹_ t⇒) ▹0          = ▹0
+    CRed 𝓐 (cong ▹_ ▹_ t⇒) (▹ 𝒕)       = ▹ (satRed 𝓐 t⇒ 𝒕)
+    CRed 𝓐 t⇒              (ne 𝒏)      = ne (mapβSNe t⇒ 𝒏)
+    CRed 𝓐 t⇒              (exp t⇒₁ 𝒕) = TODO
+
   ⟦▸⟧_ : ∀{n} (𝓐 : SATpred a n) → SAT (▸̂ a∞) n
   ⟦▸⟧_ {n} 𝓐 = record
     { satSet = 𝑪 𝓐
@@ -188,6 +207,7 @@ module _ {a∞ : ∞Ty} where
       { satSNe = ne
       ; satSN  = CSN 𝓐
       ; satExp = exp
+      ; satRed = CRed 𝓐
       }
     }
 
