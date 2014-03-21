@@ -54,6 +54,20 @@ data _≅T_ {Γ Γ' : Cxt} : {a a' : Ty} → Tm Γ a → Tm Γ' a' → Set where
   _∗_  : ∀{a : Ty}{b∞}{a' : Ty}{b∞'} {t : Tm Γ (▸̂ (delay a ⇒ b∞))}{t' : Tm Γ' (▸̂ (delay a' ⇒ b∞'))}
          → t ≅T t' → {u : Tm Γ (▸ a)} {u' : Tm Γ' (▸ a')}  → u ≅T u' → (t ∗ u) ≅T (t' ∗ u')
 
+Vsym : ∀ {Γ Γ' : Cxt} {a a' : Ty} → {t : Var Γ a} → {t' : Var Γ' a'} → t ≅V t' → t' ≅V t
+Vsym zero = zero
+Vsym (suc v) = suc (Vsym v)
+
+Tsym : ∀ {Γ Γ' : Cxt} {a a' : Ty} → {t : Tm Γ a} → {t' : Tm Γ' a'} → t ≅T t' → t' ≅T t
+Tsym (var [x]) = var (Vsym [x])
+Tsym (abs t)     = abs (Tsym t)
+Tsym (app t u)   = app (Tsym t) (Tsym u)
+Tsym (▹ t)       = ▹ (Tsym t)
+Tsym (t ∗ u)     = (Tsym t) ∗ (Tsym u)
+Tsym (pair t u)  = pair (Tsym t) (Tsym u)
+Tsym (fst t)     = fst (Tsym t)
+Tsym (snd t)     = snd (Tsym t)
+
 _≅C_ : Cxt → Cxt → Set
 _≅C_ = ≅L _≅_
 
