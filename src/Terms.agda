@@ -54,9 +54,23 @@ data _≅T_ {Γ Γ' : Cxt} : {a a' : Ty} → Tm Γ a → Tm Γ' a' → Set where
   _∗_  : ∀{a : Ty}{b∞}{a' : Ty}{b∞'} {t : Tm Γ (▸̂ (delay a ⇒ b∞))}{t' : Tm Γ' (▸̂ (delay a' ⇒ b∞'))}
          → t ≅T t' → {u : Tm Γ (▸ a)} {u' : Tm Γ' (▸ a')}  → u ≅T u' → (t ∗ u) ≅T (t' ∗ u')
 
+Vrefl : ∀ {Γ : Cxt} {a : Ty} → {x : Var Γ a} → x ≅V x
+Vrefl {x = zero eq} = zero
+Vrefl {x = suc t}   = suc Vrefl
+
 Vsym : ∀ {Γ Γ' : Cxt} {a a' : Ty} → {t : Var Γ a} → {t' : Var Γ' a'} → t ≅V t' → t' ≅V t
 Vsym zero = zero
 Vsym (suc v) = suc (Vsym v)
+
+Trefl : ∀ {Γ : Cxt} {a : Ty} → {t : Tm Γ a} → t ≅T t
+Trefl {t = var x}     = var Vrefl
+Trefl {t = abs t}     = abs Trefl
+Trefl {t = app t u}   = app Trefl Trefl
+Trefl {t = ▹ t}       = ▹ Trefl
+Trefl {t = t ∗ u}     = Trefl ∗ Trefl
+Trefl {t = pair t u}  = pair Trefl Trefl
+Trefl {t = fst t}     = fst Trefl
+Trefl {t = snd t}     = snd Trefl
 
 Tsym : ∀ {Γ Γ' : Cxt} {a a' : Ty} → {t : Tm Γ a} → {t' : Tm Γ' a'} → t ≅T t' → t' ≅T t
 Tsym (var [x]) = var (Vsym [x])

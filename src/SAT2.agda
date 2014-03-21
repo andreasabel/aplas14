@@ -40,13 +40,13 @@ data Cl (n : ℕ) {a} (𝑨 : TmSet a) {Γ} (t : Tm Γ a) : Set where
 -- Operations on predicates.
 
 _[→]_ : ∀{a b} → TmSet a → TmSet b → TmSet (a →̂ b)
-(𝓐 [→] 𝓑) {Γ} t = ∀{Δ} (ρ : Δ ≤ Γ) {u : Tm Δ _} → 𝓐 u → 𝓑 (app (rename ρ t) u)
+(𝓐 [→] 𝓑) {Γ} t = ∀{Δ} (ρ : Δ ≤ Γ) → ρ SubCong.≡s ρ → {u : Tm Δ _} → 𝓐 u → 𝓑 (app (rename ρ t) u)
 
 _[→]↔_ : ∀{a a' b b'} {𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨′ ↔ 𝑨  → 
          ∀{𝑩 : TmSet b}{𝑩′ : TmSet b'} → 𝑩 ↔ 𝑩′ → (𝑨 [→] 𝑩) ↔ (𝑨′ [→] 𝑩′)
-(𝑨 [→]↔ 𝑩) (eq₁ →̂  eq₂) = λ t≅t' 𝒕 ρ {u} 𝒖 → let 
-                                     r = 𝒕 ρ {cast (≅sym eq₁) u} (𝑨 (≅sym eq₁) (Tsym (coeh (≅L.refl ≅refl) (≅sym eq₁) u)) 𝒖)
-                                in 𝑩 eq₂ (app TODO (coeh (≅L.refl ≅refl) (≅sym eq₁) u)) r
+(𝑨 [→]↔ 𝑩) (eq₁ →̂  eq₂) = λ t≅t' 𝒕 ρ ρrefl {u} 𝒖 → let 
+                                     r = 𝒕 ρ ρrefl {cast (≅sym eq₁) u} (𝑨 (≅sym eq₁) (Tsym (coeh (≅L.refl ≅refl) (≅sym eq₁) u)) 𝒖)
+                                in 𝑩 eq₂ (app (SubCong.subst-ext ρrefl t≅t') (coeh (≅L.refl ≅refl) (≅sym eq₁) u)) r
    
 _[×]_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
 (𝓐 [×] 𝓑) t = 𝓐 (fst t) × 𝓑 (snd t)
@@ -107,28 +107,28 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
     𝑪 = 𝑨 [→] 𝑩
 
     CSNe : SNe _ ⊆ 𝑪
-    CSNe 𝒏 ρ 𝒖 = SAT.satSNe 𝓑 (sneApp (renameSNe ρ 𝒏) (SAT.satSN 𝓐 𝒖))
+    CSNe 𝒏 ρ ρrefl 𝒖 = SAT.satSNe 𝓑 (sneApp (renameSNe ρ 𝒏) (SAT.satSN 𝓐 𝒖))
 
     CSN : 𝑪 ⊆ SN _
-    CSN 𝒕 = unRenameSN (prop→Ind suc ≡.refl) (absVarSN (SAT.satSN 𝓑 (𝒕 suc (SAT.satSNe 𝓐 (var v₀)))))
+    CSN 𝒕 = unRenameSN (prop→Ind suc ≡.refl) (absVarSN (SAT.satSN 𝓑 (𝒕 suc (λ x₁ → var (suc x₁)) (SAT.satSNe 𝓐 (var v₀)))))
 
     CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
-    CExp t⇒ 𝒕 ρ 𝒖 = SAT.satExp 𝓑 (cong (appl _) (appl _) (subst⇒ (renSN ρ) t⇒)) (𝒕 ρ 𝒖)
+    CExp t⇒ 𝒕 ρ ρrefl 𝒖 = SAT.satExp 𝓑 (cong (appl _) (appl _) (subst⇒ (renSN ρ) t⇒)) (𝒕 ρ ρrefl 𝒖)
     
     CRed : βClosed 𝑪
-    CRed t→t' 𝒕 ρ 𝒖 = satRed 𝓑 (cong (appl _) (appl _) (subst⇒β ρ t→t')) (𝒕 ρ 𝒖)
+    CRed t→t' 𝒕 ρ ρrefl 𝒖 = satRed 𝓑 (cong (appl _) (appl _) (subst⇒β ρ t→t')) (𝒕 ρ ρrefl 𝒖)
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
 ⟦abs⟧ : ∀{n a b}{𝓐 : SAT a n}{𝓑 : SAT b n}{Γ}{t : Tm (a ∷ Γ) b} →
     (∀{Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} → u ∈ 𝓐 → subst0 u (subst (lifts ρ) t) ∈ 𝓑) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
-(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) ρ 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) (⇃ 𝒕 ρ (↿ 𝒖))
+(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) ρ ρrefl 𝒖 = SAT.satExp 𝓑 (β (SAT.satSN 𝓐 𝒖)) (⇃ 𝒕 ρ (↿ 𝒖))
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t ∈ 𝓐 ⟦→⟧ 𝓑 and u ∈ 𝓐, then app t u ∈ 𝓑
 
 ⟦app⟧ : ∀ {n a b}{𝓐 : SAT a n}{𝓑 : SAT b n}{Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a}
         → t ∈ (𝓐 ⟦→⟧ 𝓑) → u ∈ 𝓐 → app t u ∈ 𝓑
-⟦app⟧ (↿ 𝒕) (↿ 𝒖) = ≡.subst (λ t → app t _ ∈ _) renId (↿ 𝒕 id 𝒖)
+⟦app⟧ (↿ 𝒕) (↿ 𝒖) = ≡.subst (λ t → app t _ ∈ _) renId (↿ 𝒕 id var 𝒖)
 
 -- Semantic product type
 

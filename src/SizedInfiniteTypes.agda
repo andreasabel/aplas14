@@ -57,3 +57,11 @@ mutual
   ≅refl∞ : ∀{a∞} → a∞ ∞≅ a∞
   ≅force ≅refl∞ = ≅refl
 
+mutual
+  ≅sym : ∀ {a b} → a ≅ b → b ≅ a
+  ≅sym (eq ×̂ eq₁) = (≅sym eq) ×̂ (≅sym eq₁)
+  ≅sym (eq →̂ eq₁) = (≅sym eq) →̂ (≅sym eq₁)
+  ≅sym (▸̂ a≅) = ▸̂  (≅sym∞ a≅)
+
+  ≅sym∞ : ∀{a∞ b∞} → a∞ ∞≅ b∞ → b∞ ∞≅ a∞
+  ≅force (≅sym∞ eq) = ≅sym (≅force eq)
