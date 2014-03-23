@@ -126,6 +126,8 @@ data _≅T_ {Γ Γ' : Cxt} : {a a' : Ty} → Tm Γ a → Tm Γ' a' → Set where
          → {u : Tm Γ (▸ a)} {u' : Tm Γ' (▸ a')}           → ([u] : u ≅T u')
          → (t ∗ u) ≅T (t' ∗ u')
 
+-- The term congruence is an equivalence relation.
+
 Trefl : ∀ {Γ : Cxt} {a : Ty} → {t : Tm Γ a} → t ≅T t
 Trefl {t = var x}     = var Vrefl
 Trefl {t = abs t}     = abs Trefl
@@ -136,7 +138,7 @@ Trefl {t = pair t u}  = pair Trefl Trefl
 Trefl {t = fst t}     = fst Trefl
 Trefl {t = snd t}     = snd Trefl
 
-Tsym : ∀ {Γ Γ' : Cxt} {a a' : Ty} → {t : Tm Γ a} → {t' : Tm Γ' a'} → t ≅T t' → t' ≅T t
+Tsym : ∀ {Γ Γ' a a'} {t : Tm Γ a} {t' : Tm Γ' a'} → t ≅T t' → t' ≅T t
 Tsym (var [x]) = var (Vsym [x])
 Tsym (abs t)     = abs (Tsym t)
 Tsym (app t u)   = app (Tsym t) (Tsym u)
@@ -145,6 +147,19 @@ Tsym (t ∗ u)     = (Tsym t) ∗ (Tsym u)
 Tsym (pair t u)  = pair (Tsym t) (Tsym u)
 Tsym (fst t)     = fst (Tsym t)
 Tsym (snd t)     = snd (Tsym t)
+
+Ttrans : ∀ {Γ Γ' Γ'' a a' a''} {t : Tm Γ a} {t' : Tm Γ' a'} {t'' : Tm Γ'' a''}
+         → t ≅T t' → t' ≅T t'' → t ≅T t''
+Ttrans (var [x])  (var [x'])   = var (Vtrans [x] [x'])
+Ttrans (abs t)    (abs t')     = abs (Ttrans t t')
+Ttrans (app t u)  (app t' u')  = app (Ttrans t t') (Ttrans u u')
+Ttrans (▹ t)      (▹ t')       = ▹ (Ttrans t t')
+Ttrans (t ∗ u)    (t' ∗ u')    = (Ttrans t t') ∗ (Ttrans u u')
+Ttrans (pair t u) (pair t' u') = pair (Ttrans t t') (Ttrans u u')
+Ttrans (fst t)    (fst t')     = fst (Ttrans t t')
+Ttrans (snd t)    (snd t')     = snd (Ttrans t t')
+
+-- Coercion and coherence for terms.
 
 castC : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  (t : Tm Γ a)      → Tm Δ b
 castC eqC eq         (var x)     = var (castVar eqC eq x)
