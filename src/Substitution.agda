@@ -219,14 +219,14 @@ module SubCong where
 
     lifts-ext : ∀ {Γ Δ b} {Γ' Δ' b'} {m n vt1 vt2} {f : RenSub {m} vt1 Γ Δ}{g : RenSub {n} vt2 Γ' Δ'} → f ≡s g → lifts {a = b} f ≡s lifts {a = b'} g
     lifts-ext {vt1 = `Var} {`Var} f≐g (zero) = var zero
-    lifts-ext {vt1 = `Var} {`Var} {f} {g} f≐g (suc x) with f≐g x 
-    ... | var eq = var (suc eq) 
+    lifts-ext {vt1 = `Var} {`Var} {f} {g} f≐g (suc x) with f≐g x
+    ... | var eq = var (suc eq)
     lifts-ext {vt1 = `Var} {`Tm} f≐g (zero) = var zero
-    lifts-ext {vt1 = `Var} {`Tm} {f} {g} f≐g (suc {x' = x'} x) with g x' | f≐g x 
+    lifts-ext {vt1 = `Var} {`Tm} {f} {g} f≐g (suc {x' = x'} x) with g x' | f≐g x
     ... | ._ | var eq = var (suc eq)
     lifts-ext {vt1 = `Tm} {`Var} f≐g (zero) = var zero
     lifts-ext {vt1 = `Tm} {`Var} {f} {g} f≐g (suc {x = x} [x]) with f x | f≐g [x]
-    ... | ._ | var eq = var (suc eq) 
+    ... | ._ | var eq = var (suc eq)
     lifts-ext {vt1 = `Tm} {`Tm} f≐g (zero) = var zero
     lifts-ext {vt1 = `Tm} {`Tm} f≐g (suc x) = subst-ext (λ x₂ → var (suc x₂)) (f≐g x)
 
