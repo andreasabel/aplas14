@@ -163,7 +163,7 @@ Ttrans (snd t)    (snd t')     = snd (Ttrans t t')
 
 castC : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  (t : Tm Γ a)      → Tm Δ b
 castC eqC eq         (var x)     = var (castVar eqC eq x)
-castC eqC (eq →̂ eq₁) (abs t)     = abs (castC (eq ∷ eqC) eq₁ t)
+castC eqC (eq →̂ eq₁) (abs t)     = abs (castC (≅sym eq ∷ eqC) eq₁ t)
 castC eqC eq         (app t t₁)  = app (castC eqC (≅refl →̂ eq) t) (castC eqC ≅refl t₁)
 castC eqC (eq ×̂ eq₁) (pair t t₁) = pair (castC eqC eq t) (castC eqC eq₁ t₁)
 castC eqC eq         (fst t)     = fst (castC eqC (eq ×̂ ≅refl) t)
@@ -176,7 +176,7 @@ cast = castC (≅L.refl ≅refl)
 
 coh : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (t : Tm Γ a) → castC eqC eq t ≅T t
 coh eqC eq         (var x)     = var (cohV eqC eq x)
-coh eqC (eq →̂ eq₁) (abs t)     = abs (coh (eq ∷ eqC) eq₁ t)
+coh eqC (eq →̂ eq₁) (abs t)     = abs (coh (≅sym eq ∷ eqC) eq₁ t)
 coh eqC eq         (app t t₁)  = app (coh eqC (≅refl →̂ eq) t) (coh eqC ≅refl t₁)
 coh eqC (eq ×̂ eq₁) (pair t t₁) = pair (coh eqC eq t) (coh eqC eq₁ t₁)
 coh eqC eq         (fst t)     = fst (coh eqC (eq ×̂ ≅refl) t)

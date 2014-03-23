@@ -39,7 +39,7 @@ force (μ̂ F) = F (μ̂ F)
 mutual
   data _≅_ : (a b : Ty) → Set where
     _×̂_ : ∀{a a' b b'} (a≅ : a ≅ a') (b≅ : b ≅ b') → (a ×̂ b) ≅ (a' ×̂ b')
-    _→̂_ : ∀{a a' b b'} (a≅ : a ≅ a') (b≅ : b ≅ b') → (a →̂ b) ≅ (a' →̂ b')
+    _→̂_ : ∀{a a' b b'} (a≅ : a' ≅ a) (b≅ : b ≅ b') → (a →̂ b) ≅ (a' →̂ b')
     ▸̂_  : ∀{a∞ b∞}     (a≅ : a∞ ∞≅ b∞)             → ▸̂ a∞    ≅ ▸̂ b∞
 
   record _∞≅_ (a∞ b∞ : ∞Ty) : Set where
@@ -69,7 +69,7 @@ mutual
 mutual
   ≅trans : ∀ {a b c} → a ≅ b → b ≅ c → a ≅ c
   ≅trans (eq₁ ×̂ eq₂) (eq₁' ×̂ eq₂') = (≅trans eq₁ eq₁') ×̂ (≅trans eq₂ eq₂')
-  ≅trans (eq₁ →̂ eq₂) (eq₁' →̂ eq₂') = (≅trans eq₁ eq₁') →̂ (≅trans eq₂ eq₂')
+  ≅trans (eq₁ →̂ eq₂) (eq₁' →̂ eq₂') = (≅trans eq₁' eq₁) →̂ (≅trans eq₂ eq₂')
   ≅trans (▸̂ eq) (▸̂ eq') = ▸̂ (≅trans∞ eq eq')
 
   ≅trans∞ : ∀{a∞ b∞ c∞} → a∞ ∞≅ b∞ → b∞ ∞≅ c∞ → a∞ ∞≅ c∞

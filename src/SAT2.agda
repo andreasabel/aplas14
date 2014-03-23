@@ -19,7 +19,9 @@ open import SN.AntiRename
 TmSet : (a : Ty) → Set₁
 TmSet a = {Γ : Cxt} (t : Tm Γ a) → Set
 
-_↔_ : ∀ {a b} → TmSet a → TmSet b → Set
+-- Transporting from one Kripke predicate to one of equivalent type.
+
+_↔_ : ∀ {a a'} → TmSet a → TmSet a' → Set
 _↔_ {a} {a'} 𝑨 𝑨′ = ∀ {Γ}{t : Tm Γ _}{t′ : Tm Γ _} → a ≅ a' → t ≅T t′ → 𝑨 t → 𝑨′ t′
 
 _⊆_ : ∀{a} (𝑨 𝑨′ : TmSet a) → Set
@@ -39,14 +41,18 @@ data Cl (n : ℕ) {a} (𝑨 : TmSet a) {Γ} (t : Tm Γ a) : Set where
 
 -- Operations on predicates.
 
+-- Function space.
+
 _[→]_ : ∀{a b} → TmSet a → TmSet b → TmSet (a →̂ b)
 (𝓐 [→] 𝓑) {Γ} t = ∀{Δ} (ρ : Δ ≤ Γ) → ρ SubCong.≡s ρ → {u : Tm Δ _} → 𝓐 u → 𝓑 (app (rename ρ t) u)
 
-_[→]↔_ : ∀{a a' b b'} {𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨′ ↔ 𝑨  →
-         ∀{𝑩 : TmSet b}{𝑩′ : TmSet b'} → 𝑩 ↔ 𝑩′ → (𝑨 [→] 𝑩) ↔ (𝑨′ [→] 𝑩′)
-(𝑨 [→]↔ 𝑩) (eq₁ →̂  eq₂) = λ t≅t' 𝒕 ρ ρrefl {u} 𝒖 → let
-                                     r = 𝒕 ρ ρrefl {cast (≅sym eq₁) u} (𝑨 (≅sym eq₁) (Tsym (coh (≅L.refl ≅refl) (≅sym eq₁) u)) 𝒖)
-                                in 𝑩 eq₂ (app (SubCong.subst-ext ρrefl t≅t') (coh (≅L.refl ≅refl) (≅sym eq₁) u)) r
+_[→]↔_ : ∀{a a'}{𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨′ ↔ 𝑨  →
+         ∀{b b'}{𝑩 : TmSet b}{𝑩′ : TmSet b'} → 𝑩 ↔ 𝑩′ → (𝑨 [→] 𝑩) ↔ (𝑨′ [→] 𝑩′)
+(𝑨 [→]↔ 𝑩) (eq₁ →̂  eq₂) t≅t' 𝒕 ρ ρrefl {u} 𝒖 =
+  let r = 𝒕 ρ ρrefl {cast eq₁ u} (𝑨 eq₁ (Tsym (coh (≅L.refl ≅refl) eq₁ u)) 𝒖)
+  in  𝑩 eq₂ (app (SubCong.subst-ext ρrefl t≅t') (coh (≅L.refl ≅refl) eq₁ u)) r
+
+-- Cartesian product.
 
 _[×]_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
 (𝓐 [×] 𝓑) t = 𝓐 (fst t) × 𝓑 (snd t)
