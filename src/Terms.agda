@@ -5,27 +5,72 @@ module Terms where
 open import Library
 open import SizedInfiniteTypes
 
--- * Terms
+-- * Variables
 ------------------------------------------------------------------------
 
--- Typing contexts
+-- Typing contexts.
 
 Cxt = List Ty
 
--- Variables
+-- Type equality lifted to contexts.
+
+_≅C_ : Cxt → Cxt → Set
+_≅C_ = ≅L _≅_
+
+-- Variables.
 
 data Var : (Γ : Cxt) (a : Ty) → Set where
   zero : ∀{Γ a b}  (eq : a ≅ b) → Var (a ∷ Γ) b
   suc  : ∀{Γ a b} (x : Var Γ a) → Var (b ∷ Γ) a
 
-data _≅V_ : {Γ : Cxt} {Γ' : Cxt} {a : Ty} {a' : Ty} → Var Γ a → Var Γ' a' → Set where
-  zero : ∀ {Γ}{a b} {eq : a ≅ b} {Γ' a' b'} {eq' : a' ≅ b'} → (zero {Γ = Γ} eq) ≅V (zero {Γ = Γ'} eq')
-  suc  : ∀ {Γ a b} {x : Var Γ a} {Γ' a' b'} {x' : Var Γ' a'} → x ≅V x' → suc {b = b} x ≅V suc {b = b'} x'
+-- De Bruijn index 0.
 
 v₀ : ∀ {a Γ} → Var (a ∷ Γ) a
 v₀ = zero ≅refl
 
--- Well-typed terms
+-- A congruence on variables.  Ignores the equality proofs embedded in zero.
+-- Two variables are equal if they have the same de Bruijn index.
+
+data _≅V_ : ∀ {Γ Γ' a a'} → Var Γ a → Var Γ' a' → Set where
+
+  zero : ∀ {Γ a b} {eq : a ≅ b} {Γ' a' b'} {eq' : a' ≅ b'}
+
+         → zero {Γ = Γ} eq ≅V zero {Γ = Γ'} eq'
+
+  suc  : ∀ {Γ a b} {x : Var Γ a} {Γ' a' b'} {x' : Var Γ' a'}
+
+         → x ≅V x'
+         → suc {b = b} x ≅V suc {b = b'} x'
+
+-- We are indeed an equivalence relation.
+
+Vrefl : ∀ {Γ : Cxt} {a : Ty} {x : Var Γ a} → x ≅V x
+Vrefl {x = zero eq} = zero
+Vrefl {x = suc t}   = suc Vrefl
+
+Vsym : ∀ {Γ Γ' a a'} {x : Var Γ a} {x' : Var Γ' a'} → x ≅V x' → x' ≅V x
+Vsym zero      = zero
+Vsym (suc [x]) = suc (Vsym [x])
+
+Vtrans : ∀ {Γ Γ' Γ'' a a' a''} {x : Var Γ a} {x' : Var Γ' a'} {x'' : Var Γ'' a''}
+       → x ≅V x' → x' ≅V x'' → x ≅V x''
+Vtrans zero     zero      = zero
+Vtrans (suc eq) (suc eq') = suc (Vtrans eq eq')
+
+-- Coercion and coherence for variables.
+
+castVar : ∀{Γ Δ a b} (Γ≅Δ : Γ ≅C Δ) (a≅b : a ≅ b) (x : Var Γ a) → Var Δ b
+castVar (a'≅b' ∷ Γ≅Δ) a≅b (zero a'≅a) = zero (≅fill a'≅b' a'≅a a≅b)
+castVar (_     ∷ Γ≅Δ) a≅b (suc x)     = suc  (castVar Γ≅Δ a≅b x)
+
+coehV : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (x : Var Γ a) → castVar eqC eq x ≅V x
+coehV (x∼y ∷ eqC) eq (zero eq₁) = zero
+coehV (x∼y ∷ eqC) eq (suc x₁)   = suc (coehV eqC eq x₁)
+
+-- * Terms
+------------------------------------------------------------------------
+
+-- Well-typed terms.
 
 data Tm (Γ : Cxt) : (a : Ty) → Set where
   var  : ∀{a}          (x : Var Γ a)                   → Tm Γ a
@@ -40,27 +85,46 @@ data Tm (Γ : Cxt) : (a : Ty) → Set where
   _∗_  : ∀{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
                        (u : Tm Γ (▸ a))                → Tm Γ (▸̂ b∞)
 
+-- Variable congruence extended to terms.
 
 data _≅T_ {Γ Γ' : Cxt} : {a a' : Ty} → Tm Γ a → Tm Γ' a' → Set where
-  var  : ∀{a a'} {x : Var Γ a}{x' : Var Γ' a'} → ([x] : x ≅V x') → var x ≅T var x'
-  abs  : ∀{a b a' b'} {t : Tm (a ∷ Γ) b}{t' : Tm (a' ∷ Γ') b'} → ([t] : t ≅T t') → abs t ≅T abs t'
-  app  : ∀{a b a' b'} {t : Tm Γ (a →̂ b)}{t' : Tm Γ' (a' →̂ b')} → t ≅T t' → {u : Tm Γ a} {u' : Tm Γ' a'} → u ≅T u' → app t u ≅T app t' u'
-  pair : ∀{a b a' b'} {t : Tm Γ a} {t' : Tm Γ' a'} → t ≅T t' → {u : Tm Γ b}{u' : Tm Γ' b'} → u ≅T u' → pair t u ≅T pair t' u'
-  fst  : ∀{a b a' b'} {t : Tm Γ (a ×̂ b)} {t' : Tm Γ' (a' ×̂ b')} → t ≅T t' → fst t ≅T fst t'
-  snd  : ∀{a b a' b'} {t : Tm Γ (a ×̂ b)} {t' : Tm Γ' (a' ×̂ b')} → t ≅T t' → snd t ≅T snd t'
-  ▹_   : ∀{a∞ a∞'} {t : Tm Γ (force a∞)} {t' : Tm Γ' (force a∞')} → t ≅T t' → ▹_ {a∞ = a∞} t ≅T ▹_ {a∞ = a∞'} t'
+
+  var  : ∀ {a a'}
+         → {x : Var Γ a}         {x' : Var Γ' a'}         → ([x] : x ≅V x')
+         → var x ≅T var x'
+
+  abs  : ∀ {a b a' b'}
+         → {t : Tm (a ∷ Γ) b}    {t' : Tm (a' ∷ Γ') b'}   → ([t] : t ≅T t')
+         → abs t ≅T abs t'
+
+  app  : ∀ {a b a' b'}
+         → {t : Tm Γ (a →̂ b)}    {t' : Tm Γ' (a' →̂ b')}   → ([t] : t ≅T t')
+         → {u : Tm Γ a}          {u' : Tm Γ' a'}          → ([u] : u ≅T u')
+         → app t u ≅T app t' u'
+
+  pair : ∀ {a b a' b'}
+         → {t : Tm Γ a}          {t' : Tm Γ' a'}          → ([t] : t ≅T t')
+         → {u : Tm Γ b}          {u' : Tm Γ' b'}          → ([u] : u ≅T u')
+         → pair t u ≅T pair t' u'
+
+  fst  : ∀ {a b a' b'}
+         → {t : Tm Γ (a ×̂ b)}    {t' : Tm Γ' (a' ×̂ b')}   → ([t] : t ≅T t')
+         → fst t ≅T fst t'
+
+  snd  : ∀ {a b a' b'}
+         → {t : Tm Γ (a ×̂ b)}    {t' : Tm Γ' (a' ×̂ b')}   → ([t] : t ≅T t')
+         → snd t ≅T snd t'
+
+  ▹_   : ∀ {a∞ a∞'}
+         → {t : Tm Γ (force a∞)} {t' : Tm Γ' (force a∞')} → ([t] : t ≅T t')
+         → ▹_ {a∞ = a∞} t ≅T ▹_ {a∞ = a∞'} t'
 
   -- `applicative'
-  _∗_  : ∀{a : Ty}{b∞}{a' : Ty}{b∞'} {t : Tm Γ (▸̂ (delay a ⇒ b∞))}{t' : Tm Γ' (▸̂ (delay a' ⇒ b∞'))}
-         → t ≅T t' → {u : Tm Γ (▸ a)} {u' : Tm Γ' (▸ a')}  → u ≅T u' → (t ∗ u) ≅T (t' ∗ u')
-
-Vrefl : ∀ {Γ : Cxt} {a : Ty} → {x : Var Γ a} → x ≅V x
-Vrefl {x = zero eq} = zero
-Vrefl {x = suc t}   = suc Vrefl
-
-Vsym : ∀ {Γ Γ' : Cxt} {a a' : Ty} → {t : Var Γ a} → {t' : Var Γ' a'} → t ≅V t' → t' ≅V t
-Vsym zero = zero
-Vsym (suc v) = suc (Vsym v)
+  _∗_  : ∀ {a : Ty}{b∞}{a' : Ty}{b∞'}
+         → {t  : Tm Γ  (▸̂ (delay a  ⇒ b∞ ))}
+         → {t' : Tm Γ' (▸̂ (delay a' ⇒ b∞'))}              → ([t] : t ≅T t')
+         → {u : Tm Γ (▸ a)} {u' : Tm Γ' (▸ a')}           → ([u] : u ≅T u')
+         → (t ∗ u) ≅T (t' ∗ u')
 
 Trefl : ∀ {Γ : Cxt} {a : Ty} → {t : Tm Γ a} → t ≅T t
 Trefl {t = var x}     = var Vrefl
@@ -82,13 +146,6 @@ Tsym (pair t u)  = pair (Tsym t) (Tsym u)
 Tsym (fst t)     = fst (Tsym t)
 Tsym (snd t)     = snd (Tsym t)
 
-_≅C_ : Cxt → Cxt → Set
-_≅C_ = ≅L _≅_
-
-castVar : ∀{Γ Δ a b} → (eqC : Γ ≅C Δ) (eq : a ≅ b)  (t : Var Γ a) → Var Δ b
-castVar (x∼y ∷ eqC) eq (zero eq₁) = zero TODO
-castVar (x∼y ∷ eqC) eq (suc x₁) = suc (castVar eqC eq x₁)
-
 castC : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  (t : Tm Γ a)      → Tm Δ b
 castC eqC eq         (var x)     = var (castVar eqC eq x)
 castC eqC (eq →̂ eq₁) (abs t)     = abs (castC (eq ∷ eqC) eq₁ t)
@@ -102,10 +159,6 @@ castC eqC (▸̂ a≅)     (t ∗ t₁)    = (castC eqC (▸̂ (≅delay (≅ref
 cast : ∀{Γ a b} (eq : a ≅ b) (t : Tm Γ a) → Tm Γ b
 cast = castC (≅L.refl ≅refl)
 
-coehV : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (x : Var Γ a) → castVar eqC eq x ≅V x
-coehV (x∼y ∷ eqC) eq (zero eq₁) = zero
-coehV (x∼y ∷ eqC) eq (suc x₁)   = suc (coehV eqC eq x₁)
- 
 coeh : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (t : Tm Γ a) → castC eqC eq t ≅T t
 coeh eqC eq         (var x)     = var (coehV eqC eq x)
 coeh eqC (eq →̂ eq₁) (abs t)     = abs (coeh (eq ∷ eqC) eq₁ t)
@@ -117,7 +170,8 @@ coeh eqC (▸̂ a≅)     (▹ t)       = ▹_ (coeh eqC (≅force a≅) t)
 coeh eqC (▸̂ a≅)     (t ∗ t₁)    = coeh eqC (▸̂ ≅delay (≅refl →̂ ≅force a≅)) t ∗ coeh eqC ≅refl t₁
 
 
--- A more flexible version of _∗_
+-- Variants of _∗_.
+
 ▹app : ∀{Γ c∞ b∞}{a : Ty} (eq : c∞ ∞≅ (delay a ⇒ b∞))
                           (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
 ▹app eq t u = cast (▸̂ eq) t ∗ u
@@ -127,6 +181,8 @@ _∗'_ {a∞ = a∞} t u = _∗_ {a = force a∞} (cast (▸̂ (≅delay ≅refl
 
 _<$>_ : ∀{Γ}{a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
 t <$> u = ▹ t ∗ u
+
+-- Type annotation.
 
 tmId : ∀ {Γ} a → Tm Γ a → Tm Γ a
 tmId a t = t

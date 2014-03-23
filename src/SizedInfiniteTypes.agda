@@ -65,3 +65,17 @@ mutual
 
   ≅sym∞ : ∀{a∞ b∞} → a∞ ∞≅ b∞ → b∞ ∞≅ a∞
   ≅force (≅sym∞ eq) = ≅sym (≅force eq)
+
+mutual
+  ≅trans : ∀ {a b c} → a ≅ b → b ≅ c → a ≅ c
+  ≅trans (eq₁ ×̂ eq₂) (eq₁' ×̂ eq₂') = (≅trans eq₁ eq₁') ×̂ (≅trans eq₂ eq₂')
+  ≅trans (eq₁ →̂ eq₂) (eq₁' →̂ eq₂') = (≅trans eq₁ eq₁') →̂ (≅trans eq₂ eq₂')
+  ≅trans (▸̂ eq) (▸̂ eq') = ▸̂ (≅trans∞ eq eq')
+
+  ≅trans∞ : ∀{a∞ b∞ c∞} → a∞ ∞≅ b∞ → b∞ ∞≅ c∞ → a∞ ∞≅ c∞
+  ≅force (≅trans∞ eq eq') = ≅trans (≅force eq) (≅force eq')
+
+-- Fill a 2-dimensional cube.
+
+≅fill : ∀ {a a' b b'} (a≅b : a ≅ b) (a≅a' : a ≅ a') (a'≅b' : a' ≅ b') → b ≅ b'
+≅fill a≅b a≅a' a'≅b' = ≅trans (≅sym a≅b) (≅trans a≅a' a'≅b')
