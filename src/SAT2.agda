@@ -42,16 +42,16 @@ data Cl (n : ℕ) {a} (𝑨 : TmSet a) {Γ} (t : Tm Γ a) : Set where
 _[→]_ : ∀{a b} → TmSet a → TmSet b → TmSet (a →̂ b)
 (𝓐 [→] 𝓑) {Γ} t = ∀{Δ} (ρ : Δ ≤ Γ) → ρ SubCong.≡s ρ → {u : Tm Δ _} → 𝓐 u → 𝓑 (app (rename ρ t) u)
 
-_[→]↔_ : ∀{a a' b b'} {𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨′ ↔ 𝑨  → 
+_[→]↔_ : ∀{a a' b b'} {𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨′ ↔ 𝑨  →
          ∀{𝑩 : TmSet b}{𝑩′ : TmSet b'} → 𝑩 ↔ 𝑩′ → (𝑨 [→] 𝑩) ↔ (𝑨′ [→] 𝑩′)
-(𝑨 [→]↔ 𝑩) (eq₁ →̂  eq₂) = λ t≅t' 𝒕 ρ ρrefl {u} 𝒖 → let 
-                                     r = 𝒕 ρ ρrefl {cast (≅sym eq₁) u} (𝑨 (≅sym eq₁) (Tsym (coeh (≅L.refl ≅refl) (≅sym eq₁) u)) 𝒖)
-                                in 𝑩 eq₂ (app (SubCong.subst-ext ρrefl t≅t') (coeh (≅L.refl ≅refl) (≅sym eq₁) u)) r
-   
+(𝑨 [→]↔ 𝑩) (eq₁ →̂  eq₂) = λ t≅t' 𝒕 ρ ρrefl {u} 𝒖 → let
+                                     r = 𝒕 ρ ρrefl {cast (≅sym eq₁) u} (𝑨 (≅sym eq₁) (Tsym (coh (≅L.refl ≅refl) (≅sym eq₁) u)) 𝒖)
+                                in 𝑩 eq₂ (app (SubCong.subst-ext ρrefl t≅t') (coh (≅L.refl ≅refl) (≅sym eq₁) u)) r
+
 _[×]_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
 (𝓐 [×] 𝓑) t = 𝓐 (fst t) × 𝓑 (snd t)
 
-_[×]↔_ : ∀{a a' b b'} {𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨 ↔ 𝑨′  → 
+_[×]↔_ : ∀{a a' b b'} {𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨 ↔ 𝑨′  →
          ∀{𝑩 : TmSet b}{𝑩′ : TmSet b'} → 𝑩 ↔ 𝑩′ → (𝑨 [×] 𝑩) ↔ (𝑨′ [×] 𝑩′)
 
 (𝓐 [×]↔ 𝓑) (a ×̂  b) t (f , s) = (𝓐 a (fst t) f) , (𝓑 b (snd t) s)
@@ -62,7 +62,7 @@ data [▸] {a∞} (𝑨 : TmSet (force a∞)) {Γ} : (n : ℕ) → Tm Γ (▸̂ 
   ne  : ∀{n}{t    : Tm Γ (▸̂ a∞)}     (𝒏 : SNe n t)                       → [▸] 𝑨 n t
   exp : ∀{n}{t t' : Tm Γ (▸̂ a∞)}     (t⇒ : t ⟨ n ⟩⇒ t') (𝒕 : [▸] 𝑨 n t') → [▸] 𝑨 n t
 
-[▸]↔_ : ∀{a a' n} {𝑨 : TmSet (force a)} {𝑨′ : TmSet (force a')} → 𝑨 ↔ 𝑨′ → 
+[▸]↔_ : ∀{a a' n} {𝑨 : TmSet (force a)} {𝑨′ : TmSet (force a')} → 𝑨 ↔ 𝑨′ →
          [▸] {a} 𝑨 n ↔ [▸] {a'} 𝑨′ n
 [▸]↔_ 𝓐 (▸̂ a₁) (▹ t₁) ▹0 = ▹0
 [▸]↔_ 𝓐 (▸̂ a₁) (▹ t₁) (▹ 𝒕) = ▹ (𝓐 (≅force a₁) t₁ 𝒕)
@@ -126,7 +126,7 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
 
     CExp :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
     CExp t⇒ 𝒕 ρ ρrefl 𝒖 = SAT.satExp 𝓑 (cong (appl _) (appl _) (subst⇒ (renSN ρ) t⇒)) (𝒕 ρ ρrefl 𝒖)
-    
+
     CRed : βClosed 𝑪
     CRed t→t' 𝒕 ρ ρrefl 𝒖 = satRed 𝓑 (cong (appl _) (appl _) (subst⇒β ρ t→t')) (𝒕 ρ ρrefl 𝒖)
 

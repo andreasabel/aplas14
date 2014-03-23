@@ -63,9 +63,9 @@ castVar : ∀{Γ Δ a b} (Γ≅Δ : Γ ≅C Δ) (a≅b : a ≅ b) (x : Var Γ a)
 castVar (a'≅b' ∷ Γ≅Δ) a≅b (zero a'≅a) = zero (≅fill a'≅b' a'≅a a≅b)
 castVar (_     ∷ Γ≅Δ) a≅b (suc x)     = suc  (castVar Γ≅Δ a≅b x)
 
-coehV : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (x : Var Γ a) → castVar eqC eq x ≅V x
-coehV (x∼y ∷ eqC) eq (zero eq₁) = zero
-coehV (x∼y ∷ eqC) eq (suc x₁)   = suc (coehV eqC eq x₁)
+cohV : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (x : Var Γ a) → castVar eqC eq x ≅V x
+cohV (x∼y ∷ eqC) eq (zero eq₁) = zero
+cohV (x∼y ∷ eqC) eq (suc x₁)   = suc (cohV eqC eq x₁)
 
 -- * Terms
 ------------------------------------------------------------------------
@@ -159,15 +159,15 @@ castC eqC (▸̂ a≅)     (t ∗ t₁)    = (castC eqC (▸̂ (≅delay (≅ref
 cast : ∀{Γ a b} (eq : a ≅ b) (t : Tm Γ a) → Tm Γ b
 cast = castC (≅L.refl ≅refl)
 
-coeh : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (t : Tm Γ a) → castC eqC eq t ≅T t
-coeh eqC eq         (var x)     = var (coehV eqC eq x)
-coeh eqC (eq →̂ eq₁) (abs t)     = abs (coeh (eq ∷ eqC) eq₁ t)
-coeh eqC eq         (app t t₁)  = app (coeh eqC (≅refl →̂ eq) t) (coeh eqC ≅refl t₁)
-coeh eqC (eq ×̂ eq₁) (pair t t₁) = pair (coeh eqC eq t) (coeh eqC eq₁ t₁)
-coeh eqC eq         (fst t)     = fst (coeh eqC (eq ×̂ ≅refl) t)
-coeh eqC eq         (snd t)     = snd (coeh eqC (≅refl ×̂ eq) t)
-coeh eqC (▸̂ a≅)     (▹ t)       = ▹_ (coeh eqC (≅force a≅) t)
-coeh eqC (▸̂ a≅)     (t ∗ t₁)    = coeh eqC (▸̂ ≅delay (≅refl →̂ ≅force a≅)) t ∗ coeh eqC ≅refl t₁
+coh : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (t : Tm Γ a) → castC eqC eq t ≅T t
+coh eqC eq         (var x)     = var (cohV eqC eq x)
+coh eqC (eq →̂ eq₁) (abs t)     = abs (coh (eq ∷ eqC) eq₁ t)
+coh eqC eq         (app t t₁)  = app (coh eqC (≅refl →̂ eq) t) (coh eqC ≅refl t₁)
+coh eqC (eq ×̂ eq₁) (pair t t₁) = pair (coh eqC eq t) (coh eqC eq₁ t₁)
+coh eqC eq         (fst t)     = fst (coh eqC (eq ×̂ ≅refl) t)
+coh eqC eq         (snd t)     = snd (coh eqC (≅refl ×̂ eq) t)
+coh eqC (▸̂ a≅)     (▹ t)       = ▹_ (coh eqC (≅force a≅) t)
+coh eqC (▸̂ a≅)     (t ∗ t₁)    = coh eqC (▸̂ ≅delay (≅refl →̂ ≅force a≅)) t ∗ coh eqC ≅refl t₁
 
 
 -- Variants of _∗_.
