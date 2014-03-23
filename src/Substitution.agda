@@ -197,7 +197,39 @@ weaks : ∀{n}{vt : VarTm n}{a Γ Δ} (σ : RenSub vt Γ Δ) → RenSub vt (Γ) 
 weaks {vt = `Var} σ x = suc (σ x)
 weaks {vt = `Tm} σ x = rename suc (σ x)
 
+
 -- Properties
+
+module SubCong where
+
+  _≡s_ : ∀ {Γ Δ Γ' Δ'} {m n vt1 vt2} → (f : RenSub {m} vt1 Γ Δ)(g : RenSub {n} vt2 Γ' Δ') → Set
+  f ≡s g = (∀ {a a'} {x : Var _ a}{x' : Var _ a'} → x ≅V x' → vt2tm _ (f {a} x) ≅T vt2tm _ (g x'))
+
+  mutual
+    subst-ext : ∀ {Γ Γ' Δ Δ'} {m n vt1 vt2} {f : RenSub {m} vt1 Γ Δ}{g : RenSub {n} vt2 Γ' Δ'} → f ≡s g → ∀ {a} {t : Tm Γ a} {a'} {t' : Tm Γ' a'}
+                → t ≅T t' → subst f t ≅T subst g t'
+    subst-ext f≐g (var v) = f≐g v
+    subst-ext {f = f} {g = g} f≐g (abs t)     = abs (subst-ext (lifts-ext {f = f} {g = g} f≐g) t)
+    subst-ext f≐g (app t t₁)  = app (subst-ext f≐g t) (subst-ext f≐g t₁)
+    subst-ext f≐g (pair t t₁) = pair (subst-ext f≐g t) (subst-ext f≐g t₁)
+    subst-ext f≐g (fst t)     = fst (subst-ext f≐g t)
+    subst-ext f≐g (snd t)     = snd (subst-ext f≐g t)
+    subst-ext f≐g (▹ t)       = ▹_ (subst-ext f≐g t)
+    subst-ext f≐g (t ∗ t₁)    = _∗_ (subst-ext f≐g t) (subst-ext f≐g t₁)
+
+    lifts-ext : ∀ {Γ Δ b} {Γ' Δ' b'} {m n vt1 vt2} {f : RenSub {m} vt1 Γ Δ}{g : RenSub {n} vt2 Γ' Δ'} → f ≡s g → lifts {a = b} f ≡s lifts {a = b'} g
+    lifts-ext {vt1 = `Var} {`Var} f≐g (zero) = var zero
+    lifts-ext {vt1 = `Var} {`Var} {f} {g} f≐g (suc x) with f≐g x 
+    ... | var eq = var (suc eq) 
+    lifts-ext {vt1 = `Var} {`Tm} f≐g (zero) = var zero
+    lifts-ext {vt1 = `Var} {`Tm} {f} {g} f≐g (suc {x' = x'} x) with g x' | f≐g x 
+    ... | ._ | var eq = var (suc eq)
+    lifts-ext {vt1 = `Tm} {`Var} f≐g (zero) = var zero
+    lifts-ext {vt1 = `Tm} {`Var} {f} {g} f≐g (suc {x = x} [x]) with f x | f≐g [x]
+    ... | ._ | var eq = var (suc eq) 
+    lifts-ext {vt1 = `Tm} {`Tm} f≐g (zero) = var zero
+    lifts-ext {vt1 = `Tm} {`Tm} f≐g (suc x) = subst-ext (λ x₂ → var (suc x₂)) (f≐g x)
+
 
 _≡s_ : ∀ {Γ Δ} {m n vt1 vt2} → (f : RenSub {m} vt1 Γ Δ)(g : RenSub {n} vt2 Γ Δ) → Set
 f ≡s g = (∀ {a} x → vt2tm _ (f {a} x) ≡ vt2tm _ (g x))
@@ -212,7 +244,6 @@ mutual
   subst-ext f≐g (snd t)     = ≡.cong snd (subst-ext f≐g t)
   subst-ext f≐g (▹ t)       = ≡.cong ▹_ (subst-ext f≐g t)
   subst-ext f≐g (t ∗ t₁)    = ≡.cong₂ _∗_ (subst-ext f≐g t) (subst-ext f≐g t₁)
---  subst-ext f≐g (cast eq t) = ≡.cong (cast eq) (subst-ext f≐g t)
 
   lifts-ext : ∀ {Γ Δ b} {m n vt1 vt2} {f : RenSub {m} vt1 Γ Δ}{g : RenSub {n} vt2 Γ Δ} → f ≡s g → lifts {a = b} f ≡s lifts g
   lifts-ext {vt1 = `Var} {`Var} f≐g (zero _) = ≡.refl
@@ -238,7 +269,6 @@ mutual
   subst-∙ τ σ (snd t)     = ≡.cong snd (subst-∙ τ σ t)
   subst-∙ τ σ (▹ t)       = ≡.cong ▹_ (subst-∙ τ σ t)
   subst-∙ τ σ (t ∗ t₁)    = ≡.cong₂ _∗_ (subst-∙ τ σ t) (subst-∙ τ σ t₁)
---  subst-∙ τ σ (cast eq t) = ≡.cong (cast eq) (subst-∙ τ σ t)
 
   lifts-∙ : ∀ {Γ₀ Γ₁ Γ₂}
          {n}{vt2 : VarTm n}(τ : RenSub vt2 Γ₁ Γ₂)
@@ -263,7 +293,6 @@ mutual
   subst-id (snd t)     = ≡.cong snd (subst-id t)
   subst-id (▹ t)       = ≡.cong ▹_ (subst-id t)
   subst-id (t ∗ t₁)    = ≡.cong₂ _∗_ (subst-id t) (subst-id t₁)
---  subst-id (cast eq t) = ≡.cong (cast eq) (subst-id t)
 
   lifts-id : ∀ {m vt Γ b} → lifts {a = b} (ids {m} {vt} {Γ = Γ}) ≡s ids {m} {vt} {Γ = b ∷ Γ}
   lifts-id {vt = `Var} (zero _)    = ≡.refl
