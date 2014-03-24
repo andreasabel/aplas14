@@ -149,7 +149,9 @@ mutual
       helper (u ∗l) (.u ∗l) t⇒₁ (.u ∗l) (.u ∗l) th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong (_ ∗l) (_ ∗l) h⇒tm) , (cong* (_ ∗l) (_ ∗l) tm⇒β)))
       helper (∗r t₂) (∗r .t₂) t⇒₁ (t₁ ∗l) (.t₁ ∗l) th⇒₁ = TODO
       helper (t₂ ∗l) (.t₂ ∗l) t⇒₁ (∗r t) (∗r .t) th⇒₁ = TODO
-      helper (∗r .(▹ t)) (∗r .(▹ t)) t⇒₁ (∗r t) (∗r .t) th⇒₁ = TODO
+      helper (∗r .(▹ t)) (∗r .(▹ t)) t⇒₁ (∗r t) (∗r .t) th⇒₁ with beta-shr t⇒₁ th⇒₁ 
+      ... | inj₁ ≡.refl = inj₁ ≡.refl
+      ... | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong (∗r _) (∗r _) h⇒tm) , cong* (∗r _) (∗r _) tm⇒β))
 
   mapβSNe : ∀ {n}{a} {Γ} {t t' : Tm Γ a} → t ⇒β t' → SNe n t → SNe n t'
   mapβSNe β                                     (elim (elim 𝒏 ()) (appl 𝒖))
