@@ -12,6 +12,6 @@ import SN.AntiRename
 import SN.AntiSubst
 import Reduction
 import SAT2
-import Soundness
-import SAT
+-- import Soundness
+-- import SAT
 
