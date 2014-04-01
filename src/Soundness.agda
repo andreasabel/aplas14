@@ -18,8 +18,20 @@ open import SAT2
 ⟦_⟧_ : (a : Ty) (n : ℕ) → SAT a n
 ⟦ a ×̂ b ⟧ n     = ⟦ a ⟧ n ⟦×⟧ ⟦ b ⟧ n
 ⟦ a →̂ b ⟧ n     = ⟦ a ⟧ n ⟦→⟧ ⟦ b ⟧ n
-⟦ ▸̂ a∞  ⟧ zero  = ⟦▸⟧ _
-⟦ ▸̂ a∞  ⟧ suc n = ⟦▸⟧ ⟦ force a∞ ⟧ n
+⟦ ▸̂ a∞  ⟧ n  = ⟦▸⟧ P a∞ n 
+  where
+    P : ∀ a∞ n → SATpred (force a∞) n
+    P a∞₁ zero = _
+    P a∞₁ (suc n₁) = ⟦ force a∞₁ ⟧ n₁
+
+map⟦_⟧ : ∀ (a : Ty) → ∀ {m n} → m ≤ℕ n → ∀ {Γ} {t : Tm Γ a} → t ∈ ⟦ a ⟧ n → t ∈ ⟦ a ⟧ m
+map⟦_⟧ (a ×̂ a₁) m≤n       (↿ (t1 , t2) ) = ↿ ((⇃ map⟦ a ⟧ m≤n (↿ t1)) , (⇃ map⟦ a₁ ⟧ m≤n (↿ t2)))
+map⟦_⟧ (a →̂ a₁) m≤n       (↿ 𝑡)          = ↿ (λ ρ ρrefl 𝑢 → ⇃ (map⟦ a₁ ⟧ m≤n (↿ (𝑡 ρ ρrefl {!𝑢!})))) -- we need to kripke for depths too?
+map⟦_⟧ (▸̂ a∞)   z≤n       (↿ ▹0)         = ↿ ▹0
+map⟦_⟧ (▸̂ a∞)   z≤n       (↿ (▹ 𝒕))      = ↿ ▹0
+map⟦_⟧ (▸̂ a∞)   (s≤s m≤n) (↿ (▹ 𝒕))      = ↿ (▹ (⇃ map⟦ force a∞ ⟧ m≤n (↿ 𝒕)))
+map⟦_⟧ (▸̂ a∞)   m≤n       (↿ ne 𝒏)       = ↿ ne (mapSNe m≤n 𝒏)
+map⟦_⟧ (▸̂ a∞)   m≤n       (↿ exp t⇒ 𝑡)   = ↿ (exp (map⇒ m≤n t⇒) (⇃ map⟦ (▸̂ a∞) ⟧ m≤n (↿ 𝑡)))
 
 -- Context interpretation (semantic substitutions)
 
@@ -91,6 +103,6 @@ sound (snd t) θ = ↿ (proj₂ (⇃ (sound t θ)))
 -- sound (fst t) θ = ⟦fst⟧ (sound t θ)  -- YELLOW, why?
 -- sound (snd t) θ = ⟦snd⟧ (sound t θ)
 sound {zero} (▹ t) θ = ↿ ▹0
-sound {suc n} (▹ t) θ = ↿ (▹ (⇃ sound t {!!}))
+sound {suc n} (▹ t) θ = ↿ (▹ (⇃ sound t (λ x → map⟦ _ ⟧ n≤sn (θ x))))
 sound (t ∗ t₁) {σ} θ = ⟦∗⟧ (sound t θ) (sound t₁ θ)
 
