@@ -34,7 +34,7 @@ data βEhole {Γ : Cxt} : {Δ : Cxt} {b a : Ty} → Tm Γ b → βECxt Γ Δ a b
   _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a))                     → βEhole {a = (▸̂ (delay a ⇒ b∞))} (t ∗ u) (u ∗l) t
   ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → βEhole ((t ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
   abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → βEhole (abs t) abs t
-  ▹_    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → βEhole (▹_ {a∞ = a∞} t) ▹_ t 
+  ▹_    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → βEhole (▹_ {a∞ = a∞} t) ▹_ t
 
 
 mkHole : ∀ {Γ Δ} {a b} (E : βECxt Γ Δ a b) {t} → Σ _ \ E[t] → βEhole E[t] E t
@@ -48,7 +48,7 @@ mkHole (u ∗l)    = _ , u ∗l
 mkHole (∗r t)    = _ , ∗r t
 mkHole abs       = _ , abs
 mkHole ▹_        = _ , ▹_
- 
+
 data _⇒β_ {Γ} : ∀ {a} → Tm Γ a → Tm Γ a → Set where
 
   β     : ∀ {a b}{t : Tm (a ∷ Γ) b}{u}
@@ -72,7 +72,7 @@ data _⇒β_ {Γ} : ∀ {a} → Tm Γ a → Tm Γ a → Set where
 
 subst⇒β : ∀ {m vt a Γ} {t t' : Tm Γ a} {Δ}
            (σ : RenSub {m} vt Γ Δ) → t ⇒β t' → subst σ t ⇒β subst σ t'
-subst⇒β σ (β {t = t} {u = u})            = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⇒β t') 
+subst⇒β σ (β {t = t} {u = u})            = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⇒β t')
                                                    (sgs-lifts-term {σ = σ} {u} {t})
                                            β
 subst⇒β σ β▹                             = β▹
@@ -89,7 +89,7 @@ subst⇒β σ (cong ▹_ ▹_ t⇒)                = cong ▹_ ▹_ (subst⇒β 
 subst⇒β σ (cong (pairr t) (pairr ._) t⇒) = cong (pairr (subst σ t)) (pairr _) (subst⇒β σ t⇒)
 subst⇒β σ (cong (pairl u) (pairl ._) t⇒) = cong (pairl (subst σ u)) (pairl _) (subst⇒β σ t⇒)
 
-castC⇒β : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  {t t' : Tm Γ a} → t ⇒β t' → castC eqC eq t ⇒β castC eqC eq t'  
+castC⇒β : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  {t t' : Tm Γ a} → t ⇒β t' → castC eqC eq t ⇒β castC eqC eq t'
 castC⇒β eqC eq     β    = TODO
 castC⇒β eqC (▸̂ a≅) β▹   = β▹
 castC⇒β eqC eq     βfst = βfst
@@ -108,10 +108,10 @@ castC⇒β eqC (▸̂ a≅)     (cong ▹_ ▹_ t⇒)                  = cong �
 data _⇒β*_ {Γ} {a} : Tm Γ a → Tm Γ a → Set where
   []  : ∀ {t} → t ⇒β* t
   _∷_ : ∀ {ti tm to} → ti ⇒β tm → tm ⇒β* to → ti ⇒β* to
- 
+
 _++β_ : ∀ {Γ} {a} {t₀ t₁ t₂ : Tm Γ a} → t₀ ⇒β* t₁ → t₁ ⇒β* t₂ → t₀ ⇒β* t₂
 [] ++β ys = ys
-(x ∷ xs) ++β ys = x ∷ (xs ++β ys) 
+(x ∷ xs) ++β ys = x ∷ (xs ++β ys)
 
 cong* : ∀ {a Γ Δ} {b} {t tβ* : Tm Γ a} {E : βECxt Δ Γ a b}{E[t] E[tβ*]} → βEhole E[t] E t → βEhole E[tβ*] E tβ* → t ⇒β* tβ* → E[t] ⇒β* E[tβ*]
 cong* (appl u)   (appl .u)   []       = []
@@ -134,9 +134,16 @@ castC⇒β* : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  {t t' : Tm Γ a}
 castC⇒β* eqC eq []       = []
 castC⇒β* eqC eq (x ∷ xs) = castC⇒β eqC eq x ∷ castC⇒β* eqC eq xs
 
+-- map⇒β : ∀ {m n} → .(m ≤ℕ n) → ∀ {Γ a}{t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → t ⟨ m ⟩⇒ t'
+-- map⇒β m≤n (β t∈SN) = β (mapSN m≤n t∈SN)
+-- map⇒β m≤n (β▹ {a = a}) = β▹ {a = a}
+-- map⇒β m≤n (βfst t∈SN) = βfst (mapSN m≤n t∈SN)
+-- map⇒β m≤n (βsnd t∈SN) = βsnd (mapSN m≤n t∈SN)
+-- map⇒β m≤n (cong Et Et' t→t') = cong Et Et' (map⇒ m≤n t→t')
+
 mutual
-  subst⇒β* : ∀ {m vt a Γ} {Δ} {σ ρ : RenSub {m} vt Γ Δ} → (∀ {b} (x : Var Γ b) → vt2tm _ (σ x) ⇒β* vt2tm _ (ρ x)) 
-             → (t : Tm Γ a) → subst σ t ⇒β* subst ρ t  
+  subst⇒β* : ∀ {m vt a Γ} {Δ} {σ ρ : RenSub {m} vt Γ Δ} → (∀ {b} (x : Var Γ b) → vt2tm _ (σ x) ⇒β* vt2tm _ (ρ x))
+             → (t : Tm Γ a) → subst σ t ⇒β* subst ρ t
   subst⇒β* σ₁ (var x) = σ₁ x
   subst⇒β* {vt = vt} σ₁ (abs t) = cong* abs abs (subst⇒β* (lifts⇒β* {vt = vt} σ₁) t)
   subst⇒β* σ₁ (app t t₁) = cong* (appl _) (appl _) (subst⇒β* σ₁ t) ++β cong* (appr _) (appr _) (subst⇒β* σ₁ t₁)
@@ -148,8 +155,8 @@ mutual
   subst⇒β* σ₁ (t ∗ t₁) = cong* (_ ∗l) (_ ∗l) (subst⇒β* σ₁ t) ++β
                            cong* (∗r _) (∗r _) (subst⇒β* σ₁ t₁)
 
-  lifts⇒β* : ∀ {m vt a Γ} {Δ} {σ ρ : RenSub {m} vt Γ Δ} → (∀ {b} (x : Var Γ b) → vt2tm _ (σ x) ⇒β* vt2tm _ (ρ x)) 
-             →  (∀ {b} (x : Var (a ∷ Γ) b) → vt2tm _ (lifts {a = a} σ x) ⇒β* vt2tm _ (lifts {a = a} ρ x)) 
+  lifts⇒β* : ∀ {m vt a Γ} {Δ} {σ ρ : RenSub {m} vt Γ Δ} → (∀ {b} (x : Var Γ b) → vt2tm _ (σ x) ⇒β* vt2tm _ (ρ x))
+             →  (∀ {b} (x : Var (a ∷ Γ) b) → vt2tm _ (lifts {a = a} σ x) ⇒β* vt2tm _ (lifts {a = a} ρ x))
   lifts⇒β* {vt = `Var} σ₁ (zero eq) = []
   lifts⇒β* {vt = `Tm}  σ₁ (zero eq) = []
   lifts⇒β* {vt = `Var} σ₁ (suc x)   = subst⇒β*₀ {vt = `Var} suc (σ₁ x)
@@ -159,7 +166,7 @@ mutual
   beta-shr : ∀ {n}{a} {Γ} {t tβ th : Tm Γ a} → t ⇒β tβ → t ⟨ n ⟩⇒ th → (tβ ≡ th) ⊎ Σ _ \ t' → tβ ⟨ n ⟩⇒ t' × th ⇒β* t'
   beta-shr β (β 𝒖)                                                   = inj₁ ≡.refl
   beta-shr (cong (appl u) (appl .u) (cong abs abs tβ⇒)) (β 𝒖)        = inj₂ (_ , β 𝒖 , (subst⇒β (sgs u) tβ⇒ ∷ []))
-  beta-shr (cong (appr ._) (appr ._) tβ⇒) (β {t = t} 𝒖)              
+  beta-shr (cong (appr ._) (appr ._) tβ⇒) (β {t = t} 𝒖)
     = inj₂ (_ , β (mapβSN tβ⇒ 𝒖) , subst⇒β* {vt = `Tm} (λ { {._} (zero eq) → castC⇒β (≅L.refl ≅refl) eq tβ⇒ ∷ [] ; (suc x) → [] }) t)
   beta-shr β▹ β▹                                                     = inj₁ ≡.refl
   beta-shr (cong (._ ∗l) (._ ∗l) (cong ▹_ ▹_ tβ⇒)) β▹                = inj₂ (_ , β▹ , cong ▹_ ▹_ (cong (appl _) (appl _) tβ⇒) ∷ [])
@@ -188,24 +195,24 @@ mutual
          t₂ ⟨ n ⟩⇒ tb →
          tβ ≡ th ⊎
          Σ (Tm Γ a) (λ tm → Σ (tβ ⟨ n ⟩⇒ tm) (λ x → th ⇒β* tm))
-      helper (appl u) (appl .u) t⇒₁ (appl .u) (appl .u) th⇒₁ with beta-shr t⇒₁ th⇒₁ 
+      helper (appl u) (appl .u) t⇒₁ (appl .u) (appl .u) th⇒₁ with beta-shr t⇒₁ th⇒₁
       helper (appl u) (appl .u) t⇒₁ (appl .u) (appl .u) th⇒₁ | inj₁ ≡.refl = inj₁ ≡.refl
-      helper (appl u) (appl .u) t⇒₁ (appl .u) (appl .u) th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β) 
+      helper (appl u) (appl .u) t⇒₁ (appl .u) (appl .u) th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β)
              = inj₂ (_ , cong (appl _) (appl _) h⇒tm , cong* (appl _) (appl _) tm⇒β)
       helper (appr t₂) (appr .t₂) t⇒₁ (appl t₁) (appl .t₁) th⇒₁ = inj₂ (_ , cong (appl _) (appl _) th⇒₁ , (cong (appr _) (appr _) t⇒₁ ∷ []))
-      helper fst fst t⇒₁ fst fst th⇒₁ with beta-shr t⇒₁ th⇒₁ 
+      helper fst fst t⇒₁ fst fst th⇒₁ with beta-shr t⇒₁ th⇒₁
       helper fst fst t⇒₁ fst fst th⇒₁ | inj₁ x = inj₁ (≡.cong fst x)
       helper fst fst t⇒₁ fst fst th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong fst fst h⇒tm) , cong* fst fst tm⇒β))
-      helper snd snd t⇒₁ snd snd th⇒₁ with beta-shr t⇒₁ th⇒₁ 
+      helper snd snd t⇒₁ snd snd th⇒₁ with beta-shr t⇒₁ th⇒₁
       helper snd snd t⇒₁ snd snd th⇒₁ | inj₁ x = inj₁ (≡.cong snd x)
       helper snd snd t⇒₁ snd snd th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong snd snd h⇒tm) , cong* snd snd tm⇒β))
-      helper (u ∗l) (.u ∗l) t⇒₁ (.u ∗l) (.u ∗l) th⇒₁ with beta-shr t⇒₁ th⇒₁ 
+      helper (u ∗l) (.u ∗l) t⇒₁ (.u ∗l) (.u ∗l) th⇒₁ with beta-shr t⇒₁ th⇒₁
       helper (u ∗l) (.u ∗l) t⇒₁ (.u ∗l) (.u ∗l) th⇒₁ | inj₁ ≡.refl = inj₁ ≡.refl
       helper (u ∗l) (.u ∗l) t⇒₁ (.u ∗l) (.u ∗l) th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong (_ ∗l) (_ ∗l) h⇒tm) , (cong* (_ ∗l) (_ ∗l) tm⇒β)))
-      helper (∗r t₂) (∗r .t₂) t⇒₁ (t₁ ∗l) (.t₁ ∗l) th⇒₁ = inj₂ (_ , ((cong (_ ∗l) (_ ∗l) th⇒₁) , (cong (∗r _) (∗r _) t⇒₁ ∷ []))) 
-      helper (t₂ ∗l) (.t₂ ∗l) (cong ▹_ ▹_ t⇒₁) (∗r t) (∗r .t) th⇒₁ 
+      helper (∗r t₂) (∗r .t₂) t⇒₁ (t₁ ∗l) (.t₁ ∗l) th⇒₁ = inj₂ (_ , ((cong (_ ∗l) (_ ∗l) th⇒₁) , (cong (∗r _) (∗r _) t⇒₁ ∷ [])))
+      helper (t₂ ∗l) (.t₂ ∗l) (cong ▹_ ▹_ t⇒₁) (∗r t) (∗r .t) th⇒₁
             = inj₂ (_ , ((cong (∗r _) (∗r _) th⇒₁) , (cong (_ ∗l) (_ ∗l) (cong ▹_ ▹_ t⇒₁) ∷ [])))
-      helper (∗r .(▹ t)) (∗r .(▹ t)) t⇒₁ (∗r t) (∗r .t) th⇒₁ with beta-shr t⇒₁ th⇒₁ 
+      helper (∗r .(▹ t)) (∗r .(▹ t)) t⇒₁ (∗r t) (∗r .t) th⇒₁ with beta-shr t⇒₁ th⇒₁
       ... | inj₁ ≡.refl = inj₁ ≡.refl
       ... | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong (∗r _) (∗r _) h⇒tm) , cong* (∗r _) (∗r _) tm⇒β))
 
@@ -238,7 +245,7 @@ mutual
   mapβSN (cong (pairr t₁)  (pairr .t₁) t⇒) (pair 𝒕 𝒕₁) = pair 𝒕 (mapβSN t⇒ 𝒕₁)
   mapβSN (cong ▹_ ▹_ t⇒)   ▹0                          = ▹0
   mapβSN (cong ▹_ ▹_ t⇒)   (▹ 𝒕)                       = ▹ mapβSN t⇒ 𝒕
-  mapβSN t⇒                (exp t⇒₁ 𝒕)                 with beta-shr t⇒ t⇒₁ 
+  mapβSN t⇒                (exp t⇒₁ 𝒕)                 with beta-shr t⇒ t⇒₁
   mapβSN t⇒ (exp t⇒₁ 𝒕) | inj₁ ≡.refl = 𝒕
   mapβSN t⇒ (exp t⇒₁ 𝒕) | inj₂ (_ , t⇒h , t⇒β*) = exp t⇒h (mapβ*SN t⇒β* 𝒕)
 

@@ -168,27 +168,28 @@ sneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
 -- Functoriality of the SN-notions wrt. evaluation depth n.
 
 mutual
-  mapSNe : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SNe n t -> SNe m t
+  mapSNe : ∀ {m n} → .(m ≤ℕ n) → ∀ {Γ a}{t : Tm Γ a} → SNe n t -> SNe m t
   mapSNe m≤n (var x) = var x
   mapSNe m≤n (elim t∈Ne E∈SNh) = elim (mapSNe m≤n t∈Ne) (mapSNh m≤n E∈SNh)
 
-  mapSN : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SN n t -> SN m t
+  mapSN : ∀ {m n} → .(m ≤ℕ n) → ∀ {Γ a}{t : Tm Γ a} → SN n t -> SN m t
   mapSN m≤n (ne u∈SNe) = ne (mapSNe m≤n u∈SNe)
   mapSN m≤n (abs t∈SN) = abs (mapSN m≤n t∈SN)
   mapSN m≤n (pair t∈SN u∈SN) = pair (mapSN m≤n t∈SN) (mapSN m≤n u∈SN)
-  mapSN z≤n ▹0 = ▹0
-  mapSN z≤n (▹ t∈SN) = ▹0
-  mapSN (s≤s m≤n) (▹ t∈SN) = ▹ mapSN m≤n t∈SN
+  mapSN {m = zero} _z≤n ▹0 = ▹0
+  mapSN {m = zero} _z≤n (▹ t∈SN) = ▹0
+  mapSN {m = suc m} () ▹0
+  mapSN {m = suc m}{n = suc n} sm≤sn (▹ t∈SN) = ▹ mapSN (pred≤ℕ sm≤sn) t∈SN
   mapSN m≤n (exp t→t' t∈SN) = exp (map⇒ m≤n t→t') (mapSN m≤n t∈SN)
 
-  map⇒ : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → t ⟨ m ⟩⇒ t'
+  map⇒ : ∀ {m n} → .(m ≤ℕ n) → ∀ {Γ a}{t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → t ⟨ m ⟩⇒ t'
   map⇒ m≤n (β t∈SN) = β (mapSN m≤n t∈SN)
   map⇒ m≤n (β▹ {a = a}) = β▹ {a = a}
   map⇒ m≤n (βfst t∈SN) = βfst (mapSN m≤n t∈SN)
   map⇒ m≤n (βsnd t∈SN) = βsnd (mapSN m≤n t∈SN)
   map⇒ m≤n (cong Et Et' t→t') = cong Et Et' (map⇒ m≤n t→t')
 
-  mapSNh : ∀ {m n} → m ≤ℕ n → ∀ {Γ a b}{E : ECxt Γ a b}{Et t} → SNhole n Et E t -> SNhole m Et E t
+  mapSNh : ∀ {m n} → .(m ≤ℕ n) → ∀ {Γ a b}{E : ECxt Γ a b}{Et t} → SNhole n Et E t -> SNhole m Et E t
   mapSNh m≤n (appl u∈SN) = appl (mapSN m≤n u∈SN)
   mapSNh m≤n fst = fst
   mapSNh m≤n snd = snd

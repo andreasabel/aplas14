@@ -38,6 +38,10 @@ caseMax {suc m} {suc n} P pn pm = caseMax (P ∘ suc) (pn ∘ s≤s) (pm ∘ s�
 n≤sn : ∀{n} → n ≤ℕ suc n
 n≤sn = (z≤n {1}) +-mono DecTotalOrderℕ.refl
 
+pred≤ℕ : ∀{n m} → suc n ≤ℕ suc m → n ≤ℕ m
+pred≤ℕ (s≤s p) = p
+
+
 record ⊤ {a} : Set a where
 
 -- TODOs
