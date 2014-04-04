@@ -47,6 +47,9 @@ map⟦_⟧∈ a m≤n (↿ 𝑡) = ↿ (map⟦ a ⟧ ≤ℕ.refl ≤ℕ.refl m�
 
 -- Context interpretation (semantic substitutions)
 
+⟦_⟧C⟨_⟩ : ∀ Γ {n m} → .(m ≤ℕ n) → ∀ {Δ} (σ : Subst Γ Δ) → Set
+⟦ Γ ⟧C⟨ m≤n ⟩  σ = ∀ {a} (x : Var Γ a) → σ x ∈⟨ m≤n ⟩ ⟦ a ⟧ _
+
 ⟦_⟧C : ∀ Γ n {Δ} (σ : Subst Γ Δ) → Set
 ⟦ Γ ⟧C n σ = ∀ {a} (x : Var Γ a) → σ x ∈ ⟦ a ⟧ n
 
@@ -54,14 +57,14 @@ map⟦_⟧∈ a m≤n (↿ 𝑡) = ↿ (map⟦ a ⟧ ≤ℕ.refl ≤ℕ.refl m�
 -- Lift θ (zero eq) = ↿ SAT.satSNe (⟦ _ ⟧ _) (var (zero eq))
 -- Lift θ (suc x)   = {! θ x !}  -- TODO: semantic types closed under renaming
 
-Ext : ∀ {a n Δ Γ} {t : Tm Δ a} (𝒕 : t ∈ ⟦ a ⟧ n) →
-      ∀ {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → ⟦ a ∷ Γ ⟧C n (t ∷s σ)
-Ext {a} 𝒕 θ (zero eq) = {! 𝒕 !} -- need to cast
-Ext {a} 𝒕 θ (suc x) = θ x
+Ext : ∀ {a n Δ Γ} {t : Tm Δ a} → ∀ {m} .(m≤n : m ≤ℕ n) → (𝒕 : t ∈⟨ m≤n ⟩ ⟦ a ⟧ n) →
+      ∀ {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C⟨ m≤n ⟩ σ) → ⟦ a ∷ Γ ⟧C⟨ m≤n ⟩ (t ∷s σ)
+Ext {a} m≤n 𝒕 θ (zero eq) = {! 𝒕 !} -- need to cast
+Ext {a} m≤n 𝒕 θ (suc x) = θ x
 
-Rename : ∀ {n Δ Δ'} (ρ : Ren Δ Δ') →
-         ∀ {Γ}{σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) →
-         ⟦ Γ ⟧C n (ρ •s σ)
+Rename : ∀ {n Δ Δ'} → ∀ {m} .(m≤n : m ≤ℕ n) → (ρ : Ren Δ Δ') →
+         ∀ {Γ}{σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C⟨ m≤n ⟩ σ) →
+         ⟦ Γ ⟧C⟨ m≤n ⟩ (ρ •s σ)
 Rename ρ θ x = {!!} -- TODO: semantic types closed under renaming
 
 ⟦∗⟧ : ∀ {n Γ}{a : Ty} {b∞} {t : Tm Γ (▸̂ ((delay a) ⇒ b∞))} {u : Tm Γ (▸ a)}
@@ -78,43 +81,80 @@ Rename ρ θ x = {!!} -- TODO: semantic types closed under renaming
 ⟦∗⟧ {suc n} {a = a} {b∞ = b∞} (↿ (▹ 𝒕)) (↿ ne 𝒏)   = ↿ ne (elim 𝒏 (∗r (▹ ( SAT.satSN ((⟦ a ⟧ n) ⟦→⟧ (⟦ force b∞ ⟧ n)) ≤ℕ.refl 𝒕))))
 
 -- Soundness
--- We probably need to generalize like map⟦_⟧ instead.
-mutual
-  sound : ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → subst σ t ∈ ⟦ a ⟧ n
-  sound (var x) θ = θ x
-  sound {n = n} (abs t) {σ = σ} θ = ⟦abs⟧ {n = n} {𝓐 = ⟦ _ ⟧ n} {𝓑 = ⟦ _ ⟧ n} (λ m≤n ρ {u} 𝒖 →
-    let open ≡-Reasoning
-        eq : subst (u ∷s (ρ •s σ)) t ≡ subst0 u (subst (lifts ρ) (subst (lifts σ) t))
-        eq = begin
+{-
+sound : ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → subst σ t ∈ ⟦ a ⟧ n
+sound (var x) θ = θ x
+sound {n = n} (abs t) {σ = σ} θ = ⟦abs⟧ {n = n} {𝓐 = ⟦ _ ⟧ n} {𝓑 = ⟦ _ ⟧ n} (λ m≤n ρ {u} 𝒖 →
+  let open ≡-Reasoning
+      eq : subst (u ∷s (ρ •s σ)) t ≡ subst0 u (subst (lifts ρ) (subst (lifts σ) t))
+      eq = begin
 
-               subst (u ∷s (ρ •s σ)) t
+             subst (u ∷s (ρ •s σ)) t
 
-             ≡⟨ subst-ext (cons-to-sgs u _) t ⟩
+           ≡⟨ subst-ext (cons-to-sgs u _) t ⟩
 
-                subst (sgs u •s lifts (ρ •s σ)) t
+              subst (sgs u •s lifts (ρ •s σ)) t
 
-             ≡⟨ subst-∙ _ _ t ⟩
+           ≡⟨ subst-∙ _ _ t ⟩
 
-               subst0 u (subst (lifts (ρ •s σ)) t)
+             subst0 u (subst (lifts (ρ •s σ)) t)
 
-             ≡⟨ ≡.cong (subst0 u) (subst-ext (lifts-∙ ρ σ) t) ⟩
+           ≡⟨ ≡.cong (subst0 u) (subst-ext (lifts-∙ ρ σ) t) ⟩
 
-               subst0 u (subst (lifts ρ •s lifts σ) t)
+             subst0 u (subst (lifts ρ •s lifts σ) t)
 
-             ≡⟨ ≡.cong (subst0 u) (subst-∙ (lifts ρ) (lifts σ) t) ⟩
+           ≡⟨ ≡.cong (subst0 u) (subst-∙ (lifts ρ) (lifts σ) t) ⟩
 
-               subst0 u (subst (lifts ρ) (subst (lifts σ) t))
-             ∎
-    in  ≡.subst (λ tu → tu ∈⟨ m≤n ⟩ (⟦ _ ⟧ n)) eq (sound≤ t {!𝒖 !} m≤n))
-  sound (app t u   ) θ = ⟦app⟧ (sound t θ) (sound u θ)
-  sound (pair t₁ t₂) θ = ⟦pair⟧ (sound t₁ θ) (sound t₂ θ)
-  sound (fst t) θ = ↿ (proj₁ (⇃ (sound t θ)))
-  sound (snd t) θ = ↿ (proj₂ (⇃ (sound t θ)))
-  -- sound (fst t) θ = ⟦fst⟧ (sound t θ)  -- YELLOW, why?
-  -- sound (snd t) θ = ⟦snd⟧ (sound t θ)
-  sound {zero} (▹ t) θ = ↿ ▹0
-  sound {suc n} (▹ t) θ = ↿ (▹ (⇃ sound t (λ x → map⟦ _ ⟧∈ n≤sn (θ x))))
-  sound (t ∗ t₁) {σ} θ = ⟦∗⟧ (sound t θ) (sound t₁ θ)
+             subst0 u (subst (lifts ρ) (subst (lifts σ) t))
+           ∎
+  in  ≡.subst (λ tu → tu ∈⟨ m≤n ⟩ (⟦ _ ⟧ n)) eq {! (sound t {!𝒖 !} m≤n) !})
+sound (app t u   ) θ = ⟦app⟧ (sound t θ) (sound u θ)
+sound (pair t₁ t₂) θ = ⟦pair⟧ (sound t₁ θ) (sound t₂ θ)
+sound (fst t) θ = ↿ (proj₁ (⇃ (sound t θ)))
+sound (snd t) θ = ↿ (proj₂ (⇃ (sound t θ)))
+-- sound (fst t) θ = ⟦fst⟧ (sound t θ)  -- YELLOW, why?
+-- sound (snd t) θ = ⟦snd⟧ (sound t θ)
+sound {zero} (▹ t) θ = ↿ ▹0
+sound {suc n} (▹ t) θ = ↿ (▹ (⇃ sound t (λ x → map⟦ _ ⟧∈ n≤sn (θ x))))
+sound (t ∗ t₁) {σ} θ = ⟦∗⟧ (sound t θ) (sound t₁ θ)
+-}
 
-  sound≤ : ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → ∀ {m} .(m≤n : m ≤ℕ n) → subst σ t ∈⟨ m≤n ⟩ ⟦ a ⟧ n
-  sound≤ t θ m≤n = {!!}
+sound≤ : ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} → ∀ {m} .(m≤n : m ≤ℕ n) → (θ : ⟦ Γ ⟧C⟨ m≤n ⟩ σ) →  subst σ t ∈⟨ m≤n ⟩ ⟦ a ⟧ n
+sound≤ (var x)     m≤n θ = θ x
+sound≤ {n} (abs {a = a} {b = b} t) {σ = σ}    m≤n θ = ⟦abs⟧ {𝓐 = ⟦ _ ⟧ _} {𝓑 = ⟦ _ ⟧ _} m≤n (λ l≤m ρ {u} 𝑢 → 
+  let open ≡-Reasoning
+      eq : subst (u ∷s (ρ •s σ)) t ≡ subst0 u (subst (lifts ρ) (subst (lifts σ) t))
+      eq = begin
+
+             subst (u ∷s (ρ •s σ)) t
+
+           ≡⟨ subst-ext (cons-to-sgs u _) t ⟩
+
+              subst (sgs u •s lifts (ρ •s σ)) t
+
+           ≡⟨ subst-∙ _ _ t ⟩
+
+             subst0 u (subst (lifts (ρ •s σ)) t)
+
+           ≡⟨ ≡.cong (subst0 u) (subst-ext (lifts-∙ ρ σ) t) ⟩
+
+             subst0 u (subst (lifts ρ •s lifts σ) t)
+
+           ≡⟨ ≡.cong (subst0 u) (subst-∙ (lifts ρ) (lifts σ) t) ⟩
+
+             subst0 u (subst (lifts ρ) (subst (lifts σ) t))
+           ∎
+  in
+                                 ≡.subst (λ tu → tu ∈⟨ ≤ℕ.trans l≤m m≤n ⟩ (⟦ b ⟧ n)) eq (sound≤ t (≤ℕ.trans l≤m m≤n) 
+                   (Ext (≤ℕ.trans l≤m m≤n) 𝑢 (Rename (≤ℕ.trans l≤m m≤n) ρ (λ {a} x → ↿ (map⟦ a ⟧ (≤ℕ.trans l≤m m≤n) m≤n l≤m (⇃ θ x)))))))
+sound≤ (app t t₁)  m≤n θ = ⟦app⟧ m≤n (sound≤ t m≤n θ) (sound≤ t₁ m≤n θ)
+sound≤ (pair t t₁) m≤n θ = {!!}
+sound≤ (fst t)     m≤n θ = {!!}
+sound≤ (snd t)     m≤n θ = {!!}
+sound≤ (t ∗ t₁)    m≤n θ = {!!}
+sound≤         (▹ t) {m = zero}  m≤n θ = ↿ ▹0
+sound≤ {zero}  (▹ t) {m = suc m} ()  θ 
+sound≤ {suc n} (▹ t) {m = suc m} m≤n θ = ↿ (▹ (⇃ sound≤ t (pred≤ℕ m≤n) (λ {a} x → ↿ map⟦ a ⟧ (pred≤ℕ m≤n) m≤n n≤sn (⇃ θ x))))
+
+sound : ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → subst σ t ∈ ⟦ a ⟧ n
+sound t θ = sound≤ t ≤ℕ.refl θ
