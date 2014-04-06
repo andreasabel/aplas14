@@ -65,59 +65,26 @@ Ext {a} m≤n 𝒕 θ (suc x) = θ x
 Rename : ∀ {n Δ Δ'} → ∀ {m} .(m≤n : m ≤ℕ n) → (ρ : Ren Δ Δ') →
          ∀ {Γ}{σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C⟨ m≤n ⟩ σ) →
          ⟦ Γ ⟧C⟨ m≤n ⟩ (ρ •s σ)
-Rename ρ θ x = {!!} -- TODO: semantic types closed under renaming
+Rename m≤n ρ θ {a} x = ↿ SAT.satRename (⟦ a ⟧ _) m≤n ρ (⇃ θ x)
+
+Map : ∀ {m n l o} → .(l≤m : l ≤ℕ m) → .(o≤n : o ≤ℕ n) → .(l≤o : l ≤ℕ o) 
+      → ∀ {Γ Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C⟨ o≤n ⟩ σ) → ⟦ Γ ⟧C⟨ l≤m ⟩ σ
+Map l≤m o≤n l≤o θ {a} x = ↿ (map⟦ a ⟧ l≤m o≤n l≤o (⇃ θ x))
 
 ⟦∗⟧ : ∀ {n Γ}{a : Ty} {b∞} {t : Tm Γ (▸̂ ((delay a) ⇒ b∞))} {u : Tm Γ (▸ a)}
-      → t ∈ (⟦ ▸̂ ((delay a) ⇒ b∞) ⟧ n) → u ∈ (⟦ ▸̂ (delay a) ⟧ n) → (t ∗ u) ∈ (⟦ ▸̂ b∞ ⟧ n)
-⟦∗⟧ {zero}  (↿ ▹0)       (↿ ▹0)        = ↿ exp β▹ ▹0
-⟦∗⟧ {zero}  (↿ ▹0)       (↿ ne 𝒏)      = ↿ ne (elim 𝒏 (∗r ▹0))
-⟦∗⟧ {zero}  (↿ ▹0)       (↿ exp t⇒ 𝒕₁) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ (⟦∗⟧ {n = 0} (↿ ▹0) (↿ 𝒕₁)))
-⟦∗⟧ {zero}  (↿ ne 𝒏)     (↿ 𝒕₁)        = ↿ ne (elim 𝒏 (SAT.satSN (⟦ _ ⟧ zero) ≤ℕ.refl 𝒕₁ ∗l))
-⟦∗⟧ {zero}  (↿ exp t⇒ 𝒕) (↿ 𝒕₁)        = ↿ exp (cong (_ ∗l) (_ ∗l) t⇒) (⇃ ⟦∗⟧ {n = zero} (↿ 𝒕) (↿ 𝒕₁))
-⟦∗⟧ {suc n} (↿ (▹ 𝒕))    (↿ exp t⇒ 𝒕₁) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ (⟦∗⟧ {n = suc n} (↿ (▹ 𝒕)) (↿ 𝒕₁)))
-⟦∗⟧ {suc n} (↿ ne 𝒏)     (↿ 𝒕₁)        = ↿ ne (elim 𝒏 (SAT.satSN (⟦ _ ⟧ suc n) ≤ℕ.refl 𝒕₁ ∗l))
-⟦∗⟧ {suc n} (↿ exp t⇒ 𝒕) (↿ 𝒕₁)        = ↿ exp (cong (_ ∗l) (_ ∗l) t⇒) (⇃ ⟦∗⟧ {n = suc n} (↿ 𝒕) (↿ 𝒕₁))
-⟦∗⟧ {suc n}         {b∞ = b∞} (↿ (▹ 𝒕)) (↿ (▹ 𝒕₁)) = ↿ exp β▹ (▹ ≡.subst (λ t → SAT.satSet (⟦ force b∞ ⟧ n) ≤ℕ.refl (app t _)) renId (𝒕 n ≤ℕ.refl id TODO 𝒕₁))
-⟦∗⟧ {suc n} {a = a} {b∞ = b∞} (↿ (▹ 𝒕)) (↿ ne 𝒏)   = ↿ ne (elim 𝒏 (∗r (▹ ( SAT.satSN ((⟦ a ⟧ n) ⟦→⟧ (⟦ force b∞ ⟧ n)) ≤ℕ.refl 𝒕))))
-
--- Soundness
-{-
-sound : ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → subst σ t ∈ ⟦ a ⟧ n
-sound (var x) θ = θ x
-sound {n = n} (abs t) {σ = σ} θ = ⟦abs⟧ {n = n} {𝓐 = ⟦ _ ⟧ n} {𝓑 = ⟦ _ ⟧ n} (λ m≤n ρ {u} 𝒖 →
-  let open ≡-Reasoning
-      eq : subst (u ∷s (ρ •s σ)) t ≡ subst0 u (subst (lifts ρ) (subst (lifts σ) t))
-      eq = begin
-
-             subst (u ∷s (ρ •s σ)) t
-
-           ≡⟨ subst-ext (cons-to-sgs u _) t ⟩
-
-              subst (sgs u •s lifts (ρ •s σ)) t
-
-           ≡⟨ subst-∙ _ _ t ⟩
-
-             subst0 u (subst (lifts (ρ •s σ)) t)
-
-           ≡⟨ ≡.cong (subst0 u) (subst-ext (lifts-∙ ρ σ) t) ⟩
-
-             subst0 u (subst (lifts ρ •s lifts σ) t)
-
-           ≡⟨ ≡.cong (subst0 u) (subst-∙ (lifts ρ) (lifts σ) t) ⟩
-
-             subst0 u (subst (lifts ρ) (subst (lifts σ) t))
-           ∎
-  in  ≡.subst (λ tu → tu ∈⟨ m≤n ⟩ (⟦ _ ⟧ n)) eq {! (sound t {!𝒖 !} m≤n) !})
-sound (app t u   ) θ = ⟦app⟧ (sound t θ) (sound u θ)
-sound (pair t₁ t₂) θ = ⟦pair⟧ (sound t₁ θ) (sound t₂ θ)
-sound (fst t) θ = ↿ (proj₁ (⇃ (sound t θ)))
-sound (snd t) θ = ↿ (proj₂ (⇃ (sound t θ)))
--- sound (fst t) θ = ⟦fst⟧ (sound t θ)  -- YELLOW, why?
--- sound (snd t) θ = ⟦snd⟧ (sound t θ)
-sound {zero} (▹ t) θ = ↿ ▹0
-sound {suc n} (▹ t) θ = ↿ (▹ (⇃ sound t (λ x → map⟦ _ ⟧∈ n≤sn (θ x))))
-sound (t ∗ t₁) {σ} θ = ⟦∗⟧ (sound t θ) (sound t₁ θ)
--}
+      → ∀ {m} .(m≤n : m ≤ℕ n) → t ∈⟨ m≤n ⟩ (⟦ ▸̂ ((delay a) ⇒ b∞) ⟧ n) → u ∈⟨ m≤n ⟩ (⟦ ▸̂ (delay a) ⟧ n) → (t ∗ u) ∈⟨ m≤n ⟩ (⟦ ▸̂ b∞ ⟧ n)
+⟦∗⟧ m≤n (↿ ▹0) (↿ ▹0) = ↿ (exp β▹ ▹0)
+⟦∗⟧ m≤n (↿ ▹0) (↿ ne 𝒏) = ↿ (ne (elim 𝒏 (∗r ▹0)))
+⟦∗⟧ m≤n (↿ ▹0) (↿ exp t⇒ 𝑡1) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧ m≤n (↿ ▹0) (↿ 𝑡1))
+⟦∗⟧ {suc n} {a = a} {b∞ = b∞}  {m = suc m} m≤n (↿ (▹ 𝒕)) (↿ (▹_ {t = u} 𝒕₁)) 
+ = ↿ exp β▹
+     (▹ ≡.subst (λ t → SAT.satSet (⟦ force b∞ ⟧ n) (pred≤ℕ m≤n) (app t u))
+          renId (𝒕 m ≤ℕ.refl id TODO 𝒕₁))
+⟦∗⟧ {zero} {a = a} {b∞ = b∞}  {m = suc m} () (↿ (▹ 𝒕)) _
+⟦∗⟧ {suc n} {a = a} {b∞ = b∞}  {m = suc m} m≤n (↿ (▹ 𝒕)) (↿ ne 𝒏) = ↿ (ne (elim 𝒏 (∗r (▹ SAT.satSN ((⟦ a ⟧ n) ⟦→⟧ (⟦ force b∞ ⟧ n)) (pred≤ℕ m≤n) 𝒕))))
+⟦∗⟧ m≤n (↿ (▹ 𝒕)) (↿ exp t⇒ 𝑡1) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧  m≤n (↿ (▹ 𝒕)) (↿ 𝑡1))
+⟦∗⟧ m≤n (↿ ne 𝒏) (↿ 𝑡1) = ↿ ne (elim 𝒏 (SAT.satSN (⟦ _ ⟧ _) m≤n 𝑡1 ∗l))
+⟦∗⟧ m≤n (↿ exp t⇒ 𝑡) (↿ 𝑡1) = ↿ exp (cong (_ ∗l) (_ ∗l) t⇒) (⇃ ⟦∗⟧ m≤n (↿ 𝑡) (↿ 𝑡1))
 
 sound≤ : ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} → ∀ {m} .(m≤n : m ≤ℕ n) → (θ : ⟦ Γ ⟧C⟨ m≤n ⟩ σ) →  subst σ t ∈⟨ m≤n ⟩ ⟦ a ⟧ n
 sound≤ (var x)     m≤n θ = θ x
@@ -144,17 +111,18 @@ sound≤ {n} (abs {a = a} {b = b} t) {σ = σ}    m≤n θ = ⟦abs⟧ {𝓐 = �
 
              subst0 u (subst (lifts ρ) (subst (lifts σ) t))
            ∎
-  in
-                                 ≡.subst (λ tu → tu ∈⟨ ≤ℕ.trans l≤m m≤n ⟩ (⟦ b ⟧ n)) eq (sound≤ t (≤ℕ.trans l≤m m≤n) 
-                   (Ext (≤ℕ.trans l≤m m≤n) 𝑢 (Rename (≤ℕ.trans l≤m m≤n) ρ (λ {a} x → ↿ (map⟦ a ⟧ (≤ℕ.trans l≤m m≤n) m≤n l≤m (⇃ θ x)))))))
+      .l≤n : _
+      l≤n = ≤ℕ.trans l≤m m≤n
+  in ≡.subst (λ tu → tu ∈⟨ l≤n ⟩ (⟦ b ⟧ n)) eq (sound≤ t l≤n 
+                   (Ext l≤n 𝑢 (Rename l≤n ρ (Map l≤n m≤n l≤m θ)))))
 sound≤ (app t t₁)  m≤n θ = ⟦app⟧ m≤n (sound≤ t m≤n θ) (sound≤ t₁ m≤n θ)
-sound≤ (pair t t₁) m≤n θ = {!!}
-sound≤ (fst t)     m≤n θ = {!!}
-sound≤ (snd t)     m≤n θ = {!!}
-sound≤ (t ∗ t₁)    m≤n θ = {!!}
+sound≤ (pair t t₁) m≤n θ = ⟦pair⟧ m≤n (sound≤ t m≤n θ) (sound≤ t₁ m≤n θ)
+sound≤ (fst t)     m≤n θ = ⟦fst⟧ {𝓐 = ⟦ _ ⟧ _} {𝓑 = ⟦ _ ⟧ _} m≤n (sound≤ t m≤n θ)
+sound≤ (snd t)     m≤n θ = ⟦snd⟧ {𝓐 = ⟦ _ ⟧ _} {𝓑 = ⟦ _ ⟧ _} m≤n (sound≤ t m≤n θ)
+sound≤ (t ∗ t₁)    m≤n θ = ⟦∗⟧ m≤n (sound≤ t m≤n θ) (sound≤ t₁ m≤n θ)
 sound≤         (▹ t) {m = zero}  m≤n θ = ↿ ▹0
 sound≤ {zero}  (▹ t) {m = suc m} ()  θ 
-sound≤ {suc n} (▹ t) {m = suc m} m≤n θ = ↿ (▹ (⇃ sound≤ t (pred≤ℕ m≤n) (λ {a} x → ↿ map⟦ a ⟧ (pred≤ℕ m≤n) m≤n n≤sn (⇃ θ x))))
+sound≤ {suc n} (▹ t) {m = suc m} m≤n θ = ↿ (▹ (⇃ sound≤ t (pred≤ℕ m≤n) (Map (pred≤ℕ m≤n) m≤n n≤sn θ)))
 
 sound : ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → subst σ t ∈ ⟦ a ⟧ n
 sound t θ = sound≤ t ≤ℕ.refl θ

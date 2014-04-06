@@ -83,6 +83,7 @@ record IsSAT (n : ℕ) {a} (𝑨 : TmSet a) : Set where
     satSNe  : SNe n ⊆ 𝑨
     satSN   : 𝑨 ⊆ SN n
     satExp  : Closed n 𝑨
+    satRename : ∀ {Γ Δ} → (ρ : Ren Γ Δ) → ∀ {t} → 𝑨 t → 𝑨 (subst ρ t)
     satRed  : βClosed 𝑨
 --open IsSAT
 
@@ -124,6 +125,7 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
     ; satSN  = CSN  m≤n
     ; satExp = CExp m≤n
     ; satRed = CRed m≤n
+    ; satRename = λ ρ {t} 𝒕 l l≤m ρ₁ x₁ {u} 𝒖 → ≡.subst (λ t → 𝑩 {l} _ (app t u)) (subst-∙ ρ₁ ρ t) (𝒕 l l≤m (λ x₂ → ρ₁ (ρ x₂)) TODO 𝒖)
     }
   ; satMono = λ m≤n → TODO
   }
@@ -172,6 +174,7 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
     ; satSN = CSN m≤n
     ; satExp = CExp m≤n
     ; satRed = CRed m≤n
+    ; satRename = λ ρ x → (satRename 𝓐 m≤n ρ (proj₁ x)) , (satRename 𝓑 m≤n ρ (proj₂ x))
     }
   ; satMono = TODO
   }
@@ -199,18 +202,18 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 -- Lemma (introduction):  If t₁ ∈ 𝓐 and t₂ ∈ 𝓑 then pair t₁ t₂ ∈ 𝓐 ⟦×⟧ 𝓑
 
 ⟦pair⟧ : ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
-          → t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
-⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} (↿ 𝒕₁) (↿ 𝒕₂) = satExp 𝓐 ≤ℕ.refl (βfst (satSN 𝓑 ≤ℕ.refl 𝒕₂)) 𝒕₁ , satExp 𝓑 ≤ℕ.refl (βsnd (satSN 𝓐 ≤ℕ.refl 𝒕₁)) 𝒕₂
+         → ∀ {m} .(m≤n : m ≤ℕ _) → t₁ ∈⟨ m≤n ⟩ 𝓐 → t₂ ∈⟨ m≤n ⟩ 𝓑 → pair t₁ t₂ ∈⟨ m≤n ⟩ (𝓐 ⟦×⟧ 𝓑)
+⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} m≤n (↿ 𝒕₁) (↿ 𝒕₂) = satExp 𝓐 m≤n (βfst (satSN 𝓑 m≤n 𝒕₂)) 𝒕₁ , satExp 𝓑 m≤n (βsnd (satSN 𝓐 m≤n 𝒕₁)) 𝒕₂
 
 -- Lemma (elimination):  If t ∈ 𝓐 ⟦×⟧ 𝓑 then t₁ ∈ 𝓐 and t₂ ∈ 𝓑.
 
 ⟦fst⟧ : ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂  b)}
-        → t ∈ (𝓐 ⟦×⟧ 𝓑) → fst t ∈ 𝓐
-⟦fst⟧ 𝒕 =  ↿ (proj₁ (⇃ 𝒕))
+        → ∀ {m} .(m≤n : m ≤ℕ _) → t ∈⟨ m≤n ⟩ (𝓐 ⟦×⟧ 𝓑) → fst t ∈⟨ m≤n ⟩ 𝓐
+⟦fst⟧ m≤n 𝒕 =  ↿ (proj₁ (⇃ 𝒕))
 
 ⟦snd⟧ : ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂  b)}
-        → t ∈ (𝓐 ⟦×⟧ 𝓑) → snd t ∈ 𝓑
-⟦snd⟧ 𝒕 =  ↿ (proj₂ (⇃ 𝒕))
+        → ∀ {m} .(m≤n : m ≤ℕ n) → t ∈⟨ m≤n ⟩ (𝓐 ⟦×⟧ 𝓑) → snd t ∈⟨ m≤n ⟩ 𝓑
+⟦snd⟧ m≤n 𝒕 =  ↿ (proj₂ (⇃ 𝒕))
 
 -- Any term set is saturated at level -1
 
@@ -240,6 +243,13 @@ module _ {a∞ : ∞Ty} where
     CSN         𝓐 m≤n (ne 𝒏)     = ne 𝒏
     CSN         𝓐 m≤n (exp t⇒ 𝒕) = exp t⇒ (CSN 𝓐 m≤n 𝒕)
 
+    CRen : ∀ {n} (𝓐 : SATpred a n) → ∀ {m} → .(m≤n : m ≤ℕ n) → ∀ {Γ Δ} (ρ : Γ ≤ Δ) → ∀ {t} → 𝑪 {n} 𝓐  m≤n t → 𝑪 {n} 𝓐  m≤n (subst ρ t)
+    CRen         𝓐 m≤n ρ ▹0         = ▹0
+    CRen {zero}  𝓐 ()  ρ (▹ 𝒕)
+    CRen {suc n} 𝓐 m≤n ρ (▹ 𝒕)      = ▹ satRename 𝓐 (pred≤ℕ m≤n) ρ 𝒕
+    CRen         𝓐 m≤n ρ (ne 𝒏)     = ne (substSNe (ρ , (λ x → var (ρ x))) 𝒏)
+    CRen         𝓐 m≤n ρ (exp t⇒ 𝒕) = exp (subst⇒ (ρ , (λ x → var (ρ x))) t⇒) (CRen 𝓐 m≤n ρ 𝒕)
+
     CRed : ∀ {n} (𝓐 : SATpred a n) → ∀ {m} → .(m≤n : m ≤ℕ n) → βClosed (𝑪 {n} 𝓐 m≤n)
     CRed         𝓐 m≤n (cong ▹_ ▹_ t⇒) ▹0          = ▹0
     CRed {zero}  𝓐 ()  (cong ▹_ ▹_ t⇒) (▹ 𝒕)
@@ -255,6 +265,7 @@ module _ {a∞ : ∞Ty} where
       ; satSN  = CSN 𝓐 m≤n
       ; satExp = exp
       ; satRed = CRed 𝓐 m≤n
+      ; satRename = CRen 𝓐 m≤n
       }
     ; satMono = TODO
     }
