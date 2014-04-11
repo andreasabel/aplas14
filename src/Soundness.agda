@@ -26,11 +26,11 @@ open import SAT3
 
 map⟦_⟧ : ∀ (a : Ty) → ∀ {m n l o} → .(l≤m : l ≤ℕ m) → .(o≤n : o ≤ℕ n) → .(l ≤ℕ o) → ∀ {Γ} {t : Tm Γ a} → SAT.satSet (⟦ a ⟧ n) o≤n t 
                                            → SAT.satSet (⟦ a ⟧ m) l≤m t
-map⟦_⟧ (a →̂ a₁) l≤m o≤n l≤o  𝑡          = λ q q≤l ρ ρrefl 𝑢 →
+map⟦_⟧ (a →̂ a₁) l≤m o≤n l≤o  𝑡          = λ q q≤l ρ 𝑢 →
        let .q≤m : _; q≤m = ≤ℕ.trans q≤l l≤m
            .q≤o : _; q≤o = ≤ℕ.trans q≤l l≤o
            .q≤n : _; q≤n = ≤ℕ.trans q≤o o≤n in 
-       map⟦ a₁ ⟧ q≤m q≤n ≤ℕ.refl (𝑡 q q≤o ρ ρrefl (map⟦ a ⟧ q≤n q≤m ≤ℕ.refl 𝑢))
+       map⟦ a₁ ⟧ q≤m q≤n ≤ℕ.refl (𝑡 q q≤o ρ (map⟦ a ⟧ q≤n q≤m ≤ℕ.refl 𝑢))
 map⟦_⟧ (a ×̂ a₁)                       l≤m o≤n l≤o (t1 , t2)  = map⟦ a ⟧ l≤m o≤n l≤o t1 , map⟦ a₁ ⟧ l≤m o≤n l≤o t2
 map⟦_⟧ (▸̂ a∞) {l = zero}              l≤m o≤n _   ▹0         = ▹0
 map⟦_⟧ (▸̂ a∞) {l = suc l}             l≤m o≤n ()  ▹0 
@@ -53,13 +53,9 @@ map⟦_⟧∈ a m≤n (↿ 𝑡) = ↿ (map⟦ a ⟧ ≤ℕ.refl ≤ℕ.refl m�
 ⟦_⟧C : ∀ Γ n {Δ} (σ : Subst Γ Δ) → Set
 ⟦ Γ ⟧C n σ = ∀ {a} (x : Var Γ a) → σ x ∈ ⟦ a ⟧ n
 
--- Lift : ∀ {a n Γ Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C n σ) → ⟦ a ∷ Γ ⟧C n (lifts σ)
--- Lift θ (zero eq) = ↿ SAT.satSNe (⟦ _ ⟧ _) (var (zero eq))
--- Lift θ (suc x)   = {! θ x !}  -- TODO: semantic types closed under renaming
-
 Ext : ∀ {a n Δ Γ} {t : Tm Δ a} → ∀ {m} .(m≤n : m ≤ℕ n) → (𝒕 : t ∈⟨ m≤n ⟩ ⟦ a ⟧ n) →
       ∀ {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C⟨ m≤n ⟩ σ) → ⟦ a ∷ Γ ⟧C⟨ m≤n ⟩ (t ∷s σ)
-Ext {a} m≤n 𝒕 θ (zero eq) = {! 𝒕 !} -- need to cast
+Ext {a} m≤n 𝒕 θ (zero)  = 𝒕
 Ext {a} m≤n 𝒕 θ (suc x) = θ x
 
 Rename : ∀ {n Δ Δ'} → ∀ {m} .(m≤n : m ≤ℕ n) → (ρ : Ren Δ Δ') →
@@ -79,7 +75,7 @@ Map l≤m o≤n l≤o θ {a} x = ↿ (map⟦ a ⟧ l≤m o≤n l≤o (⇃ θ x))
 ⟦∗⟧ {suc n} {a = a} {b∞ = b∞}  {m = suc m} m≤n (↿ (▹ 𝒕)) (↿ (▹_ {t = u} 𝒕₁)) 
  = ↿ exp β▹
      (▹ ≡.subst (λ t → SAT.satSet (⟦ force b∞ ⟧ n) (pred≤ℕ m≤n) (app t u))
-          renId (𝒕 m ≤ℕ.refl id TODO 𝒕₁))
+          renId (𝒕 m ≤ℕ.refl id 𝒕₁))
 ⟦∗⟧ {zero} {a = a} {b∞ = b∞}  {m = suc m} () (↿ (▹ 𝒕)) _
 ⟦∗⟧ {suc n} {a = a} {b∞ = b∞}  {m = suc m} m≤n (↿ (▹ 𝒕)) (↿ ne 𝒏) = ↿ (ne (elim 𝒏 (∗r (▹ SAT.satSN ((⟦ a ⟧ n) ⟦→⟧ (⟦ force b∞ ⟧ n)) (pred≤ℕ m≤n) 𝒕))))
 ⟦∗⟧ m≤n (↿ (▹ 𝒕)) (↿ exp t⇒ 𝑡1) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧  m≤n (↿ (▹ 𝒕)) (↿ 𝑡1))

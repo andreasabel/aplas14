@@ -79,3 +79,6 @@ mutual
 
 ≅fill : ∀ {a a' b b'} (a≅b : a ≅ b) (a≅a' : a ≅ a') (a'≅b' : a' ≅ b') → b ≅ b'
 ≅fill a≅b a≅a' a'≅b' = ≅trans (≅sym a≅b) (≅trans a≅a' a'≅b')
+
+postulate
+  ≅-to-≡ : ∀ {a b} → a ≅ b → a ≡ b 

@@ -157,8 +157,8 @@ mutual
 
   lifts⇒β* : ∀ {m vt a Γ} {Δ} {σ ρ : RenSub {m} vt Γ Δ} → (∀ {b} (x : Var Γ b) → vt2tm _ (σ x) ⇒β* vt2tm _ (ρ x))
              →  (∀ {b} (x : Var (a ∷ Γ) b) → vt2tm _ (lifts {a = a} σ x) ⇒β* vt2tm _ (lifts {a = a} ρ x))
-  lifts⇒β* {vt = `Var} σ₁ (zero eq) = []
-  lifts⇒β* {vt = `Tm}  σ₁ (zero eq) = []
+  lifts⇒β* {vt = `Var} σ₁ (zero) = []
+  lifts⇒β* {vt = `Tm}  σ₁ (zero) = []
   lifts⇒β* {vt = `Var} σ₁ (suc x)   = subst⇒β*₀ {vt = `Var} suc (σ₁ x)
   lifts⇒β* {vt = `Tm}  σ₁ (suc x)   = subst⇒β*₀ {vt = `Var} suc (σ₁ x)
 
@@ -167,7 +167,7 @@ mutual
   beta-shr β (β 𝒖)                                                   = inj₁ ≡.refl
   beta-shr (cong (appl u) (appl .u) (cong abs abs tβ⇒)) (β 𝒖)        = inj₂ (_ , β 𝒖 , (subst⇒β (sgs u) tβ⇒ ∷ []))
   beta-shr (cong (appr ._) (appr ._) tβ⇒) (β {t = t} 𝒖)
-    = inj₂ (_ , β (mapβSN tβ⇒ 𝒖) , subst⇒β* {vt = `Tm} (λ { {._} (zero eq) → castC⇒β (≅L.refl ≅refl) eq tβ⇒ ∷ [] ; (suc x) → [] }) t)
+    = inj₂ (_ , β (mapβSN tβ⇒ 𝒖) , subst⇒β* {vt = `Tm} (λ { {._} (zero) → tβ⇒ ∷ [] ; (suc x) → [] }) t)
   beta-shr β▹ β▹                                                     = inj₁ ≡.refl
   beta-shr (cong (._ ∗l) (._ ∗l) (cong ▹_ ▹_ tβ⇒)) β▹                = inj₂ (_ , β▹ , cong ▹_ ▹_ (cong (appl _) (appl _) tβ⇒) ∷ [])
   beta-shr (cong (∗r ._) (∗r ._) (cong ▹_ ▹_ tβ⇒)) β▹                = inj₂ (_ , β▹ , cong ▹_ ▹_ (cong (appr _) (appr _) tβ⇒) ∷ [])

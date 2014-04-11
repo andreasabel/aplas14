@@ -44,14 +44,14 @@ data Cl (n : ℕ) {a} (𝑨 : TmSet a) {Γ} (t : Tm Γ a) : Set where
 -- Function space.
 
 _[→]_ : ∀{a b} → TmSet a → TmSet b → TmSet (a →̂ b)
-(𝓐 [→] 𝓑) {Γ} t = ∀{Δ} (ρ : Δ ≤ Γ) → ρ SubCong.≡s ρ → {u : Tm Δ _} → 𝓐 u → 𝓑 (app (rename ρ t) u)
-
+(𝓐 [→] 𝓑) {Γ} t = ∀{Δ} (ρ : Δ ≤ Γ) → {u : Tm Δ _} → 𝓐 u → 𝓑 (app (rename ρ t) u)
+{-
 _[→]↔_ : ∀{a a'}{𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨′ ↔ 𝑨  →
          ∀{b b'}{𝑩 : TmSet b}{𝑩′ : TmSet b'} → 𝑩 ↔ 𝑩′ → (𝑨 [→] 𝑩) ↔ (𝑨′ [→] 𝑩′)
 (𝑨 [→]↔ 𝑩) (eq₁ →̂  eq₂) t≅t' 𝒕 ρ ρrefl {u} 𝒖 =
   let r = 𝒕 ρ ρrefl {cast eq₁ u} (𝑨 eq₁ (Tsym (coh (≅L.refl ≅refl) eq₁ u)) 𝒖)
   in  𝑩 eq₂ (app (SubCong.subst-ext ρrefl t≅t') (coh (≅L.refl ≅refl) eq₁ u)) r
-
+-}
 -- Cartesian product.
 
 _[×]_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
@@ -125,7 +125,7 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
     ; satSN  = CSN  m≤n
     ; satExp = CExp m≤n
     ; satRed = CRed m≤n
-    ; satRename = λ ρ {t} 𝒕 l l≤m ρ₁ x₁ {u} 𝒖 → ≡.subst (λ t → 𝑩 {l} _ (app t u)) (subst-∙ ρ₁ ρ t) (𝒕 l l≤m (λ x₂ → ρ₁ (ρ x₂)) TODO 𝒖)
+    ; satRename = λ ρ {t} 𝒕 l l≤m ρ₁ {u} 𝒖 → ≡.subst (λ t → 𝑩 {l} _ (app t u)) (subst-∙ ρ₁ ρ t) (𝒕 l l≤m (λ x₂ → ρ₁ (ρ x₂)) 𝒖)
     }
   ; satMono = λ m≤n → TODO
   }
@@ -139,30 +139,30 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
       ((𝑨 l≤n) [→] (𝑩 l≤n)) t
 
     CSNe : ∀ {m} .(m≤n : m ≤ℕ _) → SNe m ⊆ 𝑪 m≤n
-    CSNe m≤n 𝒏 l l≤m ρ ρrefl 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in SAT.satSNe 𝓑 l≤n (sneApp (mapSNe l≤m (renameSNe ρ 𝒏)) (SAT.satSN 𝓐 l≤n 𝒖))
+    CSNe m≤n 𝒏 l l≤m ρ 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in SAT.satSNe 𝓑 l≤n (sneApp (mapSNe l≤m (renameSNe ρ 𝒏)) (SAT.satSN 𝓐 l≤n 𝒖))
 
     CSN : ∀ {m} .(m≤n : m ≤ℕ _) → 𝑪 m≤n ⊆ SN m
-    CSN {m} m≤n 𝒕 = unRenameSN (prop→Ind suc ≡.refl) (absVarSN (SAT.satSN 𝓑 m≤n (𝒕 m ≤ℕ.refl suc (λ x₁ → var (suc x₁)) (SAT.satSNe 𝓐 m≤n (var v₀)))))
+    CSN {m} m≤n 𝒕 = unRenameSN (prop→Ind suc ≡.refl) (absVarSN (SAT.satSN 𝓑 m≤n (𝒕 m ≤ℕ.refl suc (SAT.satSNe 𝓐 m≤n (var v₀)))))
 
     CExp : ∀ {m} .(m≤n : m ≤ℕ _) →  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 m≤n t' → 𝑪 m≤n t
-    CExp m≤n t⇒ 𝒕 l l≤m ρ ρrefl 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in SAT.satExp 𝓑 l≤n ((cong (appl _) (appl _) (map⇒ l≤m (subst⇒ (renSN ρ) t⇒)))) (𝒕 l l≤m ρ ρrefl 𝒖)
+    CExp m≤n t⇒ 𝒕 l l≤m ρ 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in SAT.satExp 𝓑 l≤n ((cong (appl _) (appl _) (map⇒ l≤m (subst⇒ (renSN ρ) t⇒)))) (𝒕 l l≤m ρ 𝒖)
 
     CRed : ∀ {m} .(m≤n : m ≤ℕ _) → βClosed (𝑪 m≤n)
-    CRed m≤n t→t' 𝒕 l l≤m ρ ρrefl 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in satRed 𝓑 l≤n (cong (appl _) (appl _) (subst⇒β ρ t→t')) (𝒕 l l≤m ρ ρrefl 𝒖)
+    CRed m≤n t→t' 𝒕 l l≤m ρ 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in satRed 𝓑 l≤n (cong (appl _) (appl _) (subst⇒β ρ t→t')) (𝒕 l l≤m ρ 𝒖)
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
 ⟦abs⟧ : ∀{n a b}{𝓐 : SAT a n}{𝓑 : SAT b n}{Γ}{t : Tm (a ∷ Γ) b}{m} → .(m≤n : m ≤ℕ n) →
     (∀ {l} .(l≤m : l ≤ℕ m) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} → let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in  
       u ∈⟨ l≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ l≤n ⟩ 𝓑 ) → abs t ∈⟨ m≤n ⟩ (𝓐 ⟦→⟧ 𝓑)
-(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} m≤n 𝒕) l l≤m ρ ρrefl 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in
+(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} m≤n 𝒕) l l≤m ρ 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in
   SAT.satExp 𝓑 l≤n (β (SAT.satSN 𝓐 l≤n 𝒖)) (⇃ (𝒕 l≤m ρ (↿ 𝒖)))
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t ∈ 𝓐 ⟦→⟧ 𝓑 and u ∈ 𝓐, then app t u ∈ 𝓑
 
 ⟦app⟧ : ∀ {n a b}{𝓐 : SAT a n}{𝓑 : SAT b n}{Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
         ∀ {m} .(m≤n : m ≤ℕ n) → t ∈⟨ m≤n ⟩ (𝓐 ⟦→⟧ 𝓑) → u ∈⟨ m≤n ⟩ 𝓐 → app t u ∈⟨ m≤n ⟩ 𝓑
-⟦app⟧ {𝓑 = 𝓑} {u = u} m≤n (↿ 𝒕) (↿ 𝒖) = ≡.subst (λ t → app t u ∈⟨ m≤n ⟩ 𝓑) renId (↿ 𝒕 _ ≤ℕ.refl id var 𝒖)
+⟦app⟧ {𝓑 = 𝓑} {u = u} m≤n (↿ 𝒕) (↿ 𝒖) = ≡.subst (λ t → app t u ∈⟨ m≤n ⟩ 𝓑) renId (↿ 𝒕 _ ≤ℕ.refl id 𝒖)
 
 -- Semantic product type
 

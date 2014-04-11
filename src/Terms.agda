@@ -20,22 +20,22 @@ _≅C_ = ≅L _≅_
 -- Variables.
 
 data Var : (Γ : Cxt) (a : Ty) → Set where
-  zero : ∀{Γ a b}  (eq : a ≅ b) → Var (a ∷ Γ) b
+  zero : ∀{Γ a}                 → Var (a ∷ Γ) a
   suc  : ∀{Γ a b} (x : Var Γ a) → Var (b ∷ Γ) a
 
 -- De Bruijn index 0.
 
 v₀ : ∀ {a Γ} → Var (a ∷ Γ) a
-v₀ = zero ≅refl
+v₀ = zero
 
 -- A congruence on variables.  Ignores the equality proofs embedded in zero.
 -- Two variables are equal if they have the same de Bruijn index.
 
 data _≅V_ : ∀ {Γ Γ' a a'} → Var Γ a → Var Γ' a' → Set where
 
-  zero : ∀ {Γ a b} {eq : a ≅ b} {Γ' a' b'} {eq' : a' ≅ b'}
+  zero : ∀ {Γ a} {Γ' a'}
 
-         → zero {Γ = Γ} eq ≅V zero {Γ = Γ'} eq'
+         → zero {Γ = Γ} {a} ≅V zero {Γ = Γ'} {a'}
 
   suc  : ∀ {Γ a b} {x : Var Γ a} {Γ' a' b'} {x' : Var Γ' a'}
 
@@ -45,8 +45,8 @@ data _≅V_ : ∀ {Γ Γ' a a'} → Var Γ a → Var Γ' a' → Set where
 -- We are indeed an equivalence relation.
 
 Vrefl : ∀ {Γ : Cxt} {a : Ty} {x : Var Γ a} → x ≅V x
-Vrefl {x = zero eq} = zero
-Vrefl {x = suc t}   = suc Vrefl
+Vrefl {x = zero}  = zero
+Vrefl {x = suc t} = suc Vrefl
 
 Vsym : ∀ {Γ Γ' a a'} {x : Var Γ a} {x' : Var Γ' a'} → x ≅V x' → x' ≅V x
 Vsym zero      = zero
@@ -60,12 +60,13 @@ Vtrans (suc eq) (suc eq') = suc (Vtrans eq eq')
 -- Coercion and coherence for variables.
 
 castVar : ∀{Γ Δ a b} (Γ≅Δ : Γ ≅C Δ) (a≅b : a ≅ b) (x : Var Γ a) → Var Δ b
-castVar (a'≅b' ∷ Γ≅Δ) a≅b (zero a'≅a) = zero (≅fill a'≅b' a'≅a a≅b)
-castVar (_     ∷ Γ≅Δ) a≅b (suc x)     = suc  (castVar Γ≅Δ a≅b x)
+castVar (a'≅b' ∷ Γ≅Δ) a≅b zero rewrite ≅-to-≡ (≅trans (≅sym a'≅b') a≅b) = zero
+castVar (_     ∷ Γ≅Δ) a≅b (suc x)                                       = suc  (castVar Γ≅Δ a≅b x)
 
 cohV : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (x : Var Γ a) → castVar eqC eq x ≅V x
-cohV (x∼y ∷ eqC) eq (zero eq₁) = zero
-cohV (x∼y ∷ eqC) eq (suc x₁)   = suc (cohV eqC eq x₁)
+cohV (x∼y ∷ eqC) eq zero with ≅-to-≡ (≅trans (≅sym x∼y) eq) 
+cohV (x∼y ∷ eqC) eq zero    | ≡.refl = zero
+cohV (x∼y ∷ eqC) eq (suc x₁) = suc (cohV eqC eq x₁)
 
 -- * Terms
 ------------------------------------------------------------------------
