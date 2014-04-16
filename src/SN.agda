@@ -1,12 +1,13 @@
 {-# OPTIONS --copatterns --sized-types #-}
 {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --sized-types #-}
 -- {-# OPTIONS --show-implicit #-}
--- {-# OPTIONS --no-termination-check #-} -- too slow
+{-# OPTIONS --no-termination-check #-} -- too slow
 
 module SN where
 
 open import Relation.Unary using (_∈_; _⊆_)
-
+open import Size
 open import Library
 open import SizedInfiniteTypes
 open import Terms
@@ -74,63 +75,66 @@ mutual
 
   -- Strongly neutral terms.
 
-  data SNe (n : ℕ) {Γ} {b} : Tm Γ b → Set where
+  data SNe {i : Size} (n : ℕ) {Γ} {b} : Tm Γ b → Set where
 
     var  : ∀ x                              → SNe n (var x)
 
-    elim : ∀ {a} {t : Tm Γ a} {E Et}
-           → (𝒏 : SNe n t) (𝑬𝒕 : SNhole n Et E t) → SNe n Et
+    elim : ∀ {j : Size< i}{a} {t : Tm Γ a} {E Et}
+           → (𝒏 : SNe {j} n t) (𝑬𝒕 : SNhole n Et E t) → SNe n Et
 
   -- Strongly normalizing terms.
 
-  data SN {Γ} : ℕ → ∀ {a} → Tm Γ a → Set where
+  data SN {i : Size}{Γ} : ℕ → ∀ {a} → Tm Γ a → Set where
 
-    ne   : ∀ {a n t}
-           → (𝒏 : SNe n t)
+    ne   : ∀ {j : Size< i} {a n t}
+           → (𝒏 : SNe {j} n t)
            → SN n {a} t
 
-    abs  : ∀ {a b n}{t : Tm (a ∷ Γ) b}
-           → (𝒕 : SN n t)
+    abs  : ∀ {j : Size< i} {a b n}{t : Tm (a ∷ Γ) b}
+           → (𝒕 : SN {j} n t)
            → SN n (abs t)
 
-    pair : ∀ {a b n t u}
-           → (𝒕 : SN n t) (𝒖 : SN n u)
+    pair : ∀ {j₁ j₂ : Size< i} {a b n t u}
+           → (𝒕 : SN {j₁} n t) (𝒖 : SN {j₂} n u)
            → SN n {a ×̂ b} (pair t u)
 
     ▹0   : ∀ {a∞} {t : Tm Γ (force a∞)}
            → SN 0 {▸̂ a∞} (▹ t)
 
-    ▹_   : ∀ {a∞ n} {t : Tm Γ (force a∞)}
-           → (𝒕 : SN n t)
+    ▹_   : ∀ {j : Size< i} {a∞ n} {t : Tm Γ (force a∞)}
+           → (𝒕 : SN {j} n t)
            → SN (suc n) {▸̂ a∞} (▹ t)
 
-    exp  : ∀{a n t t′}
-           → (t⇒ : t ⟨ n ⟩⇒ t′) (𝒕′ : SN n t′)
+    exp  : ∀ {j : Size< i} {a n t t′}
+           → (t⇒ : t ⟨ n ⟩⇒ t′) (𝒕′ : SN {j} n t′)
            → SN n {a} t
+
+  _size_⟨_⟩⇒_ : ∀ (i : Size) {Γ}{a} → Tm Γ a → ℕ → Tm Γ a → Set
+  i size t ⟨ n ⟩⇒ t′ = _⟨_⟩⇒_ {i} t n t′
 
   -- Strong head reduction
 
-  data _⟨_⟩⇒_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
+  data _⟨_⟩⇒_ {i : Size} {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
 
-    β     : ∀ {n a b}{t : Tm (a ∷ Γ) b}{u}
-            → (𝒖 : SN n u)
+    β     : ∀ {j : Size< i} {n a b}{t : Tm (a ∷ Γ) b}{u}
+            → (𝒖 : SN {j} n u)
             → (app (abs t) u) ⟨ n ⟩⇒ subst0 u t
 
     β▹    : ∀ {n a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
              → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b∞} (app t u))
 
-    βfst  : ∀ {n a b}{t : Tm Γ a}{u : Tm Γ b}
-            → (𝒖 : SN n u)
+    βfst  : ∀ {j : Size< i} {n a b}{t : Tm Γ a}{u : Tm Γ b}
+            → (𝒖 : SN {j} n u)
             → fst (pair t u) ⟨ n ⟩⇒ t
 
-    βsnd  : ∀ {n a b}{t : Tm Γ a}{u : Tm Γ b}
-            → (𝒕 : SN n t)
+    βsnd  : ∀ {j : Size< i} {n a b}{t : Tm Γ a}{u : Tm Γ b}
+            → (𝒕 : SN {j} n t)
             → snd (pair t u) ⟨ n ⟩⇒ u
 
-    cong  : ∀ {n a b t t' Et Et'}{E : ECxt Γ a b}
+    cong  : ∀ {j : Size< i} {n a b t t' Et Et'}{E : ECxt Γ a b}
             → (𝑬𝒕 : Ehole Et E t)
             → (𝑬𝒕' : Ehole Et' E t')
-            → (t⇒ : t ⟨ n ⟩⇒ t')
+            → (t⇒ : j size t ⟨ n ⟩⇒ t')
             → Et ⟨ n ⟩⇒ Et'
 
 -- Strong head reduction is deterministic.
@@ -281,7 +285,7 @@ renameSN ρ = substSN (renSN ρ)
 
 -- Variables are SN.
 
-varSN : ∀{Γ a n x} → var x ∈ SN {Γ} n {a}
+varSN : ∀{Γ a n x} → var x ∈ SN {Γ = Γ} n {a}
 varSN = ne (var _)
 
 -- SN is closed under application to variables.
@@ -313,7 +317,8 @@ bothProjSN (ne (elim 𝒏 fst))    _                 = ne 𝒏
 bothProjSN (exp (βfst 𝒕₂) 𝒕₁)    _                 = pair 𝒕₁ 𝒕₂
 bothProjSN (exp (cong _ _ _) _) (ne (elim 𝒏 snd))  = ne 𝒏
 bothProjSN (exp (cong _ _ _) _) (exp (βsnd 𝒕₁) 𝒕₂) = pair 𝒕₁ 𝒕₂
-bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕₂) rewrite det⇒ t⇒₁ t⇒₂ = exp t⇒₂ (bothProjSN 𝒕₁ 𝒕₂)
+bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕₂) 
+  = exp t⇒₂ (≡.subst (SN _) (det⇒ t⇒₁ t⇒₂) (bothProjSN 𝒕₁ (≡.subst (SN _) (≡.sym (≡.cong snd (det⇒ t⇒₁ t⇒₂))) 𝒕₂)))
 
 
 -- Subterm properties of SN

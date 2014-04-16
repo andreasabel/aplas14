@@ -89,22 +89,6 @@ subst⇒β σ (cong ▹_ ▹_ t⇒)                = cong ▹_ ▹_ (subst⇒β 
 subst⇒β σ (cong (pairr t) (pairr ._) t⇒) = cong (pairr (subst σ t)) (pairr _) (subst⇒β σ t⇒)
 subst⇒β σ (cong (pairl u) (pairl ._) t⇒) = cong (pairl (subst σ u)) (pairl _) (subst⇒β σ t⇒)
 
-castC⇒β : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  {t t' : Tm Γ a} → t ⇒β t' → castC eqC eq t ⇒β castC eqC eq t'
-castC⇒β eqC eq     β    = TODO
-castC⇒β eqC (▸̂ a≅) β▹   = β▹
-castC⇒β eqC eq     βfst = βfst
-castC⇒β eqC eq     βsnd = βsnd
-castC⇒β eqC eq         (cong (appl u) (appl .u) t⇒)     = cong (appl _) (appl _) (castC⇒β eqC (≅refl →̂ eq) t⇒)
-castC⇒β eqC eq         (cong (appr t₁) (appr .t₁) t⇒)   = cong (appr _) (appr _) (castC⇒β eqC ≅refl t⇒)
-castC⇒β eqC (eq ×̂ eq₁) (cong (pairl u) (pairl .u) t⇒)   = cong (pairl _) (pairl _) (castC⇒β eqC eq t⇒)
-castC⇒β eqC (eq ×̂ eq₁) (cong (pairr t₁) (pairr .t₁) t⇒) = cong (pairr _) (pairr _) (castC⇒β eqC eq₁ t⇒)
-castC⇒β eqC eq         (cong fst fst t⇒)                = cong fst fst (castC⇒β eqC (eq ×̂ ≅refl) t⇒)
-castC⇒β eqC eq         (cong snd snd t⇒)                = cong snd snd (castC⇒β eqC (≅refl ×̂ eq) t⇒)
-castC⇒β eqC (▸̂ a≅)     (cong (u ∗l) (.u ∗l) t⇒)         = cong (_ ∗l) (_ ∗l) (castC⇒β eqC (▸̂ ≅delay (≅refl →̂ ≅force a≅)) t⇒)
-castC⇒β eqC (▸̂ a≅)     (cong (∗r t₁) (∗r .t₁) t⇒)       = cong (∗r _) (∗r _) (castC⇒β eqC ≅refl t⇒)
-castC⇒β eqC (eq →̂ eq₁) (cong abs abs t⇒)                = cong abs abs (castC⇒β (≅sym eq ∷ eqC) eq₁ t⇒)
-castC⇒β eqC (▸̂ a≅)     (cong ▹_ ▹_ t⇒)                  = cong ▹_ ▹_ (castC⇒β eqC (≅force a≅) t⇒)
-
 data _⇒β*_ {Γ} {a} : Tm Γ a → Tm Γ a → Set where
   []  : ∀ {t} → t ⇒β* t
   _∷_ : ∀ {ti tm to} → ti ⇒β tm → tm ⇒β* to → ti ⇒β* to
@@ -129,10 +113,6 @@ cong* E1         E2          (x ∷ t⇒) = cong E1 (proj₂ (mkHole _)) x ∷ c
 subst⇒β*₀ : ∀ {m vt a Γ} {t t' : Tm Γ a} {Δ} (σ : RenSub {m} vt Γ Δ) → t ⇒β* t' → subst σ t ⇒β* subst σ t'
 subst⇒β*₀ σ [] = []
 subst⇒β*₀ σ (x ∷ xs) = (subst⇒β σ x) ∷ (subst⇒β*₀ σ xs)
-
-castC⇒β* : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  {t t' : Tm Γ a} → t ⇒β* t' → castC eqC eq t ⇒β* castC eqC eq t'
-castC⇒β* eqC eq []       = []
-castC⇒β* eqC eq (x ∷ xs) = castC⇒β eqC eq x ∷ castC⇒β* eqC eq xs
 
 -- map⇒β : ∀ {m n} → .(m ≤ℕ n) → ∀ {Γ a}{t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → t ⟨ m ⟩⇒ t'
 -- map⇒β m≤n (β t∈SN) = β (mapSN m≤n t∈SN)
@@ -163,7 +143,7 @@ mutual
   lifts⇒β* {vt = `Tm}  σ₁ (suc x)   = subst⇒β*₀ {vt = `Var} suc (σ₁ x)
 
 mutual
-  beta-shr : ∀ {n}{a} {Γ} {t tβ th : Tm Γ a} → t ⇒β tβ → t ⟨ n ⟩⇒ th → (tβ ≡ th) ⊎ Σ _ \ t' → tβ ⟨ n ⟩⇒ t' × th ⇒β* t'
+  beta-shr : ∀ {i n a Γ} {t tβ th : Tm Γ a} → t ⇒β tβ → i size t ⟨ n ⟩⇒ th → (tβ ≡ th) ⊎ Σ _ \ t' → tβ ⟨ n ⟩⇒ t' × th ⇒β* t'
   beta-shr β (β 𝒖)                                                   = inj₁ ≡.refl
   beta-shr (cong (appl u) (appl .u) (cong abs abs tβ⇒)) (β 𝒖)        = inj₂ (_ , β 𝒖 , (subst⇒β (sgs u) tβ⇒ ∷ []))
   beta-shr (cong (appr ._) (appr ._) tβ⇒) (β {t = t} 𝒖)
@@ -216,7 +196,7 @@ mutual
       ... | inj₁ ≡.refl = inj₁ ≡.refl
       ... | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong (∗r _) (∗r _) h⇒tm) , cong* (∗r _) (∗r _) tm⇒β))
 
-  mapβSNe : ∀ {n}{a} {Γ} {t t' : Tm Γ a} → t ⇒β t' → SNe n t → SNe n t'
+  mapβSNe : ∀ {i n a Γ} {t t' : Tm Γ a} → t ⇒β t' → SNe {i} n t → SNe {i} n t'
   mapβSNe β                                     (elim (elim 𝒏 ()) (appl 𝒖))
   mapβSNe β▹                                    (elim (elim 𝒏 ()) (𝒖 ∗l))
   mapβSNe β▹                                    (elim (elim 𝒏 ()) (∗r 𝒕))
@@ -238,7 +218,7 @@ mutual
   mapβSNe (cong (pairr _) (pairr ._) t⇒)        (elim 𝒏 ())
   mapβSNe (cong (pairl _) (pairl ._) t⇒)        (elim 𝒏 ())
 
-  mapβSN : ∀ {n}{a} {Γ} {t t' : Tm Γ a} → t ⇒β t' → SN n t → SN n t'
+  mapβSN : ∀ {i n a Γ} {t t' : Tm Γ a} → t ⇒β t' → SN {i} n t → SN {i} n t'
   mapβSN t⇒                (ne 𝒏)                      = ne (mapβSNe t⇒ 𝒏)
   mapβSN (cong abs abs t⇒) (abs 𝒕)                     = abs (mapβSN t⇒ 𝒕)
   mapβSN (cong (pairl u)   (pairl .u) t⇒) (pair 𝒕 𝒕₁)  = pair (mapβSN t⇒ 𝒕) 𝒕₁
@@ -249,6 +229,6 @@ mutual
   mapβSN t⇒ (exp t⇒₁ 𝒕) | inj₁ ≡.refl = 𝒕
   mapβSN t⇒ (exp t⇒₁ 𝒕) | inj₂ (_ , t⇒h , t⇒β*) = exp t⇒h (mapβ*SN t⇒β* 𝒕)
 
-  mapβ*SN : ∀ {n}{a} {Γ} {t t' : Tm Γ a} → t ⇒β* t' → SN n t → SN n t'
+  mapβ*SN : ∀ {i n a Γ} {t t' : Tm Γ a} → t ⇒β* t' → SN {i} n t → SN {i} n t'
   mapβ*SN []          𝒕 = 𝒕
   mapβ*SN (t⇒ ∷ t⇒β*) 𝒕 = mapβ*SN t⇒β* (mapβSN t⇒ 𝒕)
