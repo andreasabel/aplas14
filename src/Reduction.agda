@@ -1,7 +1,6 @@
 {-# OPTIONS --copatterns --sized-types #-}
 {-# OPTIONS --allow-unsolved-metas #-}
 --{-# OPTIONS --show-implicit #-}
-{-# OPTIONS --no-termination-check #-} -- too slow
 
 module Reduction where
 
@@ -143,7 +142,7 @@ mutual
   lifts⇒β* {vt = `Tm}  σ₁ (suc x)   = subst⇒β*₀ {vt = `Var} suc (σ₁ x)
 
 mutual
-  beta-shr : ∀ {i n a Γ} {t tβ th : Tm Γ a} → t ⇒β tβ → i size t ⟨ n ⟩⇒ th → (tβ ≡ th) ⊎ Σ _ \ t' → tβ ⟨ n ⟩⇒ t' × th ⇒β* t'
+  beta-shr : ∀ {i n a Γ} {t tβ th : Tm Γ a} → t ⇒β tβ → i size t ⟨ n ⟩⇒ th → (tβ ≡ th) ⊎ Σ _ \ t' → i size tβ ⟨ n ⟩⇒ t' × th ⇒β* t'
   beta-shr β (β 𝒖)                                                   = inj₁ ≡.refl
   beta-shr (cong (appl u) (appl .u) (cong abs abs tβ⇒)) (β 𝒖)        = inj₂ (_ , β 𝒖 , (subst⇒β (sgs u) tβ⇒ ∷ []))
   beta-shr (cong (appr ._) (appr ._) tβ⇒) (β {t = t} 𝒖)
@@ -165,16 +164,16 @@ mutual
   beta-shr (cong E1 E2 t⇒) (cong E0 E3 th⇒)                          = helper E1 E2 t⇒ E0 E3 th⇒
 
     where
-      helper : ∀ {n a Γ} {t tβ th : Tm Γ a} {Δ a₁} {t₁ ta : Tm Δ a₁}
+      helper : ∀ {i}{j : Size< i}{n a Γ} {t tβ th : Tm Γ a} {Δ a₁} {t₁ ta : Tm Δ a₁}
            {E : βECxt Γ Δ a₁ a} {a₂} {t₂ tb : Tm Γ a₂} {E₁ : ECxt Γ a₂ a} →
          βEhole t E t₁ →
          βEhole tβ E ta →
          t₁ ⇒β ta →
          Ehole t E₁ t₂ →
          Ehole th E₁ tb →
-         t₂ ⟨ n ⟩⇒ tb →
+         j size t₂ ⟨ n ⟩⇒ tb →
          tβ ≡ th ⊎
-         Σ (Tm Γ a) (λ tm → Σ (tβ ⟨ n ⟩⇒ tm) (λ x → th ⇒β* tm))
+         Σ (Tm Γ a) (λ tm → Σ (i size tβ ⟨ n ⟩⇒ tm) (λ x → th ⇒β* tm))
       helper (appl u) (appl .u) t⇒₁ (appl .u) (appl .u) th⇒₁ with beta-shr t⇒₁ th⇒₁
       helper (appl u) (appl .u) t⇒₁ (appl .u) (appl .u) th⇒₁ | inj₁ ≡.refl = inj₁ ≡.refl
       helper (appl u) (appl .u) t⇒₁ (appl .u) (appl .u) th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β)
@@ -204,15 +203,15 @@ mutual
   mapβSNe βsnd                                  (elim (elim 𝒏 ()) snd)
   mapβSNe (cong (appl u) (appl .u) t⇒)          (elim 𝒏 (appl 𝒖))   = elim (mapβSNe t⇒ 𝒏) (appl 𝒖)
   mapβSNe (cong (appr t₁) (appr .t₁) t⇒)        (elim 𝒏 (appl 𝒖))   = elim 𝒏 (appl (mapβSN t⇒ 𝒖))
-  mapβSNe (cong fst fst t⇒)                     (elim 𝒏 fst)        = elim (mapβSNe t⇒ 𝒏) fst
-  mapβSNe (cong snd snd t⇒)                     (elim 𝒏 snd)        = elim (mapβSNe t⇒ 𝒏) snd
-  mapβSNe (cong (u ∗l) (.u ∗l) t⇒)              (elim 𝒏 (𝒖 ∗l))     = elim (mapβSNe t⇒ 𝒏) (𝒖 ∗l)
+  mapβSNe (cong fst fst t⇒)                     (elim {j₁ = j₁} {j₂ = j₂} 𝒏 fst)        = elim {j₁ = j₁} {j₂ = j₂} (mapβSNe t⇒ 𝒏) fst
+  mapβSNe (cong snd snd t⇒)                     (elim {j₁ = j₁} {j₂ = j₂} 𝒏 snd)        = elim {j₁ = j₁} {j₂ = j₂} (mapβSNe t⇒ 𝒏) snd
+  mapβSNe (cong (u ∗l) (.u ∗l) t⇒)              (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (𝒖 ∗l))     = elim {j₁ = j₁} {j₂ = j₂} (mapβSNe t⇒ 𝒏) (𝒖 ∗l)
   mapβSNe (cong (u ∗l) (.u ∗l) (cong ▹_ ▹_ t⇒)) (elim 𝒏 (∗r ne (elim _ ())))
-  mapβSNe (cong (u ∗l) (.u ∗l) (cong ▹_ ▹_ t⇒)) (elim 𝒏 (∗r ▹0))    = elim 𝒏 (∗r ▹0)
-  mapβSNe (cong (u ∗l) (.u ∗l) (cong ▹_ ▹_ t⇒)) (elim 𝒏 (∗r (▹ 𝒕))) = elim 𝒏 (∗r (▹ mapβSN t⇒ 𝒕))
+  mapβSNe (cong (u ∗l) (.u ∗l) (cong ▹_ ▹_ t⇒)) (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r ▹0))    = elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r_ ▹0)
+  mapβSNe (cong (u ∗l) (.u ∗l) (cong ▹_ ▹_ t⇒)) (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r (▹ 𝒕))) = elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r (▹ mapβSN t⇒ 𝒕))
   mapβSNe (cong (u ∗l) (.u ∗l) (cong ▹_ ▹_ t⇒)) (elim 𝒏 (∗r exp (cong () 𝑬𝒕' t⇒₁) 𝒕))
-  mapβSNe (cong (∗r t₁) (∗r .t₁) t⇒)            (elim 𝒏 (𝒖 ∗l))     = elim 𝒏 (mapβSN t⇒ 𝒖 ∗l)
-  mapβSNe (cong (∗r ._) (∗r ._) t⇒)             (elim 𝒏 (∗r 𝒕))     = elim (mapβSNe t⇒ 𝒏) (∗r 𝒕)
+  mapβSNe (cong (∗r t₁) (∗r .t₁) t⇒)            (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (_∗l 𝒖))     = elim {j₁ = j₁} {j₂ = j₂} 𝒏 (mapβSN t⇒ 𝒖 ∗l)
+  mapβSNe (cong (∗r ._) (∗r ._) t⇒)             (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r 𝒕))     = elim {j₁ = j₁} {j₂ = j₂} (mapβSNe t⇒ 𝒏) (∗r 𝒕)
   mapβSNe (cong abs abs t⇒)                     (elim 𝒏 ())
   mapβSNe (cong ▹_ ▹_ t⇒)                       (elim 𝒏 ())
   mapβSNe (cong (pairr _) (pairr ._) t⇒)        (elim 𝒏 ())

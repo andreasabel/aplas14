@@ -1,7 +1,7 @@
 {-# OPTIONS --copatterns --sized-types #-}
 {-# OPTIONS --allow-unsolved-metas #-}
 {-# OPTIONS --sized-types #-}
--- {-# OPTIONS --show-implicit #-}
+{-# OPTIONS --show-implicit #-}
 {-# OPTIONS --no-termination-check #-} -- too slow
 
 module SN where
@@ -57,20 +57,20 @@ mutual
 
   -- Strongly normalizing evaluation contexts
 
-  data SNhole (n : ℕ) {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
+  data SNhole {i : Size} (n : ℕ) {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
 
     appl  : ∀ {a b t u}
-            → (𝒖 : SN n u)
+            → (𝒖 : SN {i} n u)
             → SNhole n (app t u) (appl u) (t ∶ (a →̂ b))
 
     fst   : ∀ {a b t}                 → SNhole n (fst {a = a} {b = b} t) fst t
 
     snd   : ∀ {a b t}                 → SNhole n (snd {a = a} {b = b} t) snd t
 
-    _∗l   : ∀ {a b∞ t u} (𝒖 : SN n u) → SNhole n (_∗_ {a = a} {b∞} t u) (u ∗l) t
+    _∗l   : ∀ {a b∞ t u} (𝒖 : SN {i} n u) → SNhole n (_∗_ {a = a} {b∞} t u) (u ∗l) t
 
     ∗r_   : ∀ {a : Ty}{b∞}{u t}
-              (𝒕 : SN n (▹_ {a∞ = delay (a →̂ force b∞)} t))
+              (𝒕 : SN {i} n (▹_ {a∞ = delay (a →̂ force b∞)} t))
                                       → SNhole n (_<$>_ {a = a} {b∞} t u) (∗r t) u
 
   -- Strongly neutral terms.
@@ -79,8 +79,8 @@ mutual
 
     var  : ∀ x                              → SNe n (var x)
 
-    elim : ∀ {j : Size< i}{a} {t : Tm Γ a} {E Et}
-           → (𝒏 : SNe {j} n t) (𝑬𝒕 : SNhole n Et E t) → SNe n Et
+    elim : ∀ {j₁ j₂ : Size< i}{a} {t : Tm Γ a} {E Et}
+           → (𝒏 : SNe {j₁} n t) (𝑬𝒕 : SNhole {j₂} n Et E t) → SNe n Et
 
   -- Strongly normalizing terms.
 
@@ -105,8 +105,8 @@ mutual
            → (𝒕 : SN {j} n t)
            → SN (suc n) {▸̂ a∞} (▹ t)
 
-    exp  : ∀ {j : Size< i} {a n t t′}
-           → (t⇒ : t ⟨ n ⟩⇒ t′) (𝒕′ : SN {j} n t′)
+    exp  : ∀ {j₁ j₂ : Size< i} {a n t t′}
+           → (t⇒ : j₁ size t ⟨ n ⟩⇒ t′) (𝒕′ : SN {j₂} n t′)
            → SN n {a} t
 
   _size_⟨_⟩⇒_ : ∀ (i : Size) {Γ}{a} → Tm Γ a → ℕ → Tm Γ a → Set
@@ -298,15 +298,14 @@ appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) (appl (var _)) t→t') 
 -- Closure under projections
 
 fstSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (fst t)
-fstSN (ne 𝒏)       = ne (elim 𝒏 fst)
+fstSN (ne 𝒏)       = ne (elim {j₁ = ∞} 𝒏 fst)
 fstSN (pair 𝒕₁ 𝒕₂) = exp (βfst 𝒕₂) 𝒕₁
 fstSN (exp t⇒ 𝒕)   = exp (cong fst fst t⇒) (fstSN 𝒕)
 
 sndSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (snd t)
-sndSN (ne 𝒏)       = ne (elim 𝒏 snd)
+sndSN (ne 𝒏)       = ne (elim {j₁ = ∞} 𝒏 snd)
 sndSN (pair 𝒕₁ 𝒕₂) = exp (βsnd 𝒕₁) 𝒕₂
 sndSN (exp t⇒ 𝒕)   = exp (cong snd snd t⇒) (sndSN 𝒕)
-
 
 -- Extensionality of SN for product type:
 -- If fst t ∈ SN and snd t ∈ SN then t ∈ SN.
