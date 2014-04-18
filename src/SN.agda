@@ -324,28 +324,28 @@ bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕
 
 -- If fst t ∈ SN then t ∈ SN.
 
-fromFstSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n (fst t) → SN n t
+fromFstSN : ∀{i n a b Γ}{t : Tm Γ (a ×̂ b)} → SN {i} n (fst t) → SN {i} n t
 fromFstSN (ne (elim 𝒏 fst))         = ne 𝒏
 fromFstSN (exp (βfst 𝒕₂) 𝒕₁)        = pair 𝒕₁ 𝒕₂
 fromFstSN (exp (cong fst fst t⇒) 𝒕) = exp t⇒ (fromFstSN 𝒕)
 
 -- If snd t ∈ SN then t ∈ SN.
 
-fromSndSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n (snd t) → SN n t
+fromSndSN : ∀{i n a b Γ}{t : Tm Γ (a ×̂ b)} → SN {i} n (snd t) → SN {i} n t
 fromSndSN (ne (elim 𝒏 snd))         = ne 𝒏
 fromSndSN (exp (βsnd 𝒕₁) 𝒕₂)        = pair 𝒕₁ 𝒕₂
 fromSndSN (exp (cong snd snd t⇒) 𝒕) = exp t⇒ (fromSndSN 𝒕)
 
 -- If app t u ∈ SN then u ∈ SN.
 
-apprSN : ∀{n a b Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} → SN n (app t u) → SN n u
+apprSN : ∀{i n a b Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} → SN {i} n (app t u) → SN {i} n u
 apprSN (ne (elim 𝒏 (appl 𝒖)))               = 𝒖
 apprSN (exp (β 𝒖) 𝒕)                        = 𝒖
 apprSN (exp (cong (appl u) (appl .u) t⇒) 𝒕) = apprSN 𝒕
 
-delaySN : ∀ {n a∞ b∞ Γ Δ}{t1 : Tm Γ (force a∞)}{t2 : Tm Δ (force b∞)}
-          → (∀ {n} → SN n t1 → SN n t2)
-          → SN n (▹_ {a∞ = a∞} t1) → SN n (▹_ {a∞ = b∞} t2)
+delaySN : ∀ {i n a∞ b∞ Γ Δ}{t1 : Tm Γ (force a∞)}{t2 : Tm Δ (force b∞)}
+          → (∀ {i n} → SN {i} n t1 → SN {i} n t2)
+          → SN {i} n (▹_ {a∞ = a∞} t1) → SN {i} n (▹_ {a∞ = b∞} t2)
 delaySN f (ne (elim 𝒏 ()))
 delaySN f ▹0    = ▹0
 delaySN f (▹ 𝒕) = ▹ f 𝒕
@@ -353,8 +353,8 @@ delaySN f (exp (cong () 𝑬𝒕' t⇒) 𝒕)
 
 -- If t ∗ u ∈ SN then u ∈ SN.
 
-∗rSN  : ∀{Γ}{a : Ty}{b∞} {t : Tm Γ (▸̂ (delay a ⇒ b∞))}
-                     {u : Tm Γ (▸ a)} → ∀ {n} → SN n (t ∗ u) → SN n u
+∗rSN  : ∀{i Γ}{a : Ty}{b∞} {t : Tm Γ (▸̂ (delay a ⇒ b∞))}
+                     {u : Tm Γ (▸ a)} → ∀ {n} → SN {i} n (t ∗ u) → SN {i} n u
 ∗rSN (ne (elim 𝒏 (𝒖 ∗l))) = 𝒖
 ∗rSN (ne (elim 𝒏 (∗r 𝒕))) = ne 𝒏
 ∗rSN (exp β▹ z) = delaySN apprSN z
