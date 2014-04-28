@@ -48,33 +48,36 @@ pairsn t u = acc (λ x → helper t u x) where
   helper (acc f) u₂ (cong (pairl u₁) (pairl .u₁) t⇒) = pairsn (f t⇒) u₂
   helper t₂ (acc f) (cong (pairr t₁) (pairr .t₁) t⇒) = pairsn t₂ (f t⇒)
 
---cong-fst-sn : ∀ {Γ n a j} {b} {t t' : Tm Γ (a ×̂ b)} →
---              t ⟨ n ⟩⇒ t' → sn n (fst t') → sn n (fst t)
-
 -- Goal here: prove that sne is closed under application.
 
-elimsn : ∀{n Γ a b}{E : ECxt Γ a b}{t : Tm Γ a}{Et : Tm Γ b} → sn n t → PCxt (sn n) Et E t → PNe (λ _ → ⊤) t →
+
+appsn : ∀{n Γ a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} → sn n t → sn n u → SNe n t →
+                 ∀ {t' : Tm Γ b} → app t u ⟨ n ⟩⇒β t' → sn n t'
+appsn t₂ u₁ (elim 𝒏 ()) β
+appsn (acc t) u₁ 𝒏 (cong (appl u) (appl .u) t⇒) = acc (appsn (t t⇒) u₁ (mapNβSNe t⇒ 𝒏))
+appsn t₁ (acc u₁) 𝒏 (cong (appr t) (appr .t) t⇒) = acc (appsn t₁ (u₁ t⇒) 𝒏)
+
+∗1sn : ∀ {n Γ} {a : Ty}{b∞} {t : Tm Γ (▸̂ ((delay (λ {j} → a)) ⇒ b∞))}
+         {u : Tm Γ (▸ a)} {Et' : Tm Γ (▸̂ b∞)} →
+       sn n t → sn n u → SNe n t ⊎ SNe n u → (t ∗ u) ⟨ n ⟩⇒β Et' → sn n Et'
+∗1sn t₂       u₁ (inj₁ (elim e ())) β▹
+∗1sn t₂       u₁ (inj₂ (elim e ())) β▹
+∗1sn (acc t₁) u₁ e           (cong (u ∗l) (.u ∗l) t⇒) = acc (∗1sn (t₁ t⇒) u₁ (Data.Sum.map (mapNβSNe t⇒) id e))
+∗1sn t₁       (acc u) e      (cong (∗r t) (∗r .t) t⇒) = acc (∗1sn t₁ (u t⇒) (Data.Sum.map id (mapNβSNe t⇒) e))
+
+elimsn : ∀{n Γ a b}{E : ECxt Γ a b}{t : Tm Γ a}{Et : Tm Γ b} → sn n t → PCxt (sn n) Et E t → SNe n t →
   ∀ {Et' : Tm Γ b} → Et ⟨ n ⟩⇒β Et' → sn n Et'
-elimsn 𝒕 (appl 𝒖) (elim 𝒏 ()) β
-elimsn 𝒕 (𝒖 ∗l) (elim 𝒏 ()) β▹
-elimsn 𝒕 (∗r 𝒕₁) (elim 𝒏 ()) β▹
-elimsn 𝒕 fst (elim 𝒏 ()) βfst
-elimsn 𝒕 snd (elim 𝒏 ()) βsnd
-elimsn 𝒕 (appl 𝒖) 𝒏 (cong (appl u) (appl .u) Et⇒Et') = {!acc (elimsn ? (appl 𝒖) ? (cong (appl u) (appl u) ?)) !}
-elimsn 𝒕 𝑬𝒕 𝒏 (cong (appr t₂) 𝑬𝒕' Et⇒Et') = {!!}
-elimsn 𝒕 𝑬𝒕 𝒏 (cong fst 𝑬𝒕' Et⇒Et') = {!!}
-elimsn 𝒕 𝑬𝒕 𝒏 (cong snd 𝑬𝒕' Et⇒Et') = {!!}
-elimsn 𝒕 𝑬𝒕 𝒏 (cong (u ∗l) 𝑬𝒕' Et⇒Et') = {!!}
-elimsn 𝒕 𝑬𝒕 𝒏 (cong (∗r t₂) 𝑬𝒕' Et⇒Et') = {!!}
+elimsn 𝒕 fst      (elim 𝒏 ()) βfst
+elimsn 𝒕 fst      𝒏           (cong fst fst Et⇒Et') = fstsn (sn⇒β 𝒕 Et⇒Et')
+elimsn 𝒕 snd      (elim 𝒏 ()) βsnd
+elimsn 𝒕 snd      𝒏           (cong snd snd Et⇒Et') = {!!}
+elimsn 𝒕 (appl 𝒖) 𝒏           t⇒                    = appsn 𝒕 𝒖 𝒏 t⇒
+elimsn 𝒕 (𝒖 ∗l)   𝒏           t⇒                    = ∗1sn 𝒕 𝒖 (inj₁ 𝒏) t⇒
+elimsn 𝒕 (∗r 𝒕₁)  𝒏           t⇒                    = ∗1sn {!𝒕₁!} 𝒕 (inj₂ 𝒏) t⇒
 
-snesn : ∀{n Γ a} {t : Tm Γ a} → PNe (sn n) t → sn n t
-snesn (var x) = varsn x
-snesn (elim 𝒏 𝑬𝒕) = {!snesn 𝒏!}
-
-
-open import Data.Empty
 
 mutual
+
   helper : ∀ {Γ n a} {t : Tm Γ a} {j₁ j₂ : Size}
              {t′ : Tm Γ a} →
            t ⟨ n ⟩⇒ t′ → SN n t′ → sn n t
@@ -89,32 +92,14 @@ mutual
   helper (cong (∗r t₁) (∗r .t₁) t⇒) t₂ = {!helper t⇒ (∗rSN t₂)!}
 
   fromSN : ∀ {i} {Γ} {n : ℕ} {a} {t : Tm Γ a} → SN {i} n t → sn n t
-  fromSN (ne 𝒏) = {- mapPNe () 𝒏 -}  fromSNe 𝒏
+  fromSN (ne 𝒏) = fromSNe 𝒏
   fromSN (abs t₁) = abssn (fromSN t₁)
   fromSN (pair t₁ t₂) = pairsn (fromSN t₁) (fromSN t₂)
   fromSN ▹0 = acc ((λ { (cong () _ _) }))
   fromSN (▹ t₁) = ▹sn (fromSN t₁)
-  fromSN (exp t⇒ t₁) = helper t⇒ t₁
+  fromSN (exp t⇒ t₁) = {! helper t⇒ t₁ !}
 
   fromSNe : ∀ {i Γ n a} {t : Tm Γ a} →
             SNe {i} n t → sn n t
-  fromSNe (elim 𝒏 (appl 𝒖)) = {!!}
-  fromSNe {t = fst (var x)   } (elim 𝒏 fst) = acc λ{ .{_} (cong fst fst t'⇒β) → fstsn (sn⇒β (fromSNe 𝒏) t'⇒β) }
-  fromSNe {t = fst (app t t₁)} (elim 𝒏 fst) = acc λ{ .{_} (cong fst fst t'⇒β) → fstsn (sn⇒β (fromSNe 𝒏) t'⇒β) }
-  fromSNe {t = fst (pair t t₁)} (elim (elim 𝒏 ()) fst)
-  fromSNe {t = fst (fst t)   } (elim 𝒏 fst) = acc λ{ .{_} (cong fst fst t'⇒β) → fstsn (sn⇒β (fromSNe 𝒏) t'⇒β) }
-  fromSNe {t = fst (snd t)   } (elim 𝒏 fst) = acc λ{ .{_} (cong fst fst t'⇒β) → fstsn (sn⇒β (fromSNe 𝒏) t'⇒β) }
-  fromSNe (elim 𝒏 snd) = {!!}
-  fromSNe (elim 𝒏 (𝒖 ∗l)) = {!!}
-  fromSNe (elim 𝒏 (∗r 𝒕)) = {!!}
-  fromSNe (var x)  = varsn x
-
-  -- fromSNe : ∀ {i Γ n a} {t : Tm Γ a} {t' : Tm Γ a} →
-  --           SNe {i} n t → t ⟨ n ⟩⇒β t' → ⊥
-  -- fromSNe (elim 𝒏 (appl 𝒖)) β = {!!}
-  -- fromSNe (elim (elim 𝒏 ()) (𝒖 ∗l)) β▹
-  -- fromSNe (elim (elim 𝒏 ()) (∗r 𝒕)) β▹
-  -- fromSNe (elim (elim 𝒏 ()) fst) βfst
-  -- fromSNe (elim (elim 𝒏 ()) snd) βsnd
-  -- fromSNe (elim 𝒏 E1) (cong E2 E3 t⇒) = {! fromSNe 𝒏 t⇒ !}
-  -- fromSNe (var x) (cong () 𝑬𝒕' t⇒)
+  fromSNe (elim 𝒏 E) = acc (elimsn (fromSNe 𝒏) (mapPCxt fromSN E) (𝒏))
+  fromSNe (var x)    = varsn x
