@@ -32,7 +32,7 @@ force (a∞ ⇒ b∞) = force a∞ →̂ force b∞
 -- Guarded fixpoint types (needs sized types)
 
 μ̂ : ∀{i} → (∀{j : Size< i} → ∞Ty {j} → Ty {j}) → ∞Ty {i}
-force (μ̂ F) = F (μ̂ F)
+(force (μ̂ {i} F)) {j} = F (μ̂ {j} F)
 
 -- Type equality
 
@@ -81,4 +81,4 @@ mutual
 ≅fill a≅b a≅a' a'≅b' = ≅trans (≅sym a≅b) (≅trans a≅a' a'≅b')
 
 postulate
-  ≅-to-≡ : ∀ {a b} → a ≅ b → a ≡ b 
+  ≅-to-≡ : ∀ {a b} → a ≅ b → a ≡ b
