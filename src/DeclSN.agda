@@ -8,6 +8,7 @@ open import Library
 open import SizedInfiniteTypes
 open import Terms
 open import Substitution
+open import TermShape
 open import SN
 open import NReduction
 open import Reduction
@@ -50,6 +51,27 @@ pairsn t u = acc (λ x → helper t u x) where
 --cong-fst-sn : ∀ {Γ n a j} {b} {t t' : Tm Γ (a ×̂ b)} →
 --              t ⟨ n ⟩⇒ t' → sn n (fst t') → sn n (fst t)
 
+-- Goal here: prove that sne is closed under application.
+
+elimsn : ∀{n Γ a b}{E : ECxt Γ a b}{t : Tm Γ a}{Et : Tm Γ b} → sn n t → PCxt (sn n) Et E t → PNe (λ _ → ⊤) t →
+  ∀ {Et' : Tm Γ b} → Et ⟨ n ⟩⇒β Et' → sn n Et'
+elimsn 𝒕 (appl 𝒖) (elim 𝒏 ()) β
+elimsn 𝒕 (𝒖 ∗l) (elim 𝒏 ()) β▹
+elimsn 𝒕 (∗r 𝒕₁) (elim 𝒏 ()) β▹
+elimsn 𝒕 fst (elim 𝒏 ()) βfst
+elimsn 𝒕 snd (elim 𝒏 ()) βsnd
+elimsn 𝒕 (appl 𝒖) 𝒏 (cong (appl u) (appl .u) Et⇒Et') = {!acc (elimsn ? (appl 𝒖) ? (cong (appl u) (appl u) ?)) !}
+elimsn 𝒕 𝑬𝒕 𝒏 (cong (appr t₂) 𝑬𝒕' Et⇒Et') = {!!}
+elimsn 𝒕 𝑬𝒕 𝒏 (cong fst 𝑬𝒕' Et⇒Et') = {!!}
+elimsn 𝒕 𝑬𝒕 𝒏 (cong snd 𝑬𝒕' Et⇒Et') = {!!}
+elimsn 𝒕 𝑬𝒕 𝒏 (cong (u ∗l) 𝑬𝒕' Et⇒Et') = {!!}
+elimsn 𝒕 𝑬𝒕 𝒏 (cong (∗r t₂) 𝑬𝒕' Et⇒Et') = {!!}
+
+snesn : ∀{n Γ a} {t : Tm Γ a} → PNe (sn n) t → sn n t
+snesn (var x) = varsn x
+snesn (elim 𝒏 𝑬𝒕) = {!snesn 𝒏!}
+
+
 open import Data.Empty
 
 mutual
@@ -67,7 +89,7 @@ mutual
   helper (cong (∗r t₁) (∗r .t₁) t⇒) t₂ = {!helper t⇒ (∗rSN t₂)!}
 
   fromSN : ∀ {i} {Γ} {n : ℕ} {a} {t : Tm Γ a} → SN {i} n t → sn n t
-  fromSN (ne 𝒏) = fromSNe 𝒏
+  fromSN (ne 𝒏) = {- mapPNe () 𝒏 -}  fromSNe 𝒏
   fromSN (abs t₁) = abssn (fromSN t₁)
   fromSN (pair t₁ t₂) = pairsn (fromSN t₁) (fromSN t₂)
   fromSN ▹0 = acc ((λ { (cong () _ _) }))

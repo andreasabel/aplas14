@@ -9,6 +9,7 @@ open import Library
 open import SizedInfiniteTypes
 open import Terms
 open import Substitution
+open import TermShape
 open import SN
 
 data βECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → Set where

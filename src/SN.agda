@@ -20,32 +20,13 @@ mutual
 
   -- Strongly normalizing evaluation contexts
 
-  data SNhole {i : Size} (n : ℕ) {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
-
-    appl  : ∀ {a b t u}
-            → (𝒖 : SN {i} n u)
-            → SNhole n (app t u) (appl u) (t ∶ (a →̂ b))
-
-    fst   : ∀ {a b t}                 → SNhole n (fst {a = a} {b = b} t) fst t
-
-    snd   : ∀ {a b t}                 → SNhole n (snd {a = a} {b = b} t) snd t
-
-    _∗l   : ∀ {a b∞ t u} (𝒖 : SN {i} n u) → SNhole n (_∗_ {a = a} {b∞} t u) (u ∗l) t
-
-    ∗r_   : ∀ {a : Ty}{b∞}{u t}
-              (𝒕 : SN {i} n (▹_ {a∞ = delay (a →̂ force b∞)} t))
-                                      → SNhole n (_<$>_ {a = a} {b∞} t u) (∗r t) u
+  SNhole : ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
+  SNhole {i} n = PCxt (SN {i} n)
 
   -- Strongly neutral terms.
 
-  data SNe {i : Size} (n : ℕ) {Γ} {b} : Tm Γ b → Set where
-
-    var  : ∀ x                              → SNe n (var x)
-
-    elim : ∀ {a} {t : Tm Γ a} {E Et}
-           → (𝒏 : SNe {i} n t) (𝑬𝒕 : SNhole {i} n Et E t) → SNe n Et
-    -- elim : ∀ {j₁ j₂ : Size< i}{a} {t : Tm Γ a} {E Et}
-    --        → (𝒏 : SNe {j₁} n t) (𝑬𝒕 : SNhole {j₂} n Et E t) → SNe n Et
+  SNe : ∀ {i : Size} (n : ℕ) {Γ} {b} → Tm Γ b → Set
+  SNe {i} n = PNe (SN {i} n)
 
   -- Strongly normalizing terms.
 
@@ -75,32 +56,101 @@ mutual
            → SN n {a} t
 
   _size_⟨_⟩⇒_ : ∀ (i : Size) {Γ}{a} → Tm Γ a → ℕ → Tm Γ a → Set
-  i size t ⟨ n ⟩⇒ t′ = _⟨_⟩⇒_ {i} t n t′
+  i size t ⟨ n ⟩⇒ t′ = SN {i} n / t ⇒ t′
 
   -- Strong head reduction
 
-  data _⟨_⟩⇒_ {i : Size} {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
+  _⟨_⟩⇒_ : ∀ {i : Size} {Γ} {a} → Tm Γ a → ℕ → Tm Γ a → Set
+  _⟨_⟩⇒_ {i} t n t' = (SN {i} n) / t ⇒ t'
 
-    β     : ∀  {n a b}{t : Tm (a ∷ Γ) b}{u}
-            → (𝒖 : SN {i} n u)
-            → (app (abs t) u) ⟨ n ⟩⇒ subst0 u t
 
-    β▹    : ∀ {n a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
-             → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b∞} (app t u))
+-- -- Inductive definition of strong normalization.
 
-    βfst  : ∀  {n a b}{t : Tm Γ a}{u : Tm Γ b}
-            → (𝒖 : SN {i} n u)
-            → fst (pair t u) ⟨ n ⟩⇒ t
+-- mutual
 
-    βsnd  : ∀  {n a b}{t : Tm Γ a}{u : Tm Γ b}
-            → (𝒕 : SN {i} n t)
-            → snd (pair t u) ⟨ n ⟩⇒ u
+--   -- Strongly normalizing evaluation contexts
 
-    cong  : ∀  {n a b t t' Et Et'}{E : ECxt Γ a b}
-            → (𝑬𝒕 : Ehole Et E t)
-            → (𝑬𝒕' : Ehole Et' E t')
-            → (t⇒ : i size t ⟨ n ⟩⇒ t')
-            → Et ⟨ n ⟩⇒ Et'
+--   data SNhole {i : Size} (n : ℕ) {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
+
+--     appl  : ∀ {a b t u}
+--             → (𝒖 : SN {i} n u)
+--             → SNhole n (app t u) (appl u) (t ∶ (a →̂ b))
+
+--     fst   : ∀ {a b t}                 → SNhole n (fst {a = a} {b = b} t) fst t
+
+--     snd   : ∀ {a b t}                 → SNhole n (snd {a = a} {b = b} t) snd t
+
+--     _∗l   : ∀ {a b∞ t u} (𝒖 : SN {i} n u) → SNhole n (_∗_ {a = a} {b∞} t u) (u ∗l) t
+
+--     ∗r_   : ∀ {a : Ty}{b∞}{u t}
+--               (𝒕 : SN {i} n (▹_ {a∞ = delay (a →̂ force b∞)} t))
+--                                       → SNhole n (_<$>_ {a = a} {b∞} t u) (∗r t) u
+
+--   -- Strongly neutral terms.
+
+--   data SNe {i : Size} (n : ℕ) {Γ} {b} : Tm Γ b → Set where
+
+--     var  : ∀ x                              → SNe n (var x)
+
+--     elim : ∀ {a} {t : Tm Γ a} {E Et}
+--            → (𝒏 : SNe {i} n t) (𝑬𝒕 : SNhole {i} n Et E t) → SNe n Et
+--     -- elim : ∀ {j₁ j₂ : Size< i}{a} {t : Tm Γ a} {E Et}
+--     --        → (𝒏 : SNe {j₁} n t) (𝑬𝒕 : SNhole {j₂} n Et E t) → SNe n Et
+
+--   -- Strongly normalizing terms.
+
+--   data SN {i : Size}{Γ} : ℕ → ∀ {a} → Tm Γ a → Set where
+
+--     ne   : ∀ {j : Size< i} {a n t}
+--            → (𝒏 : SNe {j} n t)
+--            → SN n {a} t
+
+--     abs  : ∀ {j : Size< i} {a b n}{t : Tm (a ∷ Γ) b}
+--            → (𝒕 : SN {j} n t)
+--            → SN n (abs t)
+
+--     pair : ∀ {j₁ j₂ : Size< i} {a b n t u}
+--            → (𝒕 : SN {j₁} n t) (𝒖 : SN {j₂} n u)
+--            → SN n {a ×̂ b} (pair t u)
+
+--     ▹0   : ∀ {a∞} {t : Tm Γ (force a∞)}
+--            → SN 0 {▸̂ a∞} (▹ t)
+
+--     ▹_   : ∀ {j : Size< i} {a∞ n} {t : Tm Γ (force a∞)}
+--            → (𝒕 : SN {j} n t)
+--            → SN (suc n) {▸̂ a∞} (▹ t)
+
+--     exp  : ∀ {j₁ j₂ : Size< i} {a n t t′}
+--            → (t⇒ : j₁ size t ⟨ n ⟩⇒ t′) (𝒕′ : SN {j₂} n t′)
+--            → SN n {a} t
+
+--   _size_⟨_⟩⇒_ : ∀ (i : Size) {Γ}{a} → Tm Γ a → ℕ → Tm Γ a → Set
+--   i size t ⟨ n ⟩⇒ t′ = _⟨_⟩⇒_ {i} t n t′
+
+--   -- Strong head reduction
+
+--   data _⟨_⟩⇒_ {i : Size} {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
+
+--     β     : ∀  {n a b}{t : Tm (a ∷ Γ) b}{u}
+--             → (𝒖 : SN {i} n u)
+--             → (app (abs t) u) ⟨ n ⟩⇒ subst0 u t
+
+--     β▹    : ∀ {n a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
+--              → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b∞} (app t u))
+
+--     βfst  : ∀  {n a b}{t : Tm Γ a}{u : Tm Γ b}
+--             → (𝒖 : SN {i} n u)
+--             → fst (pair t u) ⟨ n ⟩⇒ t
+
+--     βsnd  : ∀  {n a b}{t : Tm Γ a}{u : Tm Γ b}
+--             → (𝒕 : SN {i} n t)
+--             → snd (pair t u) ⟨ n ⟩⇒ u
+
+--     cong  : ∀  {n a b t t' Et Et'}{E : ECxt Γ a b}
+--             → (𝑬𝒕 : Ehole Et E t)
+--             → (𝑬𝒕' : Ehole Et' E t')
+--             → (t⇒ : i size t ⟨ n ⟩⇒ t')
+--             → Et ⟨ n ⟩⇒ Et'
 
     -- β     : ∀ {j : Size< i} {n a b}{t : Tm (a ∷ Γ) b}{u}
     --         → (𝒖 : SN {j} n u)
@@ -156,6 +206,9 @@ sneApp : ∀{n Γ a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
 sneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
 
 -- Functoriality of the SN-notions wrt. evaluation depth n.
+
+-- TODO: these can be expressed in terms of the parametrized notions.
+-- mapPNe etc.
 
 mutual
   mapSNe : ∀ {m n} → .(m ≤ℕ n) → ∀ {Γ a}{t : Tm Γ a} → SNe n t -> SNe m t
