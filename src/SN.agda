@@ -1,8 +1,7 @@
 {-# OPTIONS --copatterns --sized-types #-}
 {-# OPTIONS --allow-unsolved-metas #-}
-{-# OPTIONS --sized-types #-}
 {-# OPTIONS --show-implicit #-}
-{-# OPTIONS --no-termination-check #-} -- too slow
+-- {-# OPTIONS --no-termination-check #-} -- too slow
 
 module SN where
 
@@ -12,43 +11,7 @@ open import Library
 open import SizedInfiniteTypes
 open import Terms
 open import Substitution
-
-
--- Evaluation contexts.
-
-data ECxt (Γ : Cxt) : (a b : Ty) → Set where
-  appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
-  fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a
-  snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
-  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → ECxt Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞)
-  ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → ECxt Γ (▸ a) (▸̂ b∞)
-
--- Ehole Et E t ~~ Et = E[t]
-
-data Ehole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
-  appl  : ∀ {a b t} (u : Tm Γ a)  → Ehole (app t u) (appl u) (t ∶ (a →̂ b))
-  fst   : ∀ {a b t} → Ehole {a = a ×̂ b} (fst t) fst t
-  snd   : ∀ {a b t} → Ehole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a)) → Ehole {a = (▸̂ (delay a ⇒ b∞))} (t ∗ u) (u ∗l) t
-  ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (a →̂ force b∞)) → Ehole (((▹ t) ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
-
-
--- Evaluation contexts are closed under substitution.
-
-substEC : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ECxt Γ a b → ECxt Δ a b
-substEC σ (appl u) = appl (subst σ u)
-substEC σ fst      = fst
-substEC σ snd      = snd
-substEC σ (u ∗l)   = subst σ u ∗l
-substEC σ (∗r t₁)  = ∗r subst σ t₁
-
-substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E}{Et : Tm Γ b}{t : Tm Γ a} → (Eh : Ehole Et E t)
-            → Ehole (subst σ Et) (substEC σ E) (subst σ t)
-substEh σ (appl u) = appl (subst σ u)
-substEh σ fst      = fst
-substEh σ snd      = snd
-substEh σ (u ∗l)   = subst σ u ∗l
-substEh σ (∗r t₁)  = ∗r subst σ t₁
+open import TermShape
 
 
 -- Inductive definition of strong normalization.
@@ -79,8 +42,10 @@ mutual
 
     var  : ∀ x                              → SNe n (var x)
 
-    elim : ∀ {j₁ j₂ : Size< i}{a} {t : Tm Γ a} {E Et}
-           → (𝒏 : SNe {j₁} n t) (𝑬𝒕 : SNhole {j₂} n Et E t) → SNe n Et
+    elim : ∀ {a} {t : Tm Γ a} {E Et}
+           → (𝒏 : SNe {i} n t) (𝑬𝒕 : SNhole {i} n Et E t) → SNe n Et
+    -- elim : ∀ {j₁ j₂ : Size< i}{a} {t : Tm Γ a} {E Et}
+    --        → (𝒏 : SNe {j₁} n t) (𝑬𝒕 : SNhole {j₂} n Et E t) → SNe n Et
 
   -- Strongly normalizing terms.
 
@@ -116,26 +81,47 @@ mutual
 
   data _⟨_⟩⇒_ {i : Size} {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
 
-    β     : ∀ {j : Size< i} {n a b}{t : Tm (a ∷ Γ) b}{u}
-            → (𝒖 : SN {j} n u)
+    β     : ∀  {n a b}{t : Tm (a ∷ Γ) b}{u}
+            → (𝒖 : SN {i} n u)
             → (app (abs t) u) ⟨ n ⟩⇒ subst0 u t
 
     β▹    : ∀ {n a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
              → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b∞} (app t u))
 
-    βfst  : ∀ {j : Size< i} {n a b}{t : Tm Γ a}{u : Tm Γ b}
-            → (𝒖 : SN {j} n u)
+    βfst  : ∀  {n a b}{t : Tm Γ a}{u : Tm Γ b}
+            → (𝒖 : SN {i} n u)
             → fst (pair t u) ⟨ n ⟩⇒ t
 
-    βsnd  : ∀ {j : Size< i} {n a b}{t : Tm Γ a}{u : Tm Γ b}
-            → (𝒕 : SN {j} n t)
+    βsnd  : ∀  {n a b}{t : Tm Γ a}{u : Tm Γ b}
+            → (𝒕 : SN {i} n t)
             → snd (pair t u) ⟨ n ⟩⇒ u
 
-    cong  : ∀ {j : Size< i} {n a b t t' Et Et'}{E : ECxt Γ a b}
+    cong  : ∀  {n a b t t' Et Et'}{E : ECxt Γ a b}
             → (𝑬𝒕 : Ehole Et E t)
             → (𝑬𝒕' : Ehole Et' E t')
-            → (t⇒ : j size t ⟨ n ⟩⇒ t')
+            → (t⇒ : i size t ⟨ n ⟩⇒ t')
             → Et ⟨ n ⟩⇒ Et'
+
+    -- β     : ∀ {j : Size< i} {n a b}{t : Tm (a ∷ Γ) b}{u}
+    --         → (𝒖 : SN {j} n u)
+    --         → (app (abs t) u) ⟨ n ⟩⇒ subst0 u t
+
+    -- β▹    : ∀ {n a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
+    --          → (▹ t ∗ ▹ u) ⟨ n ⟩⇒ (▹_ {a∞ = b∞} (app t u))
+
+    -- βfst  : ∀ {j : Size< i} {n a b}{t : Tm Γ a}{u : Tm Γ b}
+    --         → (𝒖 : SN {j} n u)
+    --         → fst (pair t u) ⟨ n ⟩⇒ t
+
+    -- βsnd  : ∀ {j : Size< i} {n a b}{t : Tm Γ a}{u : Tm Γ b}
+    --         → (𝒕 : SN {j} n t)
+    --         → snd (pair t u) ⟨ n ⟩⇒ u
+
+    -- cong  : ∀ {j : Size< i} {n a b t t' Et Et'}{E : ECxt Γ a b}
+    --         → (𝑬𝒕 : Ehole Et E t)
+    --         → (𝑬𝒕' : Ehole Et' E t')
+    --         → (t⇒ : j size t ⟨ n ⟩⇒ t')
+    --         → Et ⟨ n ⟩⇒ Et'
 
 -- Strong head reduction is deterministic.
 
@@ -298,12 +284,14 @@ appVarSN (exp t→t' t'∈SN) = exp (cong (appl (var _)) (appl (var _)) t→t') 
 -- Closure under projections
 
 fstSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (fst t)
-fstSN (ne 𝒏)       = ne (elim {j₁ = ∞} 𝒏 fst)
+fstSN (ne 𝒏)       = ne (elim 𝒏 fst)
+-- fstSN (ne 𝒏)       = ne (elim {j₁ = ∞} 𝒏 fst)
 fstSN (pair 𝒕₁ 𝒕₂) = exp (βfst 𝒕₂) 𝒕₁
 fstSN (exp t⇒ 𝒕)   = exp (cong fst fst t⇒) (fstSN 𝒕)
 
 sndSN : ∀{n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (snd t)
-sndSN (ne 𝒏)       = ne (elim {j₁ = ∞} 𝒏 snd)
+sndSN (ne 𝒏)       = ne (elim 𝒏 snd)
+-- sndSN (ne 𝒏)       = ne (elim {j₁ = ∞} 𝒏 snd)
 sndSN (pair 𝒕₁ 𝒕₂) = exp (βsnd 𝒕₁) 𝒕₂
 sndSN (exp t⇒ 𝒕)   = exp (cong snd snd t⇒) (sndSN 𝒕)
 
@@ -316,7 +304,7 @@ bothProjSN (ne (elim 𝒏 fst))    _                 = ne 𝒏
 bothProjSN (exp (βfst 𝒕₂) 𝒕₁)    _                 = pair 𝒕₁ 𝒕₂
 bothProjSN (exp (cong _ _ _) _) (ne (elim 𝒏 snd))  = ne 𝒏
 bothProjSN (exp (cong _ _ _) _) (exp (βsnd 𝒕₁) 𝒕₂) = pair 𝒕₁ 𝒕₂
-bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕₂) 
+bothProjSN (exp (cong fst fst t⇒₁) 𝒕₁) (exp (cong snd snd t⇒₂) 𝒕₂)
   = exp t⇒₂ (≡.subst (SN _) (det⇒ t⇒₁ t⇒₂) (bothProjSN 𝒕₁ (≡.subst (SN _) (≡.sym (≡.cong snd (det⇒ t⇒₁ t⇒₂))) 𝒕₂)))
 
 
