@@ -63,7 +63,7 @@ data PCxt {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) : {a b : Ty} → Tm Γ b �
   _∗l   : ∀ {a b∞ t u} (𝒖 : P u) → PCxt P (_∗_ {a = a} {b∞} t u) (u ∗l) t
 
   ∗r_   : ∀ {a : Ty}{b∞}{u t}
-            (𝒕 : P (▹_ {a∞ = delay (a →̂ force b∞)} t))
+            (𝒕 : P (▹_ {a∞ = delay a ⇒ b∞} t))
                                     → PCxt P (_<$>_ {a = a} {b∞} t u) (∗r t) u
 
 -- Parameterized neutral terms.
