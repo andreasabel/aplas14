@@ -41,6 +41,9 @@ pairsn t u = acc (λ x → helper t u x) where
   helper (acc f) u₂ (cong (pairl u₁) (pairl .u₁) t⇒) = pairsn (f t⇒) u₂
   helper t₂ (acc f) (cong (pairr t₁) (pairr .t₁) t⇒) = pairsn t₂ (f t⇒)
 
+--cong-fst-sn : ∀ {Γ n a j} {b} {t t' : Tm Γ (a ×̂ b)} →
+--              t ⟨ n ⟩⇒ t' → sn n (fst t') → sn n (fst t)
+
 open import Data.Empty
 
 mutual
@@ -51,7 +54,11 @@ mutual
   helper β▹ t₁ = {!!}
   helper (βfst 𝒖) t₁ = fstsn (pairsn (fromSN t₁) (fromSN 𝒖))
   helper (βsnd 𝒕) t₁ = {!!}
-  helper (cong 𝑬𝒕 𝑬𝒕' t⇒) t₂ = {!!}
+  helper (cong (appl u) (appl .u) t⇒) t₂ = {!fstsn!}
+  helper (cong fst fst t⇒) t₂ = fstsn (helper t⇒ (fromFstSN t₂))
+  helper (cong snd snd t⇒) t₂ = {!!}
+  helper (cong (u ∗l) (.u ∗l) t⇒) t₂ = {!!}
+  helper (cong (∗r t₁) (∗r .t₁) t⇒) t₂ = {!helper t⇒ (∗rSN t₂)!}
 
   fromSN : ∀ {i} {Γ} {n : ℕ} {a} {t : Tm Γ a} → SN {i} n t → sn n t
   fromSN (ne 𝒏) = acc (λ x → ⊥-elim (fromSNe 𝒏 x))
