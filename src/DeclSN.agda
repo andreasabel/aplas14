@@ -15,18 +15,24 @@ open import Reduction
 data sn {Γ} (n : ℕ) {a} (t : Tm Γ a) : Set where
   acc : (∀ {t'} → t ⟨ n ⟩⇒β t' → sn n t') → sn n t
 
+sn⇒β :  ∀ {Γ} {n : ℕ} {a} {t t' : Tm Γ a} → sn n t → t ⟨ n ⟩⇒β t' → sn n t'
+sn⇒β (acc h) r = h r
+
+varsn : ∀ {Γ} {n : ℕ} {a} (x : Var Γ a) → sn n (var x)
+varsn x = acc λ { (cong () _ _) }
+
 abssn : ∀ {Γ} {n : ℕ} {a b} {t : Tm (a ∷ Γ) b} → sn n t → sn n (abs t)
-abssn (acc f) = acc (λ { {._} (cong abs abs x)  → abssn (f x) }) 
+abssn (acc f) = acc (λ { {._} (cong abs abs x)  → abssn (f x) })
 
 ▹sn : ∀ {Γ} {n : ℕ} {a∞} {t : Tm Γ (force a∞)} → sn n t → sn (suc n) (▹_ {a∞ = a∞} t)
-▹sn (acc f) = acc (λ { {._} (cong ▹_ ▹_ x)  → ▹sn (f x) }) 
+▹sn (acc f) = acc (λ { {._} (cong ▹_ ▹_ x)  → ▹sn (f x) })
 
 Fstsn : ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ a}{u : Tm Γ b} → sn n (pair t u) → sn n t
 Fstsn (acc f) = acc (\ x -> Fstsn (f (cong (pairl _) (pairl _) x)))
 
 fstsn : ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ (a ×̂  b)} → sn n t → sn n (fst t)
 fstsn t = acc (helper t) where
-  helper : ∀ {Γ n a b} {t : Tm Γ (a ×̂ b)} {t' : Tm Γ a} 
+  helper : ∀ {Γ n a b} {t : Tm Γ (a ×̂ b)} {t' : Tm Γ a}
            → sn n t → fst t ⟨ n ⟩⇒β t' → sn n t'
   helper t       βfst               = Fstsn t
   helper (acc f) (cong fst fst t⇒β) = fstsn (f t⇒β)
@@ -61,19 +67,32 @@ mutual
   helper (cong (∗r t₁) (∗r .t₁) t⇒) t₂ = {!helper t⇒ (∗rSN t₂)!}
 
   fromSN : ∀ {i} {Γ} {n : ℕ} {a} {t : Tm Γ a} → SN {i} n t → sn n t
-  fromSN (ne 𝒏) = acc (λ x → ⊥-elim (fromSNe 𝒏 x))
+  fromSN (ne 𝒏) = fromSNe 𝒏
   fromSN (abs t₁) = abssn (fromSN t₁)
   fromSN (pair t₁ t₂) = pairsn (fromSN t₁) (fromSN t₂)
   fromSN ▹0 = acc ((λ { (cong () _ _) }))
   fromSN (▹ t₁) = ▹sn (fromSN t₁)
   fromSN (exp t⇒ t₁) = helper t⇒ t₁
 
-  fromSNe : ∀ {i Γ n a} {t : Tm Γ a} {t' : Tm Γ a} →
-            SNe {i} n t → t ⟨ n ⟩⇒β t' → ⊥ 
-  fromSNe (elim 𝒏 (appl 𝒖)) β = {!!}
-  fromSNe (elim (elim 𝒏 ()) (𝒖 ∗l)) β▹
-  fromSNe (elim (elim 𝒏 ()) (∗r 𝒕)) β▹
-  fromSNe (elim (elim 𝒏 ()) fst) βfst
-  fromSNe (elim (elim 𝒏 ()) snd) βsnd
-  fromSNe (elim 𝒏 E1) (cong E2 E3 t⇒) = {! fromSNe 𝒏 t⇒ !}
-  fromSNe (var x) (cong () 𝑬𝒕' t⇒)
+  fromSNe : ∀ {i Γ n a} {t : Tm Γ a} →
+            SNe {i} n t → sn n t
+  fromSNe (elim 𝒏 (appl 𝒖)) = {!!}
+  fromSNe {t = fst (var x)   } (elim 𝒏 fst) = acc λ{ .{_} (cong fst fst t'⇒β) → fstsn (sn⇒β (fromSNe 𝒏) t'⇒β) }
+  fromSNe {t = fst (app t t₁)} (elim 𝒏 fst) = acc λ{ .{_} (cong fst fst t'⇒β) → fstsn (sn⇒β (fromSNe 𝒏) t'⇒β) }
+  fromSNe {t = fst (pair t t₁)} (elim (elim 𝒏 ()) fst)
+  fromSNe {t = fst (fst t)   } (elim 𝒏 fst) = acc λ{ .{_} (cong fst fst t'⇒β) → fstsn (sn⇒β (fromSNe 𝒏) t'⇒β) }
+  fromSNe {t = fst (snd t)   } (elim 𝒏 fst) = acc λ{ .{_} (cong fst fst t'⇒β) → fstsn (sn⇒β (fromSNe 𝒏) t'⇒β) }
+  fromSNe (elim 𝒏 snd) = {!!}
+  fromSNe (elim 𝒏 (𝒖 ∗l)) = {!!}
+  fromSNe (elim 𝒏 (∗r 𝒕)) = {!!}
+  fromSNe (var x)  = varsn x
+
+  -- fromSNe : ∀ {i Γ n a} {t : Tm Γ a} {t' : Tm Γ a} →
+  --           SNe {i} n t → t ⟨ n ⟩⇒β t' → ⊥
+  -- fromSNe (elim 𝒏 (appl 𝒖)) β = {!!}
+  -- fromSNe (elim (elim 𝒏 ()) (𝒖 ∗l)) β▹
+  -- fromSNe (elim (elim 𝒏 ()) (∗r 𝒕)) β▹
+  -- fromSNe (elim (elim 𝒏 ()) fst) βfst
+  -- fromSNe (elim (elim 𝒏 ()) snd) βsnd
+  -- fromSNe (elim 𝒏 E1) (cong E2 E3 t⇒) = {! fromSNe 𝒏 t⇒ !}
+  -- fromSNe (var x) (cong () 𝑬𝒕' t⇒)
