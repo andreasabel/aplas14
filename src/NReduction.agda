@@ -151,8 +151,14 @@ nβ⇒β (cong E1 E2 t⇒) = cong (help E1) (help E2) (nβ⇒β t⇒)
     help abs = abs
     help ▹_ = ▹_
 
+
+nβ*⇒β* : ∀ {n a Γ} {t t' : Tm Γ a} → t ⟨ n ⟩⇒β* t' → t ⇒β* t'
+nβ*⇒β* [] = []
+nβ*⇒β* (x ∷ xs) = nβ⇒β x ∷ nβ*⇒β* xs 
+
 mapNβSNe : ∀ {i n m a Γ} {t t' : Tm Γ a} → t ⟨ m ⟩⇒β t' → SNe {i} n t → SNe {i} n t'
 mapNβSNe t⇒ 𝒕 = mapβSNe (nβ⇒β t⇒) 𝒕 
 
 mapNβSN : ∀ {i n m a Γ} {t t' : Tm Γ a} → t ⟨ m ⟩⇒β t' → SN {i} n t → SN {i} n t'
 mapNβSN t⇒ 𝒕 = mapβSN (nβ⇒β t⇒) 𝒕
+
