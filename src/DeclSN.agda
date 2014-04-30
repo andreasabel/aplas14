@@ -86,7 +86,14 @@ elimsn 𝒕 (∗r 𝒕₁)  𝒏           t⇒                    = ∗sn 𝒕�
 
 
 appsn₂ : ∀ {n a b Γ} {u : Tm Γ a} {t : Tm (a ∷ Γ) (b)} → sn n (subst (sgs u) t) → sn n u → sn n (app (abs t) u) 
-appsn₂ t[u] u = {!!}
+appsn₂ t[u] u = acc (λ x → help t[u] u x) where
+  help : ∀ {n a b Γ} {u : Tm Γ a} {t : Tm (a ∷ Γ) b} {t' : Tm Γ b} →
+       sn n (subst (u ∷s var) t) →
+       sn n u → app (abs t) u ⟨ n ⟩⇒β t' → sn n t'
+  help t[u]₁ u₂ β = t[u]₁
+  help (acc f) u₂ (cong (appl u₁) (appl .u₁) (cong abs abs b₁)) = appsn₂ (f (NReduction.subst⇒β (sgs u₁) b₁)) u₂
+  help (acc f) (acc g) (cong (appr ._) (appr ._) b₁) = appsn₂ (f {!!}) (g b₁)
+
 
 substβsn : ∀ {i m vt a Γ n} {Δ} {σ ρ : RenSub {m} vt Γ Δ} → (∀ {b} (x : Var Γ b) → vt2tm _ (σ x) ⟨ n ⟩⇒β* vt2tm _ (ρ x))
              → (t : Tm Γ a) → SN {i} n (subst σ t) → SN {i} n (subst ρ t)
@@ -94,17 +101,39 @@ substβsn f t x₁ = mapβ*SN (subst⇒β* (λ x → nβ*⇒β* (f x)) t) x₁
 
 
 
-
 mutual
-
+{-
   -- could we just use the beta-shr lemma?
-  helper2 : ∀ {i j Γ n a} {t th to : Tm Γ a} →
-           i size t ⟨ n ⟩⇒ th → SN {j} n th → sn n th -> t ⟨ n ⟩⇒β to → sn n to
-  helper2 th SNt snt tb with beta-shr (nβ⇒β tb) th 
-  helper2 th₁ SNt snt tb | inj₁ ≡.refl = snt
-  helper2 th₁ SNt snt tb | inj₂ (th , th' , []) = {!!}
-  helper2 th SNt snt tb | inj₂ (z , th' , x ∷ xs) = acc (helper2 th' {!!} {!!})
+  helper2 : ∀ {i Γ n a} {t th to : Tm Γ a} →
+           i size t ⟨ n ⟩⇒ th → {-SN {j} n th →-} sn n th -> t ⟨ n ⟩⇒β to → sn n to
+  helper2 th {-SNt-} snt tb with beta-shr (nβ⇒β tb) th 
+  helper2 th₁ {-SNt-} snt tb | inj₁ ≡.refl = snt
+  helper2 th₁ {-SNt-} snt tb | inj₂ (z , th' , xs) = rec snt z th' xs
+    where
+      rec : ∀ {i Γ n a} {th to : Tm Γ a} →
+        sn n th → (z : Tm Γ a) → SN {i} n / to ⇒ z → th ⇒β* z → sn n to
+      rec snt₁ th to⇒ ([]) = {!!}
+      rec {n = n} (acc f) th to⇒ (x ∷ []) with split {n} x
+      ... | th⇒ = acc (helper2 to⇒ (f th⇒))
+      rec {n = n} (acc f) z₁ to⇒ (x ∷ xs₁) with split x
+      ... | th⇒ = rec (f th⇒) z₁ to⇒ xs₁
+-}
 
+
+
+  helper3 : ∀ {i Γ n a} {r r' s : Tm Γ a} →
+           i size r ⟨ n ⟩⇒ r' → sn n r' -> SN n r' →  r ⟨ n ⟩⇒β s → sn n s
+  helper3 (β 𝒖) r'∈sn r'∈SN β = r'∈sn
+  helper3 (β 𝒖) (acc f) r'∈SN (cong (appl u) (appl .u) (cong abs abs r⇒s)) = {!f (NReduction.subst⇒β (sgs u) r⇒s) !}
+  helper3 (β 𝒖) r'∈sn r'∈SN (cong (appr ._) (appr ._) r⇒s) = {!!}
+  helper3 β▹ r'∈sn = {!!}
+  helper3 (βfst 𝒖) r'∈sn = {!!}
+  helper3 (βsnd 𝒕) r'∈sn = {!!}
+  helper3 (cong (appl u) (appl .u) r⇒r') r'∈sn = {!!}
+  helper3 (cong fst fst r⇒r') r'∈sn = {!!}
+  helper3 (cong snd snd r⇒r') r'∈sn = {!!}
+  helper3 (cong (u ∗l) (.u ∗l) r⇒r') r'∈sn = {!!}
+  helper3 (cong (∗r t₁) (∗r .t₁) r⇒r') r'∈sn = {!!}
 
 
   helper : ∀ {i j Γ n a} {t th to : Tm Γ a} →
@@ -127,7 +156,14 @@ mutual
   helper (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairl u) (pairl .u) t⇒o)) = fstsn (pairsn (sn⇒β 𝑡h t⇒o) (fromSN 𝒖))
   helper (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairr th) (pairr .th) t⇒o)) = fstsn (pairsn 𝑡h (sn⇒β (fromSN 𝒖) t⇒o))
   helper (βsnd 𝒕) 𝒕h 𝑡h (cong 𝑬𝒕 𝑬𝒕' t⇒o) = {!!}
-  helper (cong E0 E1 t⇒th) 𝒕h 𝑡h (cong E2 E3 t⇒o) = {!!}
+  helper (cong (appl u) (appl .u) t⇒th) 𝒕h 𝑡h (cong (appl .u) (appl .u) t⇒o) = {!appsn₂!}
+  helper (cong (appl u) (appl .u) t⇒th) 𝒕h 𝑡h (cong (appr t) (appr .t) t⇒o) = {!!}
+  helper (cong fst fst t⇒th) 𝒕h 𝑡h (cong fst fst t⇒o) = {!!}
+  helper (cong snd snd t⇒th) 𝒕h 𝑡h (cong snd snd t⇒o) = {!!}
+  helper (cong (u ∗l) (.u ∗l) t⇒th) 𝒕h 𝑡h (cong (.u ∗l) (.u ∗l) t⇒o) = {!!}
+  helper (cong (u ∗l) (.u ∗l) t⇒th) 𝒕h 𝑡h (cong (∗r t) (∗r .t) t⇒o) = {!!}
+  helper (cong (∗r t₁) (∗r .t₁) t⇒th) 𝒕h 𝑡h (cong (t ∗l) (.t ∗l) t⇒o) = {!!}
+  helper (cong (∗r t₁) (∗r .t₁) t⇒th) 𝒕h 𝑡h (cong (∗r .(▹ t₁)) (∗r .(▹ t₁)) t⇒o) = {!!}
 
   fromSN : ∀ {i} {Γ} {n : ℕ} {a} {t : Tm Γ a} → SN {i} n t → sn n t
   fromSN (ne 𝒏)       = fromSNe 𝒏
