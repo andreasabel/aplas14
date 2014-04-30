@@ -85,20 +85,15 @@ elimsn 𝒕 (𝒖 ∗l)   𝒏           t⇒                    = ∗sn 𝒕 �
 elimsn 𝒕 (∗r 𝒕₁)  𝒏           t⇒                    = ∗sn 𝒕₁ 𝒕 (inj₂ 𝒏) t⇒
 
 
-appsn₂ : ∀ {n a b Γ} {u : Tm Γ a} {t : Tm (a ∷ Γ) (b)} → sn n (subst (sgs u) t) → sn n u → sn n (app (abs t) u) 
-appsn₂ t[u] u = acc (λ x → help t[u] u x) where
-  help : ∀ {n a b Γ} {u : Tm Γ a} {t : Tm (a ∷ Γ) b} {t' : Tm Γ b} →
-       sn n (subst (u ∷s var) t) →
-       sn n u → app (abs t) u ⟨ n ⟩⇒β t' → sn n t'
-  help t[u]₁ u₂ β = t[u]₁
-  help (acc f) u₂ (cong (appl u₁) (appl .u₁) (cong abs abs b₁)) = appsn₂ (f (NReduction.subst⇒β (sgs u₁) b₁)) u₂
-  help (acc f) (acc g) (cong (appr ._) (appr ._) b₁) = appsn₂ (f {!!}) (g b₁)
 
 
 substβsn : ∀ {i m vt a Γ n} {Δ} {σ ρ : RenSub {m} vt Γ Δ} → (∀ {b} (x : Var Γ b) → vt2tm _ (σ x) ⟨ n ⟩⇒β* vt2tm _ (ρ x))
              → (t : Tm Γ a) → SN {i} n (subst σ t) → SN {i} n (subst ρ t)
 substβsn f t x₁ = mapβ*SN (subst⇒β* (λ x → nβ*⇒β* (f x)) t) x₁
 
+
+antiSubst : ∀ {n Γ a b} {t : Tm (a ∷ Γ) b}{u : Tm Γ a} → sn n (subst (sgs u) t) → sn n t
+antiSubst {t = t} (acc f) = acc (λ x → antiSubst (f (NReduction.subst⇒β (sgs _) x)))
 
 
 mutual
@@ -119,6 +114,15 @@ mutual
       ... | th⇒ = rec (f th⇒) z₁ to⇒ xs₁
 -}
 
+  appsn₂ : ∀ {i n a b Γ} {u : Tm Γ a} {t : Tm (a ∷ Γ) (b)} → sn n t → SN {i} n (subst (sgs u) t) → sn n u → sn n (app (abs t) u) 
+  appsn₂ t t[u] u = acc (λ x → help t t[u] u x) where
+    help : ∀ {i n a b Γ} {u : Tm Γ a} {t : Tm (a ∷ Γ) b} {t' : Tm Γ b} → sn n t → 
+         SN {i} n (subst (u ∷s var) t) →
+         sn n u → app (abs t) u ⟨ n ⟩⇒β t' → sn n t'
+    help t t[u]∈sn u∈sn β = fromSN t[u]∈sn
+    help (acc f1) t[u]∈sn u∈sn (cong (appl u) (appl .u) (cong abs abs t⇒)) = appsn₂ (f1 t⇒) (mapβSN (nβ⇒β (NReduction.subst⇒β (sgs u) t⇒)) t[u]∈sn) u∈sn
+    help {i} t t[u]∈sn (acc g) (cong (appr ._) (appr ._) t⇒) = appsn₂ {i} t (mapβ*SN (subst⇒β* {!!} {!!}) t[u]∈sn) (g t⇒)
+
   helper : ∀ {i j Γ n a} {t th to : Tm Γ a} →
            i size t ⟨ n ⟩⇒ th → SN {j} n th → sn n th -> t ⟨ n ⟩⇒β to → sn n to
   helper (β 𝒖) 𝒕h 𝑡h β = 𝑡h
@@ -130,16 +134,17 @@ mutual
   helper (cong fst fst (cong () 𝑬𝒕' t⇒th)) 𝒕h 𝑡h βfst
   helper (βsnd 𝒕) 𝒕h 𝑡h βsnd = 𝑡h
   helper (cong snd snd (cong () 𝑬𝒕' t⇒th)) 𝒕h 𝑡h βsnd
-  helper (β 𝒖) 𝒕h 𝑡h (cong (appl u) (appl .u) (cong abs abs t⇒o)) = appsn₂ (sn⇒β 𝑡h (NReduction.subst⇒β (sgs u) t⇒o)) (fromSN 𝒖)
+  helper (β 𝒖) 𝒕h (acc f) (cong (appl u) (appl .u) (cong abs abs t⇒o)) = appsn₂ (antiSubst (f (NReduction.subst⇒β (sgs u) t⇒o))) 
+                                (mapβSN (nβ⇒β (NReduction.subst⇒β (sgs u) t⇒o)) 𝒕h) (fromSN 𝒖)
   helper (β {t = t} 𝒖) 𝒕h 𝑡h (cong (appr ._) (appr ._) t⇒o) 
-         = appsn₂ (fromSN (substβsn (λ { .{_} zero → t⇒o ∷ [] ; (suc x) → [] }) t 𝒕h)) 
+         = appsn₂ (antiSubst 𝑡h) (substβsn (λ { {._} zero → t⇒o ∷ [] ; (suc x) → [] }) t 𝒕h)
                   (sn⇒β (fromSN 𝒖) t⇒o)
-  helper β▹ 𝒕h 𝑡h (cong (._ ∗l) (._ ∗l) t⇒o) = {!!}
+  helper β▹ 𝒕h 𝑡h (cong (._ ∗l) (._ ∗l) (cong ▹_ ▹_ t⇒o)) = {!!}
   helper β▹ 𝒕h 𝑡h (cong (∗r ._) (∗r ._) t⇒o) = {!!}
   helper (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairl u) (pairl .u) t⇒o)) = fstsn (pairsn (sn⇒β 𝑡h t⇒o) (fromSN 𝒖))
   helper (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairr th) (pairr .th) t⇒o)) = fstsn (pairsn 𝑡h (sn⇒β (fromSN 𝒖) t⇒o))
   helper (βsnd 𝒕) 𝒕h 𝑡h (cong 𝑬𝒕 𝑬𝒕' t⇒o) = {!!}
-  helper (cong (appl u) (appl .u) t⇒th) 𝒕h 𝑡h (cong (appl .u) (appl .u) t⇒o) = {!appsn₂!}
+  helper (cong (appl u) (appl .u) t⇒th) 𝒕h 𝑡h (cong (appl .u) (appl .u) t⇒o) = {!!}
   helper (cong (appl u) (appl .u) t⇒th) 𝒕h 𝑡h (cong (appr t) (appr .t) t⇒o) = {!!}
   helper (cong fst fst t⇒th) 𝒕h 𝑡h (cong fst fst t⇒o) = {!!}
   helper (cong snd snd t⇒th) 𝒕h 𝑡h (cong snd snd t⇒o) = {!!}
@@ -157,5 +162,5 @@ mutual
   fromSN (exp t⇒ t₁)  = acc (helper t⇒ t₁ (fromSN t₁))
 
   fromSNe : ∀ {i Γ n a} {t : Tm Γ a} → SNe {i} n t → sn n t
-  fromSNe (elim 𝒏 E) = acc (elimsn (fromSNe 𝒏) (mapPCxt fromSN E) (𝒏))
+  fromSNe (elim 𝒏 E) = acc (elimsn (fromSNe 𝒏) (mapPCxt fromSN E) 𝒏)
   fromSNe (var x)    = varsn x
