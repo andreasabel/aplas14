@@ -121,7 +121,8 @@ mutual
          sn n u → app (abs t) u ⟨ n ⟩⇒β t' → sn n t'
     help t t[u]∈sn u∈sn β = fromSN t[u]∈sn
     help (acc f1) t[u]∈sn u∈sn (cong (appl u) (appl .u) (cong abs abs t⇒)) = appsn₂ (f1 t⇒) (mapβSN (nβ⇒β (NReduction.subst⇒β (sgs u) t⇒)) t[u]∈sn) u∈sn
-    help {i} t t[u]∈sn (acc g) (cong (appr ._) (appr ._) t⇒) = appsn₂ {i} t (mapβ*SN (subst⇒β* {!!} {!!}) t[u]∈sn) (g t⇒)
+    help {i} {t = t} t∈sn t[u]∈sn (acc g) (cong (appr ._) (appr ._) t⇒) = appsn₂ {i} t∈sn 
+         (mapβ*SN (subst⇒β* (λ { {._} zero → nβ⇒β t⇒ ∷ [] ; (suc n) → [] }) t) t[u]∈sn) (g t⇒)
 
   helper : ∀ {i j Γ n a} {t th to : Tm Γ a} →
            i size t ⟨ n ⟩⇒ th → SN {j} n th → sn n th -> t ⟨ n ⟩⇒β to → sn n to
