@@ -119,23 +119,6 @@ mutual
       ... | th⇒ = rec (f th⇒) z₁ to⇒ xs₁
 -}
 
-
-
-  helper3 : ∀ {i Γ n a} {r r' s : Tm Γ a} →
-           i size r ⟨ n ⟩⇒ r' → sn n r' -> SN n r' →  r ⟨ n ⟩⇒β s → sn n s
-  helper3 (β 𝒖) r'∈sn r'∈SN β = r'∈sn
-  helper3 (β 𝒖) (acc f) r'∈SN (cong (appl u) (appl .u) (cong abs abs r⇒s)) = {!f (NReduction.subst⇒β (sgs u) r⇒s) !}
-  helper3 (β 𝒖) r'∈sn r'∈SN (cong (appr ._) (appr ._) r⇒s) = {!!}
-  helper3 β▹ r'∈sn = {!!}
-  helper3 (βfst 𝒖) r'∈sn = {!!}
-  helper3 (βsnd 𝒕) r'∈sn = {!!}
-  helper3 (cong (appl u) (appl .u) r⇒r') r'∈sn = {!!}
-  helper3 (cong fst fst r⇒r') r'∈sn = {!!}
-  helper3 (cong snd snd r⇒r') r'∈sn = {!!}
-  helper3 (cong (u ∗l) (.u ∗l) r⇒r') r'∈sn = {!!}
-  helper3 (cong (∗r t₁) (∗r .t₁) r⇒r') r'∈sn = {!!}
-
-
   helper : ∀ {i j Γ n a} {t th to : Tm Γ a} →
            i size t ⟨ n ⟩⇒ th → SN {j} n th → sn n th -> t ⟨ n ⟩⇒β to → sn n to
   helper (β 𝒖) 𝒕h 𝑡h β = 𝑡h
