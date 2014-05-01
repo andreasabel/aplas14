@@ -47,6 +47,22 @@ mkHole (u ∗l)    = _ , u ∗l
 mkHole (∗r t)    = _ , ∗r t
 mkHole abs       = _ , abs
 mkHole ▹_        = _ , ▹_
+{-
+NβE = \ Γ₀ a₀ n₁ Γ₁ a₁ n₀ → NβECxt Γ₁ Γ₀ a₀ a₁ n₀ n₁
+
+_[_] : ∀ {n n' Γ Δ} {a b} (E : NβE Δ a n Γ b n') (t : Tm Δ a) → Tm Γ b
+E [ t ] = proj₁ (mkHole E {t})
+
+
+data NβE* : Cxt → Ty → ℕ → Cxt → Ty → ℕ → Set where
+  [] : ∀ {Γ a n} → NβE* Γ a n Γ a n
+  _∷_ : ∀ {Γ₀ a₀ n₀ Γ₁ a₁ n₁ Γ₂ a₂ n₂} → NβE Γ₀ a₀ n₀  Γ₁ a₁ n₁ → NβE* Γ₁ a₁ n₁ Γ₂ a₂ n₂ → 
+          NβE* Γ₀ a₀ n₀  Γ₂ a₂ n₂
+
+_[_]* : ∀ {n n' Γ Δ} {a b} (E : NβE* Δ a n Γ b n') (t : Tm Δ a) → Tm Γ b
+[] [ t ]* = t
+(E ∷ Es) [ t ]* = Es [ E [ t ] ]*
+-}
 
 data _⟨_⟩⇒β_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
 

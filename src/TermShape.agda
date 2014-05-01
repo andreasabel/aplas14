@@ -44,6 +44,31 @@ substEh σ snd      = snd
 substEh σ (u ∗l)   = subst σ u ∗l
 substEh σ (∗r t₁)  = ∗r subst σ t₁
 
+mkEHole : ∀ {Γ} {a b} (E : ECxt Γ a b) {t} → Σ _ \ E[t] → Ehole E[t] E t
+mkEHole (appl u)  = _ , appl u
+--mkEHole (appr t)  = _ , appr t
+--mkEHole (pairl u) = _ , pairl u
+--mkEHole (pairr t) = _ , pairr t
+mkEHole fst       = _ , fst
+mkEHole snd       = _ , snd
+mkEHole (u ∗l)    = _ , u ∗l
+mkEHole (∗r t)    = _ , ∗r t
+--mkEHole abs       = _ , abs
+--mkEHole ▹_        = _ , ▹_
+
+
+_[_] : ∀ {Γ} {a b} (E : ECxt Γ a b) (t : Tm Γ a) → Tm Γ b
+E [ t ] = proj₁ (mkEHole E {t})
+
+
+data ECxt* (Γ : Cxt) : Ty → Ty → Set where
+  [] : ∀ {a} → ECxt* Γ a a
+  _∷_ : ∀ {a₀ a₁ a₂} → ECxt Γ a₀ a₁ → ECxt* Γ a₁ a₂ → ECxt* Γ a₀ a₂
+
+_[_]* : ∀ {Γ} {a b} (E : ECxt* Γ a b) (t : Tm Γ a) → Tm Γ b
+[] [ t ]* = t
+(E ∷ Es) [ t ]* = Es [ E [ t ] ]*
+
 
 -- Inductive definition of strong normalization.
 
@@ -152,3 +177,5 @@ mapP⇒ P⊆Q (β▹ {a = a}) = β▹ {a = a}
 mapP⇒ P⊆Q (βfst t∈P) = βfst (P⊆Q t∈P)
 mapP⇒ P⊆Q (βsnd t∈P) = βsnd (P⊆Q t∈P)
 mapP⇒ P⊆Q (cong Et Et' t→t') = cong Et Et' (mapP⇒ P⊆Q t→t')
+
+
