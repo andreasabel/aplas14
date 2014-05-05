@@ -60,7 +60,6 @@ mkEHole (∗r t)    = _ , ∗r t
 _[_] : ∀ {Γ} {a b} (E : ECxt Γ a b) (t : Tm Γ a) → Tm Γ b
 E [ t ] = proj₁ (mkEHole E {t})
 
-
 data ECxt* (Γ : Cxt) : Ty → Ty → Set where
   [] : ∀ {a} → ECxt* Γ a a
   _∷_ : ∀ {a₀ a₁ a₂} → ECxt Γ a₀ a₁ → ECxt* Γ a₁ a₂ → ECxt* Γ a₀ a₂
@@ -69,6 +68,18 @@ _[_]* : ∀ {Γ} {a b} (E : ECxt* Γ a b) (t : Tm Γ a) → Tm Γ b
 [] [ t ]* = t
 (E ∷ Es) [ t ]* = Es [ E [ t ] ]*
 
+_++*_ : ∀ {Γ a b c} → ECxt* Γ a b → ECxt* Γ b c → ECxt* Γ a c
+[] ++* ys = ys
+(x ∷ xs) ++* ys = x ∷ (xs ++* ys)
+
+_∷r_ : ∀ {Γ a b c} → ECxt* Γ a b → ECxt Γ b c → ECxt* Γ a c
+xs ∷r x = xs ++* (x ∷ [])
+
+
+data Ehole* {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt* Γ a b → Tm Γ a → Set where
+  [] : ∀ {a} {t : Tm Γ a} → Ehole* t [] t
+  _∷_ : ∀ {a b c t} {E : ECxt Γ b c} {Es : ECxt* Γ a b} {EEst Est}
+        → Ehole EEst E Est → Ehole* Est Es t → Ehole* EEst (Es ∷r E) t
 
 -- Inductive definition of strong normalization.
 
@@ -179,3 +190,26 @@ mapP⇒ P⊆Q (βsnd t∈P) = βsnd (P⊆Q t∈P)
 mapP⇒ P⊆Q (cong Et Et' t→t') = cong Et Et' (mapP⇒ P⊆Q t→t')
 
 
+_[_]⇒ : ∀ {Γ} {P : ∀{c} → Tm Γ c → Set} {a b} (E : ECxt Γ a b) {t₁ t₂ : Tm Γ a} → P / t₁ ⇒ t₂ → P / E [ t₁ ] ⇒ E [ t₂ ]
+E [ t⇒ ]⇒ = cong (proj₂ (mkEHole E)) (proj₂ (mkEHole E)) t⇒
+
+_[_]⇒* : ∀ {Γ} {P : ∀{c} → Tm Γ c → Set} {a b} (E : ECxt* Γ a b) {t₁ t₂ : Tm Γ a} → P / t₁ ⇒ t₂ → P / E [ t₁ ]* ⇒ E [ t₂ ]*
+[]       [ t⇒ ]⇒* = t⇒
+(E ∷ Es) [ t⇒ ]⇒* = Es [ E [ t⇒ ]⇒ ]⇒*
+
+hole→≡ : ∀ {Γ a b}{Et t}{E : ECxt Γ a b} → (Es : Ehole Et E t) → Et ≡ E [ t ]
+hole→≡ (appl u) = ≡.refl
+hole→≡ fst = ≡.refl
+hole→≡ snd = ≡.refl
+hole→≡ (u ∗l) = ≡.refl
+hole→≡ (∗r t₁) = ≡.refl
+
+lemma : ∀ {Γ b} {a} {t : Tm Γ a} (Es : ECxt* Γ a b)
+         {b₁} {E : ECxt Γ b b₁}
+         → E [ Es [ t ]* ] ≡ (Es ++* (E ∷ [])) [ t ]*
+lemma [] = ≡.refl
+lemma (x ∷ Es) = lemma Es
+
+hole*→≡ : ∀ {Γ a b}{Et t}{E : ECxt* Γ a b} → (Es : Ehole* Et E t) → Et ≡ E [ t ]*
+hole*→≡ [] = ≡.refl
+hole*→≡ {t = t} (_∷_ {Es = Es} x Es₁) rewrite hole→≡ x | hole*→≡ Es₁ = lemma Es

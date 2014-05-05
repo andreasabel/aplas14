@@ -8,6 +8,7 @@ open import Data.Sum
 open import Library
 open import SizedInfiniteTypes
 open import Terms
+open import TermShape
 open import Substitution
 open import SN
 
@@ -177,4 +178,74 @@ mapNβSNe t⇒ 𝒕 = mapβSNe (nβ⇒β t⇒) 𝒕
 
 mapNβSN : ∀ {i n m a Γ} {t t' : Tm Γ a} → t ⟨ m ⟩⇒β t' → SN {i} n t → SN {i} n t'
 mapNβSN t⇒ 𝒕 = mapβSN (nβ⇒β t⇒) 𝒕
+
+_[_]⇒β : ∀ {Γ} {n} {a b} (E : ECxt Γ a b) {t₁ t₂ : Tm Γ a} →  t₁ ⟨ n ⟩⇒β t₂ → E [ t₁ ] ⟨ n ⟩⇒β E [ t₂ ]
+appl u [ t⇒ ]⇒β = cong (appl u) (appl u) t⇒
+fst [ t⇒ ]⇒β = cong fst fst t⇒
+snd [ t⇒ ]⇒β = cong snd snd t⇒
+(u ∗l) [ t⇒ ]⇒β = cong (u ∗l) (u ∗l) t⇒
+(∗r t) [ t⇒ ]⇒β = cong (∗r (▹ t)) (∗r (▹ t)) t⇒
+
+_[_]⇒β* : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ t₂ : Tm Γ a} → t₁ ⟨ n ⟩⇒β t₂ → E [ t₁ ]* ⟨ n ⟩⇒β E [ t₂ ]*
+[]       [ t⇒ ]⇒β* = t⇒
+(E ∷ Es) [ t⇒ ]⇒β* = Es [ E [ t⇒ ]⇒β ]⇒β*
+
+data SnocView {Γ} {a} {t : Tm Γ a} : ∀ {b} (Es : ECxt* Γ a b) → Set where
+  [] : SnocView []
+  cons : ∀ {b c d} {El : ECxt Γ a c} (Er : ECxt Γ d b) {Ers : ECxt* Γ _ _} {Els : ECxt* Γ _ _} 
+         → (El ∷ Els) [ t ]* ≡ Er [ Ers [ t ]* ] → SnocView {b = b} (El ∷ Els)
+
+snocView : ∀ {Γ} {a b} (E : ECxt* Γ a b) (t : Tm Γ a) → SnocView {t = t} E
+snocView [] t = []
+snocView (E ∷ Es) t with snocView Es (E [ t ])
+snocView (E ∷ .[]) t | []                                 = cons E  {Ers = []}      ≡.refl
+snocView (E ∷ ._) t  | cons Er {Ers = Ers} {Els = Els} eq = cons Er {Ers = E ∷ Ers} eq
+
+
+
+data _Redex {Γ} : ∀ {a} → Tm Γ a → Set where
+
+  β     : ∀ {a b}{t : Tm (a ∷ Γ) b}{u}
+          → (app (abs t) u) Redex
+
+  β▹    : ∀ {a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
+           → (▹_ {a∞ = (delay a) ⇒ b∞} t ∗ ▹ u) Redex
+
+  βfst  : ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
+          → fst (pair t u) Redex
+
+  βsnd  : ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
+          → snd (pair t u) Redex
+
+split : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ : Tm Γ a}{t₂ Et₁ : Tm Γ b} → 
+         Ehole* Et₁ E t₁ → t₁ Redex → 
+         Et₁ ⟨ n ⟩⇒β t₂ → (Σ _ \ t₃ → Ehole* t₂ E t₃ × t₁ ⟨ n ⟩⇒β t₃) 
+         ⊎ (Σ _ \ E₁ → Ehole* t₂ E₁ t₁ × (∀ t → E [ t ]* ⟨ n ⟩⇒β E₁ [ t ]*))
+split ._ [] r t⇒ = inj₁ (_ , [] , t⇒)
+split .(appl u ∷ []) (appl u ∷ []) () β
+split ._ (appl u ∷ (() ∷ eq)) r β
+split ._ ((._ ∗l) ∷ []) () β▹
+split ._ ((._ ∗l) ∷ (() ∷ eq)) r β▹
+split .((∗r t) ∷ []) ((∗r t) ∷ []) () β▹
+split ._ ((∗r t) ∷ (() ∷ eq)) r β▹ 
+split ._ (fst ∷ (() ∷ eq)) r βfst
+split .(fst ∷ []) (fst ∷ []) () βfst
+split .(snd ∷ []) (snd ∷ []) () βsnd
+split ._ (snd ∷ (() ∷ eq)) r βsnd
+split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) with split _ eq r t⇒
+split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) | inj₁ (x , eq0 , t⇒') = inj₁ (_ , ((appl u) ∷ eq0) , t⇒')
+split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) | inj₂ (_ , eq0 , f) = inj₂ (_ , ((appl u ∷ eq0) , (λ t → cong {E = TODO} TODO TODO (f t))))
+split ._ (appl t ∷ eq) r (cong (appr Est) (appr .Est) t⇒) = inj₂ (_ , ((appl _ ∷ eq) , (λ t₁ → cong {E = TODO} TODO TODO t⇒)))
+split ._ (fst ∷ eq) r (cong fst fst t⇒) with split _ eq r t⇒ 
+split ._ (fst ∷ eq) r (cong fst fst t⇒) | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , (fst ∷ eq0) , t⇒')
+split ._ (fst ∷ eq) r (cong fst fst t⇒) | inj₂ (_ , eq0 , f) = inj₂ (_ , (fst ∷ eq0) , (λ t → cong {E = TODO} TODO TODO (f t)))
+split ._ (snd ∷ eq) r (cong snd snd t⇒) = TODO
+split ._ ((u ∗l) ∷ eq) r (cong (.u ∗l) (.u ∗l) t⇒) with split _ eq r t⇒ 
+... | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , u ∗l ∷ eq0 , t⇒')
+... | inj₂ (_ , eq0 , f)   = inj₂ (_ , (u ∗l) ∷ eq0 , (λ t → cong {E = TODO} TODO TODO (f t)))
+split ._ ((∗r t) ∷ eq) r (cong (Est ∗l) (.Est ∗l) (cong ▹_ ▹_ t⇒)) = inj₂ (_ , (∗r _ ∷ eq) , TODO) -- 
+split ._ ((t ∗l) ∷ eq) r (cong (∗r Est) (∗r .Est) t⇒) = inj₂ (_ , (_ ∗l) ∷ eq , TODO)
+split ._ ((∗r t) ∷ eq) r (cong (∗r .(▹ t)) (∗r .(▹ t)) t⇒) with split _ eq r t⇒ 
+... | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , ∗r t ∷ eq0 , t⇒')
+... | inj₂ (_ , eq0 , f)   = inj₂ (_ , ∗r t ∷ eq0 , (λ t → cong {E = TODO} TODO TODO (f t)))
 
