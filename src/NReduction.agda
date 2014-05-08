@@ -216,6 +216,26 @@ data _Redex {Γ} : ∀ {a} → Tm Γ a → Set where
 
   βsnd  : ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
           → snd (pair t u) Redex
+mutual
+  EC→NβEC : ∀ {Γ} {n a b} (E : ECxt Γ a b) → NβECxt Γ Γ a b n n
+  EC→NβEC (appl u) = appl u
+  EC→NβEC fst = fst
+  EC→NβEC snd = snd
+  EC→NβEC (u ∗l) = u ∗l
+  EC→NβEC (∗r t) = ∗r (▹ t)
+
+  mkHole2 : ∀ {Γ} {n a b} (E : ECxt Γ a b) {t : Tm Γ a} → NβEhole (E [ t ]) (EC→NβEC {n = n} E) t
+  mkHole2 (appl u) = appl u
+  mkHole2 fst = fst
+  mkHole2 snd = snd
+  mkHole2 (u ∗l) = u ∗l
+  mkHole2 (∗r t) = ∗r (▹ t)
+
+mkHole3 : ∀ {Γ} {n a b c} (E : ECxt Γ a b) {Es : ECxt* Γ _ _} {t : Tm Γ c} → NβEhole ((Es ∷r E) [ t ]*) (EC→NβEC {n = n} E) (Es [ t ]*)
+mkHole3 E {Es} {t} rewrite ≡.sym (lemma {t = t} Es {E = E}) = mkHole2 E {Es [ t ]*}
+
+≡subst⇒β : ∀ {n a Γ} {t t1 t' t'1 : Tm Γ a} → t ≡ t1 → t' ≡ t'1 → t ⟨ n ⟩⇒β t' → t1 ⟨ n ⟩⇒β t'1
+≡subst⇒β ≡.refl ≡.refl x = x
 
 split : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ : Tm Γ a}{t₂ Et₁ : Tm Γ b} → 
          Ehole* Et₁ E t₁ → t₁ Redex → 
@@ -234,18 +254,30 @@ split .(snd ∷ []) (snd ∷ []) () βsnd
 split ._ (snd ∷ (() ∷ eq)) r βsnd
 split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) with split _ eq r t⇒
 split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) | inj₁ (x , eq0 , t⇒') = inj₁ (_ , ((appl u) ∷ eq0) , t⇒')
-split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) | inj₂ (_ , eq0 , f) = inj₂ (_ , ((appl u ∷ eq0) , (λ t → cong {E = TODO} TODO TODO (f t))))
-split ._ (appl t ∷ eq) r (cong (appr Est) (appr .Est) t⇒) = inj₂ (_ , ((appl _ ∷ eq) , (λ t₁ → cong {E = TODO} TODO TODO t⇒)))
+split ._ (_∷_ {Es = Es} (appl u) eq) r (cong (appl .u) (appl .u) t⇒) | inj₂ (Es' , eq0 , f) = inj₂ (_ , ((appl u ∷ eq0) , 
+                                                        (λ t → cong (mkHole3 (appl u) {Es}) (mkHole3 (appl u) {Es'}) (f t))))
+split ._ (_∷_ {Es = Es} (appl t) eq) r (cong (appr Est) (appr .Est) t⇒) = inj₂ (_ , ((appl _ ∷ eq) , 
+      (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong (appr (Es [ t₁ ]*)) (appr (Es [ t₁ ]*)) t⇒))))
 split ._ (fst ∷ eq) r (cong fst fst t⇒) with split _ eq r t⇒ 
 split ._ (fst ∷ eq) r (cong fst fst t⇒) | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , (fst ∷ eq0) , t⇒')
-split ._ (fst ∷ eq) r (cong fst fst t⇒) | inj₂ (_ , eq0 , f) = inj₂ (_ , (fst ∷ eq0) , (λ t → cong {E = TODO} TODO TODO (f t)))
-split ._ (snd ∷ eq) r (cong snd snd t⇒) = TODO
-split ._ ((u ∗l) ∷ eq) r (cong (.u ∗l) (.u ∗l) t⇒) with split _ eq r t⇒ 
+split ._ (_∷_ {Es = Es} fst eq) r (cong fst fst t⇒) | inj₂ (Es' , eq0 , f) 
+      = inj₂ (_ , (fst ∷ eq0) , (λ t → cong (mkHole3 fst {Es}) (mkHole3 fst {Es'}) (f t)))
+split ._ (snd ∷ eq) r (cong snd snd t⇒) with split _ eq r t⇒ 
+split ._ (snd ∷ eq) r (cong snd snd t⇒) | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , (snd ∷ eq0) , t⇒')
+split ._ (_∷_ {Es = Es} snd eq) r (cong snd snd t⇒) | inj₂ (Es' , eq0 , f) 
+      = inj₂ (_ , (snd ∷ eq0) , (λ t → cong (mkHole3 snd {Es}) (mkHole3 snd {Es'}) (f t)))
+split ._ (_∷_ {Es = Es} (u ∗l) eq) r (cong (.u ∗l) (.u ∗l) t⇒) with split _ eq r t⇒ 
 ... | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , u ∗l ∷ eq0 , t⇒')
-... | inj₂ (_ , eq0 , f)   = inj₂ (_ , (u ∗l) ∷ eq0 , (λ t → cong {E = TODO} TODO TODO (f t)))
-split ._ ((∗r t) ∷ eq) r (cong (Est ∗l) (.Est ∗l) (cong ▹_ ▹_ t⇒)) = inj₂ (_ , (∗r _ ∷ eq) , TODO) -- 
-split ._ ((t ∗l) ∷ eq) r (cong (∗r Est) (∗r .Est) t⇒) = inj₂ (_ , (_ ∗l) ∷ eq , TODO)
-split ._ ((∗r t) ∷ eq) r (cong (∗r .(▹ t)) (∗r .(▹ t)) t⇒) with split _ eq r t⇒ 
+... | inj₂ (Es' , eq0 , f)   = inj₂ (_ , (u ∗l) ∷ eq0 , (λ t → cong (mkHole3 (u ∗l) {Es}) (mkHole3 (u ∗l) {Es'}) (f t)))
+split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (Est ∗l) (.Est ∗l) (cong ▹_ ▹_ t⇒)) = inj₂ (_ , (∗r _ ∷ eq) , 
+      (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong ((Es [ t₁ ]*) ∗l) ((Es [ t₁ ]*) ∗l) (cong ▹_ ▹_ t⇒)))) -- 
+split ._ (_∷_ {Es = Es} (t ∗l) eq) r (cong (∗r Est) (∗r .Est) t⇒) = inj₂ (_ , (_ ∗l) ∷ eq , (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong (∗r _) (∗r _) t⇒)))
+split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (∗r .(▹ t)) (∗r .(▹ t)) t⇒) with split _ eq r t⇒ 
 ... | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , ∗r t ∷ eq0 , t⇒')
-... | inj₂ (_ , eq0 , f)   = inj₂ (_ , ∗r t ∷ eq0 , (λ t → cong {E = TODO} TODO TODO (f t)))
+... | inj₂ (Es' , eq0 , f)   = inj₂ (_ , ∗r t ∷ eq0 , (λ t1 → cong (mkHole3 (∗r t) {Es}) (mkHole3 (∗r t) {Es'}) (f t1)))
 
+cong*2 : ∀ {Γ n a b t t'}(E : ECxt* Γ a b)
+          → (t⇒ : t ⟨ n ⟩⇒β t')
+          → E [ t ]* ⟨ n ⟩⇒β E [ t' ]*
+cong*2 [] t⇒ = t⇒
+cong*2 (x ∷ E) t⇒ = cong*2 E (cong (mkHole2 x) (mkHole2 x) t⇒)

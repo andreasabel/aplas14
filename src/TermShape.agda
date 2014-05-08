@@ -75,11 +75,11 @@ _++*_ : ∀ {Γ a b c} → ECxt* Γ a b → ECxt* Γ b c → ECxt* Γ a c
 _∷r_ : ∀ {Γ a b c} → ECxt* Γ a b → ECxt Γ b c → ECxt* Γ a c
 xs ∷r x = xs ++* (x ∷ [])
 
-
 data Ehole* {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt* Γ a b → Tm Γ a → Set where
   [] : ∀ {a} {t : Tm Γ a} → Ehole* t [] t
   _∷_ : ∀ {a b c t} {E : ECxt Γ b c} {Es : ECxt* Γ a b} {EEst Est}
         → Ehole EEst E Est → Ehole* Est Es t → Ehole* EEst (Es ∷r E) t
+
 
 -- Inductive definition of strong normalization.
 
@@ -213,3 +213,19 @@ lemma (x ∷ Es) = lemma Es
 hole*→≡ : ∀ {Γ a b}{Et t}{E : ECxt* Γ a b} → (Es : Ehole* Et E t) → Et ≡ E [ t ]*
 hole*→≡ [] = ≡.refl
 hole*→≡ {t = t} (_∷_ {Es = Es} x Es₁) rewrite hole→≡ x | hole*→≡ Es₁ = lemma Es
+
+++*-unit : ∀ {Γ a b} → (xs : ECxt* Γ a b) → xs ++* [] ≡ xs
+++*-unit [] = ≡.refl
+++*-unit (x ∷ xs) = ≡.cong (_∷_ x) (++*-unit xs)
+++*-assoc : ∀ {Γ a b c d} → (xs : ECxt* Γ a b) → {ys : ECxt* Γ b c} → {zs : ECxt* Γ c d} → xs ++* (ys ++* zs) ≡ (xs ++* ys) ++* zs
+++*-assoc [] = ≡.refl
+++*-assoc (x ∷ xs) = ≡.cong (_∷_ x) (++*-assoc xs)
+
+_++h*_ : ∀ {Γ a b c} {Es1 : ECxt* Γ a b} {Es2 : ECxt* Γ b c} → ∀ {t1 t2 t3} → Ehole* t2 Es1 t3 → Ehole* t1 Es2 t2  → Ehole* t1 (Es1 ++* Es2) t3
+_++h*_ {Es1 = Es1} xs [] rewrite ++*-unit Es1      = xs
+_++h*_ {Es1 = Es1} xs (_∷_ {E = E} {Es = Es} x ys) rewrite ++*-assoc Es1 {Es} {E ∷ []} = x ∷ (xs ++h* ys)
+
+
+mkEhole* : ∀ {Γ} {a b} (E : ECxt* Γ a b) {t} → Ehole* (E [ t ]*) E t
+mkEhole* [] = []
+mkEhole* (E ∷ Es) {t} = (proj₂ (mkEHole E) ∷ []) ++h* mkEhole* Es
