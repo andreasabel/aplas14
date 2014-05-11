@@ -110,6 +110,33 @@ cong* abs        abs         []       = []
 cong* ▹_         ▹_          []       = []
 cong* E1         E2          (x ∷ t⇒) = cong E1 (proj₂ (mkHole _)) x ∷ cong* (proj₂ (mkHole _)) E2 t⇒
 
+mutual
+  EC→βEC : ∀ {Γ} {a b} (E : ECxt Γ a b) → βECxt Γ Γ a b 
+  EC→βEC (appl u) = appl u
+  EC→βEC fst = fst
+  EC→βEC snd = snd
+  EC→βEC (u ∗l) = u ∗l
+  EC→βEC (∗r t) = ∗r (▹ t)
+
+  mkHole4 : ∀ {Γ} {a b} (E : ECxt Γ a b) {t : Tm Γ a} → βEhole (E [ t ]) (EC→βEC E) t
+  mkHole4 (appl u) = appl u
+  mkHole4 fst = fst
+  mkHole4 snd = snd
+  mkHole4 (u ∗l) = u ∗l
+  mkHole4 (∗r t) = ∗r (▹ t)
+
+cong*3 : ∀ {Γ a b t t'}(E : ECxt* Γ a b)
+          → (t⇒ : t ⇒β t')
+          → E [ t ]* ⇒β E [ t' ]*
+cong*3 [] t⇒ = t⇒
+cong*3 (x ∷ E) t⇒ = cong*3 E (cong (mkHole4 x) (mkHole4 x) t⇒)
+
+cong*4 : ∀ {Γ a b t t'}(E : ECxt* Γ a b)
+          → (t⇒ : t ⇒β* t')
+          → E [ t ]* ⇒β* E [ t' ]*
+cong*4 E [] = []
+cong*4 E (x ∷ xs) = cong*3 E x ∷ cong*4 E xs
+
 subst⇒β*₀ : ∀ {m vt a Γ} {t t' : Tm Γ a} {Δ} (σ : RenSub {m} vt Γ Δ) → t ⇒β* t' → subst σ t ⇒β* subst σ t'
 subst⇒β*₀ σ [] = []
 subst⇒β*₀ σ (x ∷ xs) = (subst⇒β σ x) ∷ (subst⇒β*₀ σ xs)

@@ -279,5 +279,6 @@ split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (∗r .(▹ t)) (∗r .(▹ t)) t
 cong*2 : ∀ {Γ n a b t t'}(E : ECxt* Γ a b)
           → (t⇒ : t ⟨ n ⟩⇒β t')
           → E [ t ]* ⟨ n ⟩⇒β E [ t' ]*
-cong*2 [] t⇒ = t⇒
-cong*2 (x ∷ E) t⇒ = cong*2 E (cong (mkHole2 x) (mkHole2 x) t⇒)
+cong*2 E t⇒ = E [ t⇒ ]⇒β*
+--cong*2 [] t⇒ = t⇒
+--cong*2 (x ∷ E) t⇒ = cong*2 E (cong (mkHole2 x) (mkHole2 x) t⇒)

@@ -1,5 +1,5 @@
 {-# OPTIONS --copatterns --sized-types #-}
-{-# OPTIONS --allow-unsolved-metas #-}
+--{-# OPTIONS --allow-unsolved-metas #-}
 
 --{-# OPTIONS --show-implicit #-}
 module DeclSN where
@@ -29,11 +29,16 @@ abssn (acc f) = acc (λ { {._} (cong abs abs x)  → abssn (f x) })
 ▹sn : ∀ {Γ} {n : ℕ} {a∞} {t : Tm Γ (force a∞)} → sn n t → sn (suc n) (▹_ {a∞ = a∞} t)
 ▹sn (acc f) = acc (λ { {._} (cong ▹_ ▹_ x)  → ▹sn (f x) })
 
+subsn : ∀ {Γ Δ} {n n' : ℕ} {a b} {f : Tm Γ a -> Tm Δ b} →
+        (g : ∀ {t t' : Tm Γ a} → t ⟨ n ⟩⇒β t' → f t ⟨ n' ⟩⇒β f t') →
+        ∀ {t} → sn n' (f t) → sn n t
+subsn g (acc ft) = acc (\ t⇒ -> subsn g (ft (g t⇒)))
+
 Fstsn : ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ a}{u : Tm Γ b} → sn n (pair t u) → sn n t
-Fstsn (acc f) = acc (\ x -> Fstsn (f (cong (pairl _) (pairl _) x)))
+Fstsn p = subsn (\ x -> cong (pairl _) (pairl _) x) p
 
 Sndsn : ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ a}{u : Tm Γ b} → sn n (pair t u) → sn n u
-Sndsn (acc f) = acc (\ x -> Sndsn (f (cong (pairr _) (pairr _) x)))
+Sndsn = subsn (\ x -> (cong (pairr _) (pairr _) x))
 
 fstsn : ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ (a ×̂  b)} → sn n t → sn n (fst t)
 fstsn t = acc (helper t) where
@@ -94,8 +99,10 @@ substβsn f t x₁ = mapβ*SN (subst⇒β* (λ x → nβ*⇒β* (f x)) t) x₁
 
 
 antiSubst : ∀ {n Γ a b} {t : Tm (a ∷ Γ) b}{u : Tm Γ a} → sn n (subst (sgs u) t) → sn n t
-antiSubst {t = t} (acc f) = acc (λ x → antiSubst (f (NReduction.subst⇒β (sgs _) x)))
+antiSubst {t = t} = subsn (λ x → NReduction.subst⇒β (sgs _) x)
 
+subexpsn : ∀ {n Γ a b} (E : ECxt* Γ a b) {t : Tm Γ a} → sn n (E [ t ]*) -> sn n t
+subexpsn E = subsn \ x -> cong*2 E x
 
 ∗sn₂ : ∀ {Γ b} {a b∞} {z} {t : Tm Γ (a →̂ (force b∞))} {u : Tm Γ a}
        {n} (E : ECxt* Γ (▸̂ b∞) b) →
@@ -167,7 +174,8 @@ sndsn₂ E z t u r = acc (λ x → help E z t u r (mkEhole* E) x) where
   help E₁ z₂ t₃ (acc u₂) r₁ eq t⇒ | inj₁ (._ , a₂ , cong snd snd (cong (pairl t₁) (pairl .t₁) t⇒')) 
     rewrite hole*→≡ a₂ = sndsn₂ E₁ z₂ t₃ (u₂ t⇒') r₁
   help E₁ (acc z₂) t₂ u₂ r eq t⇒ | inj₂ (Es' , a , g) rewrite hole*→≡ a = sndsn₂ Es' (z₂ (g _)) t₂ u₂ (sn⇒β r (g _))
-  
+
+
 mutual
 {-
   -- could we just use the beta-shr lemma?
@@ -197,7 +205,8 @@ mutual
     help {Es = Es} x (acc t₃) t[u]∈sn u∈sn eq t⇒ | inj₁ (._ , a₁ , cong (appl u₁) (appl .u₁) (cong abs abs b₁)) rewrite hole*→≡ a₁ 
       = appsn₃ {Es = Es} x (t₃ b₁) (mapNβSN (cong*2 Es (NReduction.subst⇒β (sgs u₁) b₁)) t[u]∈sn) u∈sn
     help {t = t} {Es = Es} x t₃ t[u]∈sn (acc u∈sn) eq t⇒ | inj₁ (._ , a₁ , cong (appr ._) (appr ._) b₁) rewrite hole*→≡ a₁ 
-      = appsn₃ {Es = Es} x t₃ (mapβ*SN {!(subst⇒β* (λ { {._} zero → nβ⇒β b₁ ∷ [] ; (suc n) → [] }) t)!} t[u]∈sn) (u∈sn b₁)
+      = appsn₃ {Es = Es} x t₃ (mapβ*SN (cong*4 Es
+                                          (subst⇒β* (λ { {._} zero → nβ⇒β b₁ ∷ [] ; (suc n) → [] }) t)) t[u]∈sn) (u∈sn b₁)
     help {x = x} (acc f) t₂ t[u]∈sn u∈sn eq t⇒ | inj₂ (Es' , a , g) rewrite hole*→≡ a 
          = appsn₃ {Es = Es'} (f (g x)) t₂ (mapNβSN (g _) t[u]∈sn) u∈sn
 
@@ -210,17 +219,29 @@ mutual
   helperCxt E (βfst 𝒖) 𝒕h 𝑡h βfst = 𝑡h
   helperCxt E (βsnd 𝒕) 𝒕h 𝑡h βsnd = 𝑡h
 
-  helperCxt E (β 𝒖) 𝒕h 𝑡h (cong (appl u) (appl .u) (cong abs abs t⇒)) = appsn₃ {Es = E} 𝑡h (sn⇒β (antiSubst {!𝑡h!}) t⇒) (mapβSN {!!} 𝒕h) (fromSN 𝒖)
-  helperCxt {j = j} E (β {t = t} 𝒖)    𝒕h 𝑡h (cong (appr ._) (appr ._)           t⇒)  
-    = appsn₃ {j} {Es = E} 𝑡h {!!} {!(substβsn (λ { {._} zero → t⇒ ∷ [] ; (suc x) → [] }) t 𝒕h)!} (sn⇒β (fromSN 𝒖) t⇒)
-  helperCxt E β▹       𝒕h 𝑡h (cong (._ ∗l)   (._ ∗l) (cong ▹_ ▹_ t⇒)) = ∗sn₂ E 𝑡h {!!} {!!} (sn⇒β 𝑡h (cong*2 E (cong ▹_ ▹_ (cong (appl _) (appl _) t⇒))))
-  helperCxt E β▹       𝒕h 𝑡h (cong (∗r ._)   (∗r ._) (cong ▹_ ▹_ t⇒)) = ∗sn₂ E 𝑡h {!!} {!!}
-                                                                          (sn⇒β 𝑡h (cong*2 E (cong ▹_ ▹_ (cong (appr _) (appr _) t⇒))))
-  helperCxt E (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairl u) (pairl .u) t⇒)) = fstsn₂ E 𝑡h {!!} (fromSN 𝒖) (sn⇒β 𝑡h (cong*2 E t⇒))
-  helperCxt E (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairr th) (pairr .th) t⇒)) = fstsn₂ E 𝑡h {!!} (sn⇒β (fromSN 𝒖) t⇒) 𝑡h
+  helperCxt E (β         𝒖) 𝒕h 𝑡h (cong (appl  u) (appl .u) (cong abs abs t⇒)) 
+    = appsn₃ {Es = E} 𝑡h (sn⇒β (antiSubst (subexpsn E 𝑡h)) t⇒) 
+              (mapNβSN (cong*2 E (NReduction.subst⇒β (sgs u) t⇒)) 𝒕h) 
+              (fromSN 𝒖)
+  helperCxt E (β {t = t} 𝒖) 𝒕h 𝑡h (cong (appr ._) (appr ._)               t⇒)  
+    = appsn₃ {Es = E} 𝑡h (antiSubst (subexpsn E 𝑡h)) 
+              (mapβ*SN (cong*4 E (subst⇒β* (λ { {._} zero → nβ⇒β t⇒ ∷ [] ; (suc x) → [] }) t)) 𝒕h) 
+              (sn⇒β (fromSN 𝒖) t⇒)
 
-  helperCxt E (βsnd 𝒖) 𝒕h 𝑡h (cong snd snd (cong (pairr u) (pairr .u) t⇒)) = sndsn₂ E 𝑡h {!!} (fromSN 𝒖) (sn⇒β 𝑡h (cong*2 E t⇒))
-  helperCxt E (βsnd 𝒖) 𝒕h 𝑡h (cong snd snd (cong (pairl th) (pairl .th) t⇒)) = sndsn₂ E 𝑡h {!!} (sn⇒β (fromSN 𝒖) t⇒) 𝑡h
+  helperCxt E β▹       𝒕h 𝑡h (cong (._ ∗l)   (._ ∗l) (cong ▹_ ▹_ t⇒)) 
+     = ∗sn₂ E 𝑡h (sn⇒β (subsn (λ x → cong*2 E (cong ▹_ ▹_ (cong (appl _) (appl _) x))) 𝑡h) t⇒) 
+                       (subsn (λ x → cong*2 E (cong ▹_ ▹_ (cong (appr _) (appr _) x))) 𝑡h) 
+                 (sn⇒β 𝑡h (cong*2 E (cong ▹_ ▹_ (cong (appl _) (appl _) t⇒))))
+  helperCxt E β▹       𝒕h 𝑡h (cong (∗r ._)   (∗r ._) (cong ▹_ ▹_ t⇒)) = ∗sn₂ E 𝑡h 
+            (subsn (λ x → cong*2 E (cong ▹_ ▹_ (cong (appl _) (appl _) x))) 𝑡h) 
+      (sn⇒β (subsn (λ x → cong*2 E (cong ▹_ ▹_ (cong (appr _) (appr _) x))) 𝑡h) t⇒)
+      (sn⇒β 𝑡h (cong*2 E (cong ▹_ ▹_ (cong (appr _) (appr _) t⇒))))
+
+  helperCxt E (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairl _) (pairl ._) t⇒)) = fstsn₂ E 𝑡h (sn⇒β (subexpsn E 𝑡h) t⇒) (fromSN 𝒖) (sn⇒β 𝑡h (cong*2 E t⇒))
+  helperCxt E (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairr _) (pairr ._) t⇒)) = fstsn₂ E 𝑡h (subexpsn E 𝑡h) (sn⇒β (fromSN 𝒖) t⇒) 𝑡h
+
+  helperCxt E (βsnd 𝒖) 𝒕h 𝑡h (cong snd snd (cong (pairr _) (pairr ._) t⇒)) = sndsn₂ E 𝑡h (sn⇒β (subexpsn E 𝑡h) t⇒) (fromSN 𝒖) (sn⇒β 𝑡h (cong*2 E t⇒))
+  helperCxt E (βsnd 𝒖) 𝒕h 𝑡h (cong snd snd (cong (pairl _) (pairl ._) t⇒)) = sndsn₂ E 𝑡h (subexpsn E 𝑡h) (sn⇒β (fromSN 𝒖) t⇒) 𝑡h
 
   helperCxt E (cong (appl u) (appl .u) (cong () 𝑬𝒕' th⇒)) 𝒕h 𝑡h β
   helperCxt E (cong (._ ∗l)  (._ ∗l)   (cong () 𝑬𝒕' th⇒)) 𝒕h 𝑡h β▹
@@ -245,8 +266,6 @@ mutual
   helperCxt E (cong (∗r t₁)  (∗r .t₁)  th⇒) 𝒕h (acc 𝑡h) (cong (t ∗l)   (.t ∗l) (cong ▹_ ▹_ t⇒)) 
             = acc (helperCxt [] (E [ cong (∗r _)   (∗r _)   th⇒ ]⇒*) (mapNβSN t⇒' 𝒕h) (𝑡h t⇒')) 
                where t⇒' = E [ cong (_ ∗l)   (_ ∗l) (cong ▹_ ▹_ t⇒) ]⇒β*
-
-
 
 
   fromSN : ∀ {i} {Γ} {n : ℕ} {a} {t : Tm Γ a} → SN {i} n t → sn n t
