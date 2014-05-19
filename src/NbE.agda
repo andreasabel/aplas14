@@ -55,9 +55,10 @@ mutual
 
   record ∞Dom {i : Size} (a : Ty) : Set where
     coinductive
+    -- not sugar compliant, because of Delay inside
     field
       force : ∀ {j : Size< i} → Delay (Dom {j} a)
-
+      
   Env : {i : Size} → Cxt -> Set
   Env {i} Γ = ∀ {a} → Var Γ a → Dom {i} a 
 
@@ -82,14 +83,15 @@ mutual
   eval (var x)     env = now (env x)
   eval (abs t)     env = now (abs t env)
   eval (app t t₁)  env = eval t env >>= (λ f → eval t₁ env >>= (λ x → f $ x))
-  eval (pair t t₁) env = {!!}
-  eval (fst t)     env = {!!}
-  eval (snd t)     env = {!!}
+  eval (pair t t₁) env = eval t env >>= (λ x → eval t₁ env >>= (λ y → now (pair x y)))
+  eval (fst t)     env = eval t env >>= \ { (pair x y) -> now x }
+  eval (snd t)     env = eval t env >>= \ { (pair x y) -> now y }
   eval (▹ t)       env = now (▹ eval▹ t env)
   eval (t ∗ t₁)    env = eval t env >>= (λ f → eval t₁ env >>= (λ x → f * x))
 
   eval▹ : ∀ {i Γ a} → Tm Γ a → Env {i} Γ → ∞Dom {i} a
   ∞Dom.force (eval▹ t env) = eval t env
+
   _$_ : ∀ {i j a a₁}
         (f : Dom {i} (a₁ →̂ a)) → Dom {i} a₁ → Delay {j} (Dom {i} a)
   abs t env $ x = later (∞$ t env x)
@@ -99,10 +101,11 @@ mutual
      (Env {i} Γ) → Dom {i} a₁ → ∞Delay {j} (Dom {i} a)
   ∞Delay.force (∞$ t env x) = eval t (λ { {._} zero → x ; (suc v) → env v })
 
-  _*_ : ∀ {i j} {a : Ty} {b∞} 
-        (f : Dom {i} (▸̂ ((delay a) ⇒ b∞))) → (x : Dom {i} (▸ a))
-           → Delay {j} (Dom {i} (▸̂ b∞))
+  _*_ : ∀ {i j a b} 
+        (f : Dom {i} (▸̂ (a ⇒ b))) → (x : Dom {i} (▸̂  a))
+           → Delay {j} (Dom {i} (▸̂ b))
   (▹ f) * (▹ x) = now (▹ (f ∞* x))
+
   _∞*_ : ∀ {i a b} →
        ∞Dom {i} (a →̂  b) → ∞Dom {i} a → ∞Dom {i} b
   ∞Dom.force (f ∞* x) = ∞Dom.force f >>= (λ f → ∞Dom.force x >>= \ x → f $ x)
