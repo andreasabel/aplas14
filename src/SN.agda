@@ -11,7 +11,7 @@ open import Library
 open import SizedInfiniteTypes
 open import Terms
 open import Substitution
-open import TermShape
+open import TermShape public
 
 
 -- Inductive definition of strong normalization.
