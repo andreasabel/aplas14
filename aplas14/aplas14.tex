@@ -1,0 +1,130 @@
+\nonstopmode
+
+% type-set with agda --latex
+\newcommand{\AGDALATEX}[1]{#1}
+\newcommand{\PLAINLATEX}[1]{}
+
+\newcommand{\PDFLATEX}[1]{#1}
+
+% For having two versions of a paper in one file.
+% Stuff that does not fit into the short version can be encosed in \LONGVERSION{...}
+\ifdefined\LONGVERSION
+  \relax
+\else
+% short version:
+\newcommand{\LONGVERSION}[1]{}
+\newcommand{\SHORTVERSION}[1]{#1}
+% % long version:
+% \newcommand{\LONGVERSION}[1]{#1}
+% \newcommand{\SHORTVERSION}[1]{}
+% \newcommand{\SHORTVERSION}[1]{BEGIN~SHORT\ #1 \ END~SHORT}
+\fi
+\newcommand{\LONGSHORT}[2]{\LONGVERSION{#1}\SHORTVERSION{#2}}
+
+
+
+\documentclass{llncs}
+
+
+\usepackage{times}
+%\usepackage{amsfonts,amssymb,textgreek,stmaryrd}
+\PDFLATEX{
+\usepackage[postscript]{ucs}
+\usepackage[utf8x]{inputenc}
+}
+\usepackage{pifont}
+\usepackage{natbib}
+\renewcommand{\bibname}{\refname}
+% \usepackage{unicode-math}  % xelatex only, but not needed
+
+% Agda stuff
+
+\AGDALATEX{%
+\usepackage{latex/agda}
+% \usepackage[conor]{latex/agda} %% almost Barbie
+}
+\PLAINLATEX{%
+\usepackage{verbatim}
+\newenvironment{code}{\verbatim}{\endverbatim}
+\long\def\AgdaHide#1{} % Used to hide code from LaTeX.
+}
+\DeclareUnicodeCharacter{8718}{$\blacksquare$}
+\DeclareUnicodeCharacter{8759}{::}
+\DeclareUnicodeCharacter{9656}{$\blacktriangleright$}
+\DeclareUnicodeCharacter{9733}{$\star$}
+\DeclareUnicodeCharacter{10214}{$\llbracket$}
+\DeclareUnicodeCharacter{10215}{$\rrbracket$}
+\DeclareUnicodeCharacter{10218}{$\langle\!\langle$} % hex 27EA ⟪
+\DeclareUnicodeCharacter{10219}{$\rangle\!\rangle$}
+
+\begin{document}
+%
+\frontmatter          % for the preliminaries
+%
+\pagestyle{headings}  % switches on printing of running heads
+%
+\mainmatter              % start of the contributions
+%
+\title{A Formalized Proof of Strong Normalization for Guarded Recursive Types}
+%
+\titlerunning{Strong Normalization for Guarded Types}  % abbreviated title (for running head)
+%                                     also used for the TOC unless
+%                                     \toctitle is used
+%
+\author{
+Andreas Abel\inst{1}
+\and
+Andrea Vezzosi\inst{1}
+%\thanks{Supported by 
+%Vetenskapsr\aa{}det framework grant to the ProgLog group (Thierry Coquand et al.) of
+%the Department of Computer Science and Engineering at Chalmers and
+%Gothenburg University} 
+\and 
+Lars Birkedal\inst{2} 
+\and 
+Ranald Clouston\inst{2}
+\and
+Hans Bugge Grathwohl\inst{2}
+}
+%
+\authorrunning{Abel, Vezzosi, Birkedal, Clouston, Grathwohl} % abbreviated author list (for running head)
+%
+%%%% list of authors for the TOC (use if author list has to be modified)
+%\tocauthor{Ivar Ekeland, Roger Temam, Jeffrey Dean, David Grove,
+%Craig Chambers, Kim B. Bruce, and Elisa Bertino}
+%
+\institute{
+Computer Science and Engineering, Chalmers and Gothenburg University,\\
+R\"annv\"agen 6, 41296 G\"oteborg, Sweden,
+\email{andreas.abel@gu.se,andrea.vezzosi@chalmers.se}
+\and 
+Department of Computer Science, Aarhus University, Denmark\\
+\email{\{birkedal,hbugge,ranald.clouston\}@cs.au.dk}
+}
+
+
+\maketitle              % typeset the title of the contribution
+
+%%% Abstract
+\begin{abstract}
+\input{abstract.txt}  
+\end{abstract}
+
+% Template
+\AgdaHide{
+\begin{code}
+  
+\end{code}
+}
+
+\input{intro}
+
+\input{syntax}
+
+\input{concl}
+
+
+\bibliographystyle{splncsnat}
+\bibliography{auto-aplas14}
+
+\end{document}
