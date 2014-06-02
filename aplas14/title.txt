@@ -1,0 +1,8 @@
+Andreas Abel
+Andrea Vezzosi
+Lars Birkedal
+Ranald Clouston
+Hans Bugge Grathwohl
+
+A Formalized Proof of Strong Normalization for Guarded Recursive Types
+

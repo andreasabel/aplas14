@@ -1,0 +1,9 @@
+We consider a simplified version of Nakano's guarded fixed-point types
+in a presentation of infinite type expression, defined coinductively.
+Small-step reduction is parametrized by a natural number ``depth'' that
+expresses under how many guards we may step during evaluation.  We
+prove that reduction is strongly normalizing for any depth.  The proof
+involves a typed inductive notion of strong normalization and a Kripke
+model of types in two dimensions: depth and typing context.
+Our results have been formalized in Agda and serve as a case study of
+reasoning about a language with coinductive type expressions.
