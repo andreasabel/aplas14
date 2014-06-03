@@ -57,7 +57,7 @@ latex/%.tex : %.lagda
 # initially, run latex once to create an .aux file
 # mark .aux file as fresh by creating a stamp _aux
 aplas14_aux : aplas14.tex $(files)
-	$(pdflatex) aplas14.tex;
+	-$(pdflatex) aplas14.tex;
 	touch $@;
 
 # then, run bibtex
@@ -69,7 +69,7 @@ aplas14.bbl : aplas14_aux auto-aplas14.bib
 # (otherwise we would not converge and make would never
 # return a "Nothing to do")
 aplas14.pdf : aplas14.bbl
-	$(pdflatex) aplas14.tex;
+	-$(pdflatex) aplas14.tex;
 	$(pdflatex) aplas14.tex;
 
 # auto-aplas14.bib is only defined if bibtool is present and all.bib exists
