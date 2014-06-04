@@ -22,7 +22,7 @@ bibliography=all.bib
 sedfile=postprocess.sed
 
 stylefile=latex/agda.sty
-files=byhand.bib intro.tex syntax.tex concl.tex SizedInfiniteTypes.tex \
+files=byhand.bib intro.tex syntax.tex concl.tex SizedInfiniteTypes.tex Terms.tex \
   $(stylefile)
 
 default : aplas14.pdf
