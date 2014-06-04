@@ -128,7 +128,8 @@ f ≡s g = (∀ {a} x → vt2tm _ (f {a} x) ≡ vt2tm _ (g x))
 \end{code}
 
 \begin{code}
-subst-ext : ∀ {Γ Δ} {m n vt1 vt2} {f : RenSub {m} vt1 Γ Δ}{g : RenSub {n} vt2 Γ Δ} → f ≡s g → ∀ {a} (t : Tm Γ a) → subst f t ≡ subst g t
+subst-ext :  ∀ {Γ Δ} {m n vt1 vt2} {f : RenSub {m} vt1 Γ Δ}{g : RenSub {n} vt2 Γ Δ} →
+             f ≡s g → ∀ {a} (t : Tm Γ a) → subst f t ≡ subst g t
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -155,15 +156,17 @@ lifts-ext {vt1 = `Tm} {`Tm} f≐g (suc x) = ≡.cong (subst suc) (f≐g x)
 }
 
 \begin{code}
-subst-∙ : ∀ {Γ₀ Γ₁ Γ₂}
-         {n}{vt2 : VarTm n}(τ : RenSub vt2 Γ₁ Γ₂)
-         {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁) → ∀ {a} (t : Tm Γ₀ a) → subst (τ •s σ) t ≡ subst τ (subst σ t)
-lifts-∙ : ∀ {Γ₀ Γ₁ Γ₂}
-       {n}{vt2 : VarTm n}(τ : RenSub vt2 Γ₁ Γ₂)
-       {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁) → ∀ {a} → lifts {a = a} (τ •s σ) ≡s (lifts τ •s lifts σ)
+subst-∙ :  ∀ {Γ₀ Γ₁ Γ₂}
+           {n}{vt2 : VarTm n}(τ : RenSub vt2 Γ₁ Γ₂)
+           {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁) 
+           → ∀ {a} (t : Tm Γ₀ a) → subst (τ •s σ) t ≡ subst τ (subst σ t)
 \end{code}
 \AgdaHide{
 \begin{code}
+lifts-∙ :  ∀ {Γ₀ Γ₁ Γ₂}
+           {n}{vt2 : VarTm n}(τ : RenSub vt2 Γ₁ Γ₂)
+           {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁) 
+           → ∀ {a} → lifts {a = a} (τ •s σ) ≡s (lifts τ •s lifts σ)
 subst-∙ τ {vt1 = `Var} σ (var x) = ≡.refl
 subst-∙ τ {vt1 = `Tm} σ (var x) = ≡.refl
 subst-∙ τ σ (abs t)     = ≡.cong abs (≡.trans (subst-ext (lifts-∙ τ σ) t) (subst-∙ (lifts τ) (lifts σ) t))
@@ -208,9 +211,10 @@ lifts-id {vt = `Tm}  (suc x) = ≡.refl
 \end{code}
 }
 
-
+%% not sure how many of these we want to show
 \begin{code}
-sgs-lifts : ∀ {m vt Γ Δ a} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a} → (sgs (subst σ u) •s lifts σ) ≡s (σ •s sgs u)
+sgs-lifts :  ∀ {m vt Γ Δ a} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a} 
+             → (sgs (subst σ u) •s lifts σ) ≡s (σ •s sgs u)
 sgs-lifts-term : ∀ {m vt Γ Δ a b} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a}{t : Tm (a ∷ Γ) b}
                  → subst (sgs (subst σ u)) (subst (lifts σ) t) ≡ subst σ (subst (sgs u) t)
 renId : ∀ {Γ a}{t : Tm Γ a} → rename id t ≡ t

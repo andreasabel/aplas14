@@ -27,15 +27,13 @@ v₀ = zero
 
 \begin{code}
 data Tm (Γ : Cxt) : (a : Ty) → Set where
-  var  : ∀{a}          (x : Var Γ a)                   → Tm Γ a
-  abs  : ∀{a b}        (t : Tm (a ∷ Γ) b)              → Tm Γ (a →̂ b)
-  app  : ∀{a b}        (t : Tm Γ (a →̂ b)) (u : Tm Γ a) → Tm Γ b
-  pair : ∀{a b}        (t : Tm Γ a) (u : Tm Γ b)       → Tm Γ (a ×̂ b)
-  fst  : ∀{a b}        (t : Tm Γ (a ×̂ b))              → Tm Γ a
-  snd  : ∀{a b}        (t : Tm Γ (a ×̂ b))              → Tm Γ b
-  ▹_   : ∀{a∞}         (t : Tm Γ (force a∞))           → Tm Γ (▸̂ a∞)
-
-  -- `applicative'
-  _∗_  : ∀{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
-                       (u : Tm Γ (▸ a))                → Tm Γ (▸̂ b∞)
+  var   : ∀{a}           (x : Var Γ a)                    → Tm Γ a
+  abs   : ∀{a b}         (t : Tm (a ∷ Γ) b)               → Tm Γ (a →̂ b)
+  app   : ∀{a b}         (t : Tm Γ (a →̂ b)) (u : Tm Γ a)  → Tm Γ b
+  pair  : ∀{a b}         (t : Tm Γ a) (u : Tm Γ b)        → Tm Γ (a ×̂ b)
+  fst   : ∀{a b}         (t : Tm Γ (a ×̂ b))               → Tm Γ a
+  snd   : ∀{a b}         (t : Tm Γ (a ×̂ b))               → Tm Γ b
+  ▹_    : ∀{a∞}          (t : Tm Γ (force a∞))            → Tm Γ (▸̂ a∞)
+  _∗_   : ∀{a : Ty}{b∞}  (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
+                         (u : Tm Γ (▸ a))                 → Tm Γ (▸̂ b∞)
 \end{code}
