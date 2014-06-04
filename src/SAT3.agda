@@ -11,7 +11,6 @@ open import Terms
 open import Substitution
 open import Reduction
 open import SN
---open import SN.AntiSubst
 open import SN.AntiRename
 
 -- Kripke predicates on well-typed terms.
@@ -19,16 +18,8 @@ open import SN.AntiRename
 TmSet : (a : Ty) → Set₁
 TmSet a = {Γ : Cxt} (t : Tm Γ a) → Set
 
--- Transporting from one Kripke predicate to one of equivalent type.
-
-_↔_ : ∀ {a a'} → TmSet a → TmSet a' → Set
-_↔_ {a} {a'} 𝑨 𝑨′ = ∀ {Γ}{t : Tm Γ _}{t′ : Tm Γ _} → a ≅ a' → t ≅T t′ → 𝑨 t → 𝑨′ t′
-
 _⊆_ : ∀{a} (𝑨 𝑨′ : TmSet a) → Set
 𝑨 ⊆ 𝑨′ = ∀{Γ}{t : Tm Γ _} → 𝑨 t → 𝑨′ t
-
-βClosed : ∀ {a} (𝑨 : TmSet a) → Set
-βClosed 𝑨 = ∀{Γ}{t t' : Tm Γ _} → t ⇒β t' → 𝑨 t → 𝑨 t'
 
 -- Closure by strong head expansion
 
@@ -39,41 +30,22 @@ data Cl (n : ℕ) {a} (𝑨 : TmSet a) {Γ} (t : Tm Γ a) : Set where
   emb : 𝑨 t                             → Cl n 𝑨 t
   exp : ∀{t'} → t ⟨ n ⟩⇒ t' → Cl n 𝑨 t' → Cl n 𝑨 t
 
--- Operations on predicates.
-
 -- Function space.
 
 _[→]_ : ∀{a b} → TmSet a → TmSet b → TmSet (a →̂ b)
 (𝓐 [→] 𝓑) {Γ} t = ∀{Δ} (ρ : Δ ≤ Γ) → {u : Tm Δ _} → 𝓐 u → 𝓑 (app (rename ρ t) u)
-{-
-_[→]↔_ : ∀{a a'}{𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨′ ↔ 𝑨  →
-         ∀{b b'}{𝑩 : TmSet b}{𝑩′ : TmSet b'} → 𝑩 ↔ 𝑩′ → (𝑨 [→] 𝑩) ↔ (𝑨′ [→] 𝑩′)
-(𝑨 [→]↔ 𝑩) (eq₁ →̂  eq₂) t≅t' 𝒕 ρ ρrefl {u} 𝒖 =
-  let r = 𝒕 ρ ρrefl {cast eq₁ u} (𝑨 eq₁ (Tsym (coh (≅L.refl ≅refl) eq₁ u)) 𝒖)
-  in  𝑩 eq₂ (app (SubCong.subst-ext ρrefl t≅t') (coh (≅L.refl ≅refl) eq₁ u)) r
--}
+
 -- Cartesian product.
 
 _[×]_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
 (𝓐 [×] 𝓑) t = 𝓐 (fst t) × 𝓑 (snd t)
 
-_[×]↔_ : ∀{a a' b b'} {𝑨 : TmSet a}{𝑨′ : TmSet a'} → 𝑨 ↔ 𝑨′  →
-         ∀{𝑩 : TmSet b}{𝑩′ : TmSet b'} → 𝑩 ↔ 𝑩′ → (𝑨 [×] 𝑩) ↔ (𝑨′ [×] 𝑩′)
-
-(𝓐 [×]↔ 𝓑) (a ×̂  b) t (f , s) = (𝓐 a (fst t) f) , (𝓑 b (snd t) s)
 
 data [▸] {a∞} (𝑨 : TmSet (force a∞)) {Γ} : (n : ℕ) → Tm Γ (▸̂ a∞) → Set where
   ▹0  : ∀   {t    : Tm Γ (force a∞)}                                     → [▸] 𝑨 zero (▹ t)
   ▹_  : ∀{n}{t    : Tm Γ (force a∞)} (𝒕 : 𝑨 t)                           → [▸] 𝑨 (suc n) (▹ t)
   ne  : ∀{n}{t    : Tm Γ (▸̂ a∞)}     (𝒏 : SNe n t)                       → [▸] 𝑨 n t
   exp : ∀{n}{t t' : Tm Γ (▸̂ a∞)}     (t⇒ : t ⟨ n ⟩⇒ t') (𝒕 : [▸] 𝑨 n t') → [▸] 𝑨 n t
-
-[▸]↔_ : ∀{a a' n} {𝑨 : TmSet (force a)} {𝑨′ : TmSet (force a')} → 𝑨 ↔ 𝑨′ →
-         [▸] {a} 𝑨 n ↔ [▸] {a'} 𝑨′ n
-[▸]↔_ 𝓐 (▸̂ a₁) (▹ t₁) ▹0 = ▹0
-[▸]↔_ 𝓐 (▸̂ a₁) (▹ t₁) (▹ 𝒕) = ▹ (𝓐 (≅force a₁) t₁ 𝒕)
-[▸]↔_ 𝓐 (▸̂ a₁) t₁ (ne 𝒏) = ne TODO
-[▸]↔_ 𝓐 (▸̂ a₁) t₁ (exp t⇒ 𝒕) = exp {t' = TODO} TODO (([▸]↔ 𝓐) (▸̂ a₁) TODO 𝒕)
 
 -- Saturated term sets.
 
@@ -84,7 +56,6 @@ record IsSAT (n : ℕ) {a} (𝑨 : TmSet a) : Set where
     satSN   : 𝑨 ⊆ SN n
     satExp  : Closed n 𝑨
     satRename : ∀ {Γ Δ} → (ρ : Ren Γ Δ) → ∀ {t} → 𝑨 t → 𝑨 (subst ρ t)
-    satRed  : βClosed 𝑨
 --open IsSAT
 
 record SAT (a : Ty) (n : ℕ) : Set₁ where
@@ -92,11 +63,6 @@ record SAT (a : Ty) (n : ℕ) : Set₁ where
   field
     satSet  : ∀ {m} .(m≤n : m ≤ℕ n) → TmSet a
     satProp : ∀ {m} .(m≤n : m ≤ℕ n) → IsSAT m (satSet m≤n)
-    satMono : ∀ {m} .(m≤n : m ≤ℕ n) →
-              ∀ {l} .(l≤m : l ≤ℕ m) →
-              let .l≤n : _
-                  l≤n = ≤ℕ.trans l≤m m≤n in
-              ∀ {Γ}{t : Tm Γ a} → satSet m≤n t → satSet l≤n t
 
   open module X {m} .(m≤n : m ≤ℕ n) = IsSAT (satProp m≤n) public
 open SAT
@@ -124,10 +90,8 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
     { satSNe = CSNe m≤n
     ; satSN  = CSN  m≤n
     ; satExp = CExp m≤n
-    ; satRed = CRed m≤n
     ; satRename = λ ρ {t} 𝒕 l l≤m ρ₁ {u} 𝒖 → ≡.subst (λ t → 𝑩 {l} _ (app t u)) (subst-∙ ρ₁ ρ t) (𝒕 l l≤m (λ x₂ → ρ₁ (ρ x₂)) 𝒖)
     }
-  ; satMono = λ m≤n → TODO
   }
   where
     𝑨 = satSet 𝓐
@@ -147,8 +111,6 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) 
     CExp : ∀ {m} .(m≤n : m ≤ℕ _) →  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 m≤n t' → 𝑪 m≤n t
     CExp m≤n t⇒ 𝒕 l l≤m ρ 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in SAT.satExp 𝓑 l≤n ((cong (appl _) (appl _) (map⇒ l≤m (subst⇒ (renSN ρ) t⇒)))) (𝒕 l l≤m ρ 𝒖)
 
-    CRed : ∀ {m} .(m≤n : m ≤ℕ _) → βClosed (𝑪 m≤n)
-    CRed m≤n t→t' 𝒕 l l≤m ρ 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in satRed 𝓑 l≤n (cong (appl _) (appl _) (subst⇒β ρ t→t')) (𝒕 l l≤m ρ 𝒖)
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
@@ -173,10 +135,8 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
     { satSNe = CSNe m≤n
     ; satSN = CSN m≤n
     ; satExp = CExp m≤n
-    ; satRed = CRed m≤n
     ; satRename = λ ρ x → (satRename 𝓐 m≤n ρ (proj₁ x)) , (satRename 𝓑 m≤n ρ (proj₂ x))
     }
-  ; satMono = TODO
   }
   where
     𝑨 = satSet 𝓐
@@ -194,9 +154,6 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
     CExp : ∀ {m} .(m≤n : m ≤ℕ _) →  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → (𝑪 m≤n) t' → (𝑪 m≤n) t
     CExp m≤n t⇒ (𝒕₁ , 𝒕₂) = (SAT.satExp 𝓐 m≤n (cong fst fst t⇒) 𝒕₁)
                      , (SAT.satExp 𝓑 m≤n (cong snd snd t⇒) 𝒕₂)
-
-    CRed : ∀ {m} .(m≤n : m ≤ℕ _) → βClosed (𝑪 m≤n)
-    CRed m≤n t⇒ (𝒕₁ , 𝒕₂) = satRed 𝓐 m≤n (cong fst fst t⇒) 𝒕₁ , satRed 𝓑 m≤n (cong snd snd t⇒) 𝒕₂
 
 
 -- Lemma (introduction):  If t₁ ∈ 𝓐 and t₂ ∈ 𝓑 then pair t₁ t₂ ∈ 𝓐 ⟦×⟧ 𝓑
@@ -224,9 +181,9 @@ SATpred a (suc n) = SAT a n
 -- The underlying set at level -1 is the set of all terms of appropriate type
 
 SATpredSet : {n : ℕ}{a : Ty} → SATpred a n → ∀ {m} → .(m ≤ℕ n) → TmSet a
-SATpredSet {zero} _ _ _ = ⊤
-SATpredSet {suc n} 𝓐 {zero}  m≤n = satSet 𝓐 z≤n  -- unused
+SATpredSet {_}     𝓐 {zero}  m≤n _ = ⊤
 SATpredSet {suc n} 𝓐 {suc m} m≤n = satSet 𝓐 (pred≤ℕ m≤n) 
+SATpredSet {zero}  _ {suc _} ()
 
 -- Semantic delay type
 
@@ -250,13 +207,6 @@ module _ {a∞ : ∞Ty} where
     CRen         𝓐 m≤n ρ (ne 𝒏)     = ne (substSNe (ρ , (λ x → var (ρ x))) 𝒏)
     CRen         𝓐 m≤n ρ (exp t⇒ 𝒕) = exp (subst⇒ (ρ , (λ x → var (ρ x))) t⇒) (CRen 𝓐 m≤n ρ 𝒕)
 
-    CRed : ∀ {n} (𝓐 : SATpred a n) → ∀ {m} → .(m≤n : m ≤ℕ n) → βClosed (𝑪 {n} 𝓐 m≤n)
-    CRed         𝓐 m≤n (cong ▹_ ▹_ t⇒) ▹0          = ▹0
-    CRed {zero}  𝓐 ()  (cong ▹_ ▹_ t⇒) (▹ 𝒕)
-    CRed {suc n} 𝓐 m≤n (cong ▹_ ▹_ t⇒) (▹ 𝒕) = ▹ satRed 𝓐 (pred≤ℕ m≤n) t⇒ 𝒕
-    CRed         𝓐 m≤n t⇒              (ne 𝒏)      = ne (mapβSNe t⇒ 𝒏)
-    CRed         𝓐 m≤n t⇒              (exp t⇒₁ 𝒕) = TODO
-
   ⟦▸⟧_ : ∀{n} (𝓐 : SATpred a n) → SAT (▸̂ a∞) n
   ⟦▸⟧_ {n} 𝓐 = record
     { satSet = 𝑪 𝓐
@@ -264,31 +214,6 @@ module _ {a∞ : ∞Ty} where
       { satSNe = ne
       ; satSN  = CSN 𝓐 m≤n
       ; satExp = exp
-      ; satRed = CRed 𝓐 m≤n
       ; satRename = CRen 𝓐 m≤n
       }
-    ; satMono = TODO
     }
-
-{-
-module _ {a : Ty} where
-  private
-    𝑪 : ∀{n} (𝓐 : SAT a (pred n)) → TmSet (▸ _)
-    𝑪 {n} 𝓐 = [▸] (satSet 𝓐) n
-
-    CSN : ∀ {n} (𝓐 : SAT a (pred n)) → 𝑪 {n} 𝓐  ⊆ SN n
-    CSN 𝓐  ▹0_        = ▹0
-    CSN 𝓐  (▹ 𝒕)      = ▹ satSN 𝓐 𝒕
-    CSN 𝓐  (ne 𝒏)     = ne 𝒏
-    CSN 𝓐  (exp t⇒ 𝒕) = exp t⇒ (CSN 𝓐 𝒕)
-
-  ⟦▸⟧_ : ∀{n} (𝓐 : SAT a (pred n)) → SAT (▸ a) n
-  ⟦▸⟧_ {n} 𝓐 = record
-    { satSet = 𝑪 𝓐
-    ; satProp = record
-      { satSNe = ne
-      ; satSN  = CSN 𝓐
-      ; satExp = exp
-      }
-    }
--}
