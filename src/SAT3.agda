@@ -61,21 +61,28 @@ record IsSAT (n : ℕ) {a} (𝑨 : TmSet a) : Set where
 record SAT (a : Ty) (n : ℕ) : Set₁ where
   -- constructor sat
   field
-    satSet  : ∀ {m} .(m≤n : m ≤ℕ n) → TmSet a
-    satProp : ∀ {m} .(m≤n : m ≤ℕ n) → IsSAT m (satSet m≤n)
+    satSet  : TmSet a
+    satProp : IsSAT n satSet
 
-  open module X {m} .(m≤n : m ≤ℕ n) = IsSAT (satProp m≤n) public
+  open IsSAT satProp public
 open SAT
+
+SAT≤ : (a : Ty) (n : ℕ) → Set₁
+SAT≤ a n = ∀ {m} → (m ≤ℕ n) → SAT a m
+
+module SAT≤ {a : Ty} {n : ℕ} (𝓐 : SAT≤ a n) {m} (m≤n : m ≤ℕ _) where
+  open SAT (𝓐 m≤n) public
 
 -- Elementhood for saturated sets.
 -- We use a record to instead of just application to help Agda's unifier.
-record _∈⟨_⟩_ {a n Γ} (t : Tm Γ a) {m} .(m≤n : m ≤ℕ n) (𝓐 : SAT a n) : Set where
+record _∈_ {a n Γ} (t : Tm Γ a) (𝓐 : SAT a n) : Set where
   constructor ↿_
-  field       ⇃_ : satSet 𝓐 m≤n t
-open _∈⟨_⟩_ public
+  field       ⇃_ : satSet 𝓐 t
+open _∈_ public
 
-_∈_ : ∀ {a n Γ} (t : Tm Γ a) (𝓐 : SAT a n) → Set
-t ∈ 𝓐 = t ∈⟨ ≤ℕ.refl ⟩ 𝓐
+_∈⟨_⟩_ : ∀ {a n Γ} (t : Tm Γ a) {m} (m≤n : m ≤ℕ n) (𝓐 : SAT≤ a n) → Set
+t ∈⟨ m≤n ⟩ 𝓐 = t ∈ (𝓐 m≤n) 
+
 -- -- Workaround. Agda does not accept projection satSet directly,
 -- -- maybe since it is defined in another module.
 -- satSet' = satSet
@@ -83,94 +90,94 @@ t ∈ 𝓐 = t ∈⟨ ≤ℕ.refl ⟩ 𝓐
 
 -- Semantic function type.
 
-_⟦→⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a →̂ b) n
+_⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →̂ b) n
 𝓐 ⟦→⟧ 𝓑 = record
   { satSet  = 𝑪
-  ; satProp = λ m≤n → record
-    { satSNe = CSNe m≤n
-    ; satSN  = CSN  m≤n
-    ; satExp = CExp m≤n
-    ; satRename = λ ρ {t} 𝒕 l l≤m ρ₁ {u} 𝒖 → ≡.subst (λ t → 𝑩 {l} _ (app t u)) (subst-∙ ρ₁ ρ t) (𝒕 l l≤m (λ x₂ → ρ₁ (ρ x₂)) 𝒖)
+  ; satProp = record 
+    { satSNe = CSNe
+    ; satSN  = CSN
+    ; satExp = CExp
+    ; satRename = λ ρ {t} 𝒕 m m≤n ρ₁ {u} 𝒖 → ≡.subst (λ t₁ → 𝑩 {m} m≤n (app t₁ u)) (subst-∙ ρ₁ ρ t) (𝒕 m m≤n (λ x₂ → ρ₁ (ρ x₂)) 𝒖)
     }
   }
   where
-    𝑨 = satSet 𝓐
-    𝑩 = satSet 𝓑
-    𝑪 : ∀ {m} .(m≤n : m ≤ℕ _) → TmSet (_ →̂ _)
-    𝑪 {m} m≤n t = ∀ l .l≤m →
-      let .l≤n : l ≤ℕ _
-          l≤n = ≤ℕ.trans l≤m m≤n in
-      ((𝑨 l≤n) [→] (𝑩 l≤n)) t
+    module 𝓐 = SAT≤ 𝓐
+    module 𝓑 = SAT≤ 𝓑
+    𝑨 = 𝓐.satSet
+    𝑩 = 𝓑.satSet
+    𝑪 : TmSet (_ →̂ _)
+    𝑪 t = ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
 
-    CSNe : ∀ {m} .(m≤n : m ≤ℕ _) → SNe m ⊆ 𝑪 m≤n
-    CSNe m≤n 𝒏 l l≤m ρ 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in SAT.satSNe 𝓑 l≤n (sneApp (mapSNe l≤m (renameSNe ρ 𝒏)) (SAT.satSN 𝓐 l≤n 𝒖))
+    CSNe : SNe _ ⊆ 𝑪
+    CSNe 𝒏 m m≤n ρ 𝒖 = 𝓑.satSNe m≤n (sneApp (mapSNe m≤n (renameSNe ρ 𝒏)) (𝓐.satSN m≤n 𝒖))
 
-    CSN : ∀ {m} .(m≤n : m ≤ℕ _) → 𝑪 m≤n ⊆ SN m
-    CSN {m} m≤n 𝒕 = unRenameSN (prop→Ind suc ≡.refl) (absVarSN (SAT.satSN 𝓑 m≤n (𝒕 m ≤ℕ.refl suc (SAT.satSNe 𝓐 m≤n (var v₀)))))
+    CSN : 𝑪 ⊆ SN _
+    CSN 𝒕 = unRenameSN (prop→Ind suc ≡.refl) (absVarSN (𝓑.satSN ≤ℕ.refl (𝒕 _ ≤ℕ.refl suc (𝓐.satSNe ≤ℕ.refl (var v₀)))))
 
-    CExp : ∀ {m} .(m≤n : m ≤ℕ _) →  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 m≤n t' → 𝑪 m≤n t
-    CExp m≤n t⇒ 𝒕 l l≤m ρ 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in SAT.satExp 𝓑 l≤n ((cong (appl _) (appl _) (map⇒ l≤m (subst⇒ (renSN ρ) t⇒)))) (𝒕 l l≤m ρ 𝒖)
+    CExp : ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
+    CExp t⇒ 𝒕 m m≤n ρ 𝒖 = 𝓑.satExp m≤n ((cong (appl _) (appl _) (map⇒ m≤n (subst⇒ (renSN ρ) t⇒)))) (𝒕 m m≤n ρ 𝒖)
 
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
-⟦abs⟧ : ∀{n a b}{𝓐 : SAT a n}{𝓑 : SAT b n}{Γ}{t : Tm (a ∷ Γ) b}{m} → .(m≤n : m ≤ℕ n) →
-    (∀ {l} .(l≤m : l ≤ℕ m) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} → let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in  
-      u ∈⟨ l≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ l≤n ⟩ 𝓑 ) → abs t ∈⟨ m≤n ⟩ (𝓐 ⟦→⟧ 𝓑)
-(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} m≤n 𝒕) l l≤m ρ 𝒖 = let .l≤n : _ ; l≤n = ≤ℕ.trans l≤m m≤n in
-  SAT.satExp 𝓑 l≤n (β (SAT.satSN 𝓐 l≤n 𝒖)) (⇃ (𝒕 l≤m ρ (↿ 𝒖)))
+⟦abs⟧ : ∀{n a b}{𝓐 : SAT≤ a n}{𝓑 : SAT≤ b n}{Γ}{t : Tm (a ∷ Γ) b} →
+    (∀ {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →   
+      u ∈⟨ m≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ m≤n ⟩ 𝓑 ) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
+(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) m m≤n ρ 𝒖 = 
+  SAT≤.satExp 𝓑 m≤n (β (SAT≤.satSN 𝓐 m≤n 𝒖)) (⇃ 𝒕 m≤n ρ (↿ 𝒖))
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t ∈ 𝓐 ⟦→⟧ 𝓑 and u ∈ 𝓐, then app t u ∈ 𝓑
 
-⟦app⟧ : ∀ {n a b}{𝓐 : SAT a n}{𝓑 : SAT b n}{Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
-        ∀ {m} .(m≤n : m ≤ℕ n) → t ∈⟨ m≤n ⟩ (𝓐 ⟦→⟧ 𝓑) → u ∈⟨ m≤n ⟩ 𝓐 → app t u ∈⟨ m≤n ⟩ 𝓑
-⟦app⟧ {𝓑 = 𝓑} {u = u} m≤n (↿ 𝒕) (↿ 𝒖) = ≡.subst (λ t → app t u ∈⟨ m≤n ⟩ 𝓑) renId (↿ 𝒕 _ ≤ℕ.refl id 𝒖)
+⟦app⟧ : ∀ {n a b}{𝓐 : SAT≤ a n}{𝓑 : SAT≤ b n}{Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
+        ∀ {m} (m≤n : m ≤ℕ n) → t ∈ (𝓐 ⟦→⟧ 𝓑) → u ∈⟨ m≤n ⟩ 𝓐 → app t u ∈⟨ m≤n ⟩ 𝓑
+⟦app⟧ {𝓑 = 𝓑} {u = u} m≤n (↿ 𝒕) (↿ 𝒖) = ≡.subst (λ t → app t u ∈⟨ m≤n ⟩ 𝓑) renId (↿ 𝒕 _ m≤n id 𝒖)
+
 
 -- Semantic product type
 
 _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 𝓐 ⟦×⟧ 𝓑 = record
   { satSet   = 𝑪
-  ; satProp  = λ m≤n → record
-    { satSNe = CSNe m≤n
-    ; satSN = CSN m≤n
-    ; satExp = CExp m≤n
-    ; satRename = λ ρ x → (satRename 𝓐 m≤n ρ (proj₁ x)) , (satRename 𝓑 m≤n ρ (proj₂ x))
+  ; satProp  = record
+    { satSNe = CSNe
+    ; satSN = CSN
+    ; satExp = CExp
+    ; satRename = λ ρ x → satRename 𝓐 ρ (proj₁ x) , satRename 𝓑 ρ (proj₂ x)
     }
   }
   where
     𝑨 = satSet 𝓐
     𝑩 = satSet 𝓑
-    𝑪 : ∀ {m} .(m≤n : m ≤ℕ _) → TmSet _
-    𝑪 = λ {m} m≤n t → (𝑨 m≤n [×] 𝑩 m≤n) t
+    𝑪 : TmSet _
+    𝑪 = 𝑨 [×] 𝑩
 
-    CSNe : ∀ {m} .(m≤n : m ≤ℕ _) → SNe m ⊆ 𝑪 m≤n
-    CSNe m≤n 𝒏 = (SAT.satSNe 𝓐 m≤n (elim  𝒏 fst))
-           , (SAT.satSNe 𝓑 m≤n (elim  𝒏 snd))
+    CSNe : SNe _ ⊆ 𝑪
+    CSNe 𝒏 = SAT.satSNe 𝓐 (elim  𝒏 fst)
+           , SAT.satSNe 𝓑 (elim  𝒏 snd)
 
-    CSN : ∀ {m} .(m≤n : m ≤ℕ _) → 𝑪 m≤n ⊆ SN m
-    CSN m≤n (𝒕₁ , 𝒕₂) = bothProjSN (SAT.satSN 𝓐 m≤n 𝒕₁) (SAT.satSN 𝓑 m≤n 𝒕₂)
+    CSN : 𝑪 ⊆ SN _
+    CSN (𝒕₁ , 𝒕₂) = bothProjSN (SAT.satSN 𝓐 𝒕₁) (SAT.satSN 𝓑 𝒕₂)
 
-    CExp : ∀ {m} .(m≤n : m ≤ℕ _) →  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → (𝑪 m≤n) t' → (𝑪 m≤n) t
-    CExp m≤n t⇒ (𝒕₁ , 𝒕₂) = (SAT.satExp 𝓐 m≤n (cong fst fst t⇒) 𝒕₁)
-                     , (SAT.satExp 𝓑 m≤n (cong snd snd t⇒) 𝒕₂)
+    CExp : ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
+    CExp t⇒ (𝒕₁ , 𝒕₂) = SAT.satExp 𝓐 (cong fst fst t⇒) 𝒕₁
+                      , SAT.satExp 𝓑 (cong snd snd t⇒) 𝒕₂
 
 
 -- Lemma (introduction):  If t₁ ∈ 𝓐 and t₂ ∈ 𝓑 then pair t₁ t₂ ∈ 𝓐 ⟦×⟧ 𝓑
 
 ⟦pair⟧ : ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
-         → ∀ {m} .(m≤n : m ≤ℕ _) → t₁ ∈⟨ m≤n ⟩ 𝓐 → t₂ ∈⟨ m≤n ⟩ 𝓑 → pair t₁ t₂ ∈⟨ m≤n ⟩ (𝓐 ⟦×⟧ 𝓑)
-⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} m≤n (↿ 𝒕₁) (↿ 𝒕₂) = satExp 𝓐 m≤n (βfst (satSN 𝓑 m≤n 𝒕₂)) 𝒕₁ , satExp 𝓑 m≤n (βsnd (satSN 𝓐 m≤n 𝒕₁)) 𝒕₂
+         → t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
+⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} (↿ 𝒕₁) (↿ 𝒕₂) = satExp 𝓐 (βfst (satSN 𝓑 𝒕₂)) 𝒕₁ , satExp 𝓑 (βsnd (satSN 𝓐 𝒕₁)) 𝒕₂
 
 -- Lemma (elimination):  If t ∈ 𝓐 ⟦×⟧ 𝓑 then t₁ ∈ 𝓐 and t₂ ∈ 𝓑.
 
 ⟦fst⟧ : ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂  b)}
-        → ∀ {m} .(m≤n : m ≤ℕ _) → t ∈⟨ m≤n ⟩ (𝓐 ⟦×⟧ 𝓑) → fst t ∈⟨ m≤n ⟩ 𝓐
-⟦fst⟧ m≤n 𝒕 =  ↿ (proj₁ (⇃ 𝒕))
+        → t ∈ (𝓐 ⟦×⟧ 𝓑) → fst t ∈ 𝓐
+⟦fst⟧ 𝒕 =  ↿ (proj₁ (⇃ 𝒕))
 
 ⟦snd⟧ : ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂  b)}
-        → ∀ {m} .(m≤n : m ≤ℕ n) → t ∈⟨ m≤n ⟩ (𝓐 ⟦×⟧ 𝓑) → snd t ∈⟨ m≤n ⟩ 𝓑
-⟦snd⟧ m≤n 𝒕 =  ↿ (proj₂ (⇃ 𝒕))
+        → t ∈ (𝓐 ⟦×⟧ 𝓑) → snd t ∈ 𝓑
+⟦snd⟧ 𝒕 =  ↿ (proj₂ (⇃ 𝒕))
 
 -- Any term set is saturated at level -1
 
@@ -180,40 +187,37 @@ SATpred a (suc n) = SAT a n
 
 -- The underlying set at level -1 is the set of all terms of appropriate type
 
-SATpredSet : {n : ℕ}{a : Ty} → SATpred a n → ∀ {m} → .(m ≤ℕ n) → TmSet a
-SATpredSet {_}     𝓐 {zero}  m≤n _ = ⊤
-SATpredSet {suc n} 𝓐 {suc m} m≤n = satSet 𝓐 (pred≤ℕ m≤n) 
-SATpredSet {zero}  _ {suc _} ()
+SATpredSet : {n : ℕ}{a : Ty} → SATpred a n → TmSet a
+SATpredSet {zero}  𝓐 _ = ⊤
+SATpredSet {suc n} 𝓐 = satSet 𝓐 
 
 -- Semantic delay type
 
 module _ {a∞ : ∞Ty} where
   private
     a = force a∞
-    𝑪 : ∀{n} (𝓐 : SATpred a n) → ∀ {m} → .(m ≤ℕ n) → TmSet (▸̂ a∞)
-    𝑪 {n} 𝓐 {m} m≤n = [▸] (SATpredSet 𝓐 m≤n) m
+    𝑪 : ∀{n} (𝓐 : SATpred a n) → TmSet (▸̂ a∞)
+    𝑪 {n} 𝓐 = [▸] (SATpredSet 𝓐) n
 
-    CSN : ∀ {n} (𝓐 : SATpred a n) → ∀ {m} → .(m≤n : m ≤ℕ n) → 𝑪 {n} 𝓐  m≤n ⊆ SN m
-    CSN         𝓐 m≤n ▹0         = ▹0
-    CSN {zero}  𝓐 ()  (▹ 𝒕)
-    CSN {suc n} 𝓐 m≤n (▹ 𝒕)      = ▹ satSN 𝓐 (pred≤ℕ m≤n) 𝒕
-    CSN         𝓐 m≤n (ne 𝒏)     = ne 𝒏
-    CSN         𝓐 m≤n (exp t⇒ 𝒕) = exp t⇒ (CSN 𝓐 m≤n 𝒕)
+    CSN : ∀ {n} (𝓐 : SATpred a n) → 𝑪 {n} 𝓐 ⊆ SN n
+    CSN 𝓐 ▹0         = ▹0
+    CSN 𝓐 (▹ 𝒕)      = ▹ satSN 𝓐 𝒕
+    CSN 𝓐 (ne 𝒏)     = ne 𝒏
+    CSN 𝓐 (exp t⇒ 𝒕) = exp t⇒ (CSN 𝓐 𝒕)
 
-    CRen : ∀ {n} (𝓐 : SATpred a n) → ∀ {m} → .(m≤n : m ≤ℕ n) → ∀ {Γ Δ} (ρ : Γ ≤ Δ) → ∀ {t} → 𝑪 {n} 𝓐  m≤n t → 𝑪 {n} 𝓐  m≤n (subst ρ t)
-    CRen         𝓐 m≤n ρ ▹0         = ▹0
-    CRen {zero}  𝓐 ()  ρ (▹ 𝒕)
-    CRen {suc n} 𝓐 m≤n ρ (▹ 𝒕)      = ▹ satRename 𝓐 (pred≤ℕ m≤n) ρ 𝒕
-    CRen         𝓐 m≤n ρ (ne 𝒏)     = ne (substSNe (ρ , (λ x → var (ρ x))) 𝒏)
-    CRen         𝓐 m≤n ρ (exp t⇒ 𝒕) = exp (subst⇒ (ρ , (λ x → var (ρ x))) t⇒) (CRen 𝓐 m≤n ρ 𝒕)
+    CRen : ∀ {n} (𝓐 : SATpred a n) → ∀ {Γ Δ} (ρ : Γ ≤ Δ) → ∀ {t} → 𝑪 {n} 𝓐 t → 𝑪 {n} 𝓐 (subst ρ t)
+    CRen 𝓐 ρ ▹0         = ▹0
+    CRen 𝓐 ρ (▹ 𝒕)      = ▹ satRename 𝓐 ρ 𝒕
+    CRen 𝓐 ρ (ne 𝒏)     = ne (substSNe (ρ , (λ x → var (ρ x))) 𝒏)
+    CRen 𝓐 ρ (exp t⇒ 𝒕) = exp (subst⇒ (ρ , (λ x → var (ρ x))) t⇒) (CRen 𝓐 ρ 𝒕)
 
   ⟦▸⟧_ : ∀{n} (𝓐 : SATpred a n) → SAT (▸̂ a∞) n
   ⟦▸⟧_ {n} 𝓐 = record
     { satSet = 𝑪 𝓐
-    ; satProp = λ m≤n → record
+    ; satProp = record
       { satSNe = ne
-      ; satSN  = CSN 𝓐 m≤n
+      ; satSN  = CSN 𝓐
       ; satExp = exp
-      ; satRename = CRen 𝓐 m≤n
+      ; satRename = CRen 𝓐
       }
     }
