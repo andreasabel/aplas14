@@ -33,8 +33,8 @@ mutual
   ∞Dom {n} a = ∀ {m} → (m<n : m <′ n) → Dom< m<n a
 
   Dom≤ : ∀ {n m} → m ≤′ n -> Ty -> Set
-  Dom≤ {n} ≤′-refl t = Dom {n} t
-  Dom≤ (≤′-step le) t = Dom≤ le t
+  Dom≤ {.m} {m} ≤′-refl     t = Dom {m} t
+  Dom≤         (≤′-step le) t = Dom≤ le t
 
   Dom< : ∀ {n m} → m <′ n -> Ty -> Set
   Dom< {m = m} ≤′-refl t = Dom {m} t

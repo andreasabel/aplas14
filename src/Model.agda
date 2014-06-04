@@ -24,7 +24,7 @@ Env {i} Γ = ∀ {a} → Var Γ a → Dom {i} a
 
 mutual
   mapDom : ∀ {a}{i}{j : Size< ↑ i} → Dom {i} a → Dom {j} a
-  mapDom (pair x y) = pair (mapDom x) (mapDom y)
+  mapDom (pair x y)  = pair (mapDom x) (mapDom y)
   mapDom (abs x)     = abs x 
   mapDom (▹ x)       = ▹ ∞mapDom x
 

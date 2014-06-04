@@ -55,7 +55,7 @@ lifts {vt = `Tm}  σ (suc x) = subst {vt = `Var} suc (σ x)
 
 subst σ (abs t)     = abs (subst (lifts σ) t)
 subst σ (app t u)   = app (subst σ t) (subst σ u)
-subst σ (▹ t)       = ▹ (subst σ t)
+subst σ (next t)       = next (subst σ t)
 subst σ (t ∗ u)     = subst σ t ∗ subst σ u
 subst σ (pair t u)  = pair (subst σ t) (subst σ u)
 subst σ (fst t)     = fst (subst σ t)
@@ -124,7 +124,7 @@ weaks {vt = `Tm} σ x = rename suc (σ x)
 
 
 _≡s_ : ∀ {Γ Δ} {m n vt1 vt2} → (f : RenSub {m} vt1 Γ Δ)(g : RenSub {n} vt2 Γ Δ) → Set
-f ≡s g = (∀ {a} x → vt2tm _ (f {a} x) ≡ vt2tm _ (g x))
+f ≡s g = ∀ {a} x → vt2tm _ (f {a} x) ≡ vt2tm _ (g x)
 \end{code}
 
 \begin{code}
@@ -140,7 +140,7 @@ subst-ext f≐g (app t t₁)  = ≡.cong₂ app (subst-ext f≐g t) (subst-ext f
 subst-ext f≐g (pair t t₁) = ≡.cong₂ pair (subst-ext f≐g t) (subst-ext f≐g t₁)
 subst-ext f≐g (fst t)     = ≡.cong fst (subst-ext f≐g t)
 subst-ext f≐g (snd t)     = ≡.cong snd (subst-ext f≐g t)
-subst-ext f≐g (▹ t)       = ≡.cong ▹_ (subst-ext f≐g t)
+subst-ext f≐g (next t)       = ≡.cong next (subst-ext f≐g t)
 subst-ext f≐g (t ∗ t₁)    = ≡.cong₂ _∗_ (subst-ext f≐g t) (subst-ext f≐g t₁)
 
 lifts-ext {vt1 = `Var} {`Var} f≐g (zero) = ≡.refl
@@ -174,7 +174,7 @@ subst-∙ τ σ (app t t₁)  = ≡.cong₂ app (subst-∙ τ σ t) (subst-∙ �
 subst-∙ τ σ (pair t t₁) = ≡.cong₂ pair (subst-∙ τ σ t) (subst-∙ τ σ t₁)
 subst-∙ τ σ (fst t)     = ≡.cong fst (subst-∙ τ σ t)
 subst-∙ τ σ (snd t)     = ≡.cong snd (subst-∙ τ σ t)
-subst-∙ τ σ (▹ t)       = ≡.cong ▹_ (subst-∙ τ σ t)
+subst-∙ τ σ (next t)       = ≡.cong next (subst-∙ τ σ t)
 subst-∙ τ σ (t ∗ t₁)    = ≡.cong₂ _∗_ (subst-∙ τ σ t) (subst-∙ τ σ t₁)
 
 lifts-∙ {vt2 = `Var} τ {vt1 = `Var} σ (zero)    = ≡.refl
@@ -201,7 +201,7 @@ subst-id (app t t₁)  = ≡.cong₂ app (subst-id t) (subst-id t₁)
 subst-id (pair t t₁) = ≡.cong₂ pair (subst-id t) (subst-id t₁)
 subst-id (fst t)     = ≡.cong fst (subst-id t)
 subst-id (snd t)     = ≡.cong snd (subst-id t)
-subst-id (▹ t)       = ≡.cong ▹_ (subst-id t)
+subst-id (next t)       = ≡.cong next (subst-id t)
 subst-id (t ∗ t₁)    = ≡.cong₂ _∗_ (subst-id t) (subst-id t₁)
 
 lifts-id {vt = `Var} (zero)    = ≡.refl

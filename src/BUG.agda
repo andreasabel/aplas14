@@ -2,14 +2,14 @@
 
 -- Type interpretation and soundness of typing.
 
-module Soundness where
+module BUG where
 
 open import Library
 open import SizedInfiniteTypes
 open import Terms
 open import Substitution
 open import SN
-open import SN.AntiSubst
+--open import SN.AntiSubst
 open import SN.AntiRename
 open import SAT2
 
