@@ -212,7 +212,8 @@ renameSNe   :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
 renameSN    :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
                SN n t → SN n (rename ρ t)
 varSN       :  ∀ {Γ a n x} → var x ∈ SN {Γ = Γ} n {a}
-appVarSN    :  ∀ {Γ a b n}{t : Tm Γ (a →̂ b)}{x} → t ∈ SN n → app t (var x) ∈ SN n
+appVarSN    :  ∀ {Γ a b n}{t : Tm Γ (a →̂ b)}{x} → 
+               t ∈ SN n → app t (var x) ∈ SN n
 fstSN       :  ∀ {n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (fst t)
 sndSN       :  ∀ {n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (snd t)
 bothProjSN  :  ∀ {n a b Γ}{t : Tm Γ (a ×̂ b)} →
