@@ -37,4 +37,15 @@ data Tm (Γ : Cxt) : (a : Ty) → Set where
   _∗_   : ∀{a : Ty}{b∞}  (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
                          (u : Tm Γ (▸ a))                  → Tm Γ (▸̂ b∞)
 \end{code}
+
+\AgdaHide{
+\begin{code}
+-- Type annotation.
+
+tmId : ∀ {Γ} a → Tm Γ a → Tm Γ a
+tmId a t = t
+
+syntax tmId a t = t ∶ a
+
+\end{code}
 }
