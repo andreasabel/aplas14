@@ -32,7 +32,8 @@ data NβECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → (n n' : ℕ) → Set where
 }
 
 \begin{code}
-data NβEhole {n : ℕ} {Γ : Cxt} : {n' : ℕ} → {Δ : Cxt} {b a : Ty} → Tm Γ b → NβECxt Γ Δ a b n n' → Tm Δ a → Set where
+data NβEhole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} → 
+              Tm Γ b → NβECxt Γ Δ a b n n' → Tm Δ a → Set where
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -69,20 +70,20 @@ mkHole next        = _ , next
 data _⟨_⟩⇒β_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
 
   β     : ∀ {n a b}{t : Tm (a ∷ Γ) b}{u}
-          → (app (abs t) u) ⟨ n ⟩⇒β subst0 u t
+        → app (abs t) u ⟨ n ⟩⇒β subst0 u t
 
   β▸    : ∀ {n a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
-           → (next t ∗ next u) ⟨ n ⟩⇒β (next {a∞ = b∞} (app t u))
+        → (next t ∗ next u) ⟨ n ⟩⇒β (next {a∞ = b∞} (app t u))
 
   βfst  : ∀ {n a b}{t : Tm Γ a}{u : Tm Γ b}
-          → fst (pair t u) ⟨ n ⟩⇒β t
+        → fst (pair t u) ⟨ n ⟩⇒β t
 
   βsnd  : ∀ {n a b}{t : Tm Γ a}{u : Tm Γ b}
-          → snd (pair t u) ⟨ n ⟩⇒β u
+        → snd (pair t u) ⟨ n ⟩⇒β u
 
   cong  : ∀ {n n' Δ a b t t' Et Et'}{E : NβECxt Γ Δ a b n n'}
-          → (𝑬𝒕 : NβEhole Et E t)
-          → (𝑬𝒕' : NβEhole Et' E t')
-          → (t⇒β : t ⟨ n ⟩⇒β t')
-          → Et ⟨ n' ⟩⇒β Et'
+        → (𝑬𝒕 : NβEhole Et E t)
+        → (𝑬𝒕' : NβEhole Et' E t')
+        → (t⇒β : t ⟨ n ⟩⇒β t')
+        → Et ⟨ n' ⟩⇒β Et'
 \end{code}

@@ -71,61 +71,65 @@ mkEHole (∗r t)    = _ , ∗r t
 %% -- Parameterized evaluation contexts
 %% -- Parameterized neutral terms.
 %% -- Parametrized weak head reduction
-%% TODO: Should we try to avoid this parametrization, for simplicity?
+%% Should we try to avoid this parametrization, for simplicity?
+%% Andrea: Tried to but the termination checker didn't like it.
 \begin{code}
-data PCxt {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
+data PCxt  {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) : 
+           {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
 
   appl  : ∀ {a b t u}
           → (𝒖 : P u)
           → PCxt P (app t u) (appl u) (t ∶ (a →̂ b))
 
-  fst   : ∀ {a b t}                 → PCxt P (fst {a = a} {b = b} t) fst t
+  fst   : ∀ {a b t}                 → PCxt P (fst t) fst (t ∶ (a ×̂ b))
 
-  snd   : ∀ {a b t}                 → PCxt P (snd {a = a} {b = b} t) snd t
+  snd   : ∀ {a b t}                 → PCxt P (snd t) snd (t ∶ (a ×̂ b))
 
-  _∗l   : ∀ {a b∞ t u} (𝒖 : P u) → PCxt P (_∗_ {a = a} {b∞} t u) (u ∗l) t
+  _∗l   : ∀ {a b∞ t u} (𝒖 : P u) → PCxt P (t ∗ (u ∶ ▸ a) ∶ ▸̂ b∞) (u ∗l) t
 
   ∗r_   : ∀ {a : Ty}{b∞}{u t}
             (𝒕 : P (next {a∞ = delay a ⇒ b∞} t))
-                                    → PCxt P (((next t) ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
+                                    → PCxt P ((next t) ∗ (u ∶ ▸ a) ∶ ▸̂ b∞) (∗r t) u
 
 
 
 data PNe {Γ} (P : ∀{c} → Tm Γ c → Set) {b} : Tm Γ b → Set where
 
-  var  : ∀ x                              → PNe P (var x)
+  var   : ∀ x                                 → PNe P (var x)
 
-  elim : ∀ {a} {t : Tm Γ a} {E Et}
-         → (𝒏 : PNe P t) (𝑬𝒕 : PCxt P Et E t) → PNe P Et
+  elim  : ∀ {a} {t : Tm Γ a} {E Et}
+        → (𝒏 : PNe P t) (𝑬𝒕 : PCxt P Et E t)  → PNe P Et
 
 
-data _/_⇒_ {Γ} (P : ∀{c} → Tm Γ c → Set): ∀ {a} → Tm Γ a  → Tm Γ a → Set where
+data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) : 
+            ∀ {a} → Tm Γ a → Tm Γ a → Set where
 
-  β     : ∀ {a b}{t : Tm (a ∷ Γ) b}{u}
-          → (𝒖 : P u)
-          → P / (app (abs t) u) ⇒ subst0 u t
+  β     :  ∀ {a b}{t : Tm (a ∷ Γ) b}{u}
+           → (𝒖 : P u)
+           → P / (app (abs t) u) ⇒ subst0 u t
 
-  β▸    : ∀ {a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
+  β▸    :  ∀ {a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
            → P / (next t ∗ next u) ⇒ (next {a∞ = b∞} (app t u))
 
-  βfst  : ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
-          → (𝒖 : P u)
-          → P / fst (pair t u) ⇒ t
+  βfst  :  ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
+           → (𝒖 : P u)
+           → P / fst (pair t u) ⇒ t
 
-  βsnd  : ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
-          → (𝒕 : P t)
-          → P / snd (pair t u) ⇒ u
+  βsnd  :  ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
+           → (𝒕 : P t)
+           → P / snd (pair t u) ⇒ u
 
-  cong  : ∀ {a b t t' Et Et'}{E : ECxt Γ a b}
-          → (𝑬𝒕 : Ehole Et E t)
-          → (𝑬𝒕' : Ehole Et' E t')
-          → (t⇒ : P / t ⇒ t')
-          → P / Et ⇒ Et'
+  cong  :  ∀ {a b t t' Et Et'}{E : ECxt Γ a b}
+           → (𝑬𝒕 : Ehole Et E t)
+           → (𝑬𝒕' : Ehole Et' E t')
+           → (t⇒ : P / t ⇒ t')
+           → P / Et ⇒ Et'
 \end{code}
 
 %%%-- Weak head reduction is deterministic.
+%%% Actually never used, still nice to mention?
 \begin{code}
-detP⇒ : ∀ {a Γ} {P : ∀ {c} → Tm Γ c → Set} {t t₁ t₂ : Tm Γ a}
+detP⇒  : ∀ {a Γ} {P : ∀ {c} → Tm Γ c → Set} {t t₁ t₂ : Tm Γ a}
        → (t⇒₁ : P / t ⇒ t₁) (t⇒₂ : P / t ⇒ t₂) → t₁ ≡ t₂
 \end{code}
 
@@ -167,9 +171,12 @@ pneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
 
 %%% -- Functoriality of the notions wrt. P.
 \begin{code}
-mapPCxt : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t) {a b} {E : ECxt Γ a b}{Et t} → PCxt P Et E t -> PCxt Q Et E t
-mapPNe : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t) {a}{t : Tm Γ a} → PNe P t -> PNe Q t
-mapP⇒ : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t) {a}{t t' : Tm Γ a} → P / t ⇒ t' → Q / t ⇒ t'
+mapPCxt  : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t) 
+         {a b} {E : ECxt Γ a b} {Et t} → PCxt P Et E t → PCxt Q Et E t
+mapPNe   : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t)
+         {a} {t : Tm Γ a} → PNe P t → PNe Q t
+mapP⇒    : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t)
+         {a} {t t' : Tm Γ a} → P / t ⇒ t' → Q / t ⇒ t'
 \end{code}
 
 
