@@ -5,6 +5,34 @@
 @STRING{lics00	= "15th Annual IEEE Symposium on Logic in Computer Science
 		  (LICS 2000), 26-29 June 2000, Santa Barbara, California,
 		  USA, Proceedings" }
+@STRING{lics11	= "Proceedings of the 26th Annual IEEE Symposium on Logic in
+		  Computer Science, LICS 2011, June 21-24, 2011, Toronto,
+		  Ontario, Canada" }
+@STRING{lics13	= "28th Annual ACM/IEEE Symposium on Logic in Computer
+		  Science, LICS 2013, New Orleans, LA, USA, June 25-28, 2013" }
+
+@InProceedings{	  krishnaswamiBenton:lics11,
+  author	= {Neelakantan R. Krishnaswami and Nick Benton},
+  title		= {Ultrametric Semantics of Reactive Programs},
+  booktitle	= lics11,
+  year		= 2011,
+  pages		= {257-266},
+  ee		= {http://doi.ieeecomputersociety.org/10.1109/LICS.2011.38},
+  crossref	= {DBLP:conf/lics/2011},
+  bibsource	= {DBLP, http://dblp.uni-trier.de}
+}
+
+@InProceedings{	  birkedalMogelberg:lics13,
+  author	= {Lars Birkedal and Rasmus Ejlers M{\o}gelberg},
+  title		= {Intensional Type Theory with Guarded Recursive Types qua
+		  Fixed Points on Universes},
+  booktitle	= lics13,
+  year		= 2013,
+  pages		= {213-222},
+  ee		= {http://doi.ieeecomputersociety.org/10.1109/LICS.2013.27},
+  crossref	= {DBLP:conf/lics/2013},
+  bibsource	= {DBLP, http://dblp.uni-trier.de}
+}
 
 @InProceedings{	  nakano:lics00,
   author	= {Hiroshi Nakano},
@@ -18,10 +46,53 @@
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
+@InProceedings{	  xiChenChen:popl03,
+  author	= "Hongwei Xi and Chiyan Chen and Gang Chen",
+  title		= {Guarded Recursive Datatype Constructors},
+  booktitle	= "Proceedings of the 30th ACM SIGPLAN Symposium on
+		  Principles of Programming Languages",
+  year		= 2003,
+  address	= "New Orleans",
+  pages		= "224-235",
+  abstrace	= {{ We introduce a notion of guarded recursive (g.r.)
+		  datatype constructors, generalizing the notion of recursive
+		  datatypes in functional programming languages such as ML
+		  and Haskell. We address both theoretical and practical
+		  issues resulted from this generalization. On one hand, we
+		  design a type system to formalize the notion of g.r.
+		  datatype constructors and then prove the soundness of the
+		  type system. On the other hand, we present some significant
+		  applications (e.g., implementing objects, implementing
+		  staged computation, etc.) of g.r. datatype constructors,
+		  arguing that g.r. datatype constructors can have
+		  far-reaching consequences in programming. The main
+		  contribution of the paper lies in the recognition and then
+		  the formalization of a programming notion that is of both
+		  theoretical interest and practical use. }}
+}
+
 @Proceedings{	  DBLP:conf/lics/2000,
   title		= lics00,
   booktitle	= lics00,
   publisher	= ieee,
   year		= 2000,
+  bibsource	= {DBLP, http://dblp.uni-trier.de}
+}
+
+@Proceedings{	  DBLP:conf/lics/2011,
+  title		= lics11,
+  booktitle	= lics11,
+  publisher	= ieee,
+  year		= 2011,
+  bibsource	= {DBLP, http://dblp.uni-trier.de}
+}
+
+@Proceedings{	  DBLP:conf/lics/2013,
+  title		= lics13,
+  booktitle	= lics13,
+  publisher	= ieee,
+  year		= {2013},
+  ee		= {http://ieeexplore.ieee.org/xpl/mostRecentIssue.jsp?punumber=6570844}
+		  ,
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }

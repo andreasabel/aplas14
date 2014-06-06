@@ -2,7 +2,21 @@
 \section{Introduction}
 \label{sec:intro}
 
-\citet{nakano:lics00}
+In untyped lambda calculus, fixed-point combinators can be defined
+using self-application.  Such combinators can be assigned recursive
+types, albeit only negative ones.  Since such types introduce logical
+inconsistency, they are problematic, especially in Martin-L\"of
+Type Theory and other systems based on the Curry-Howard isomorphism.
+\citet{nakano:lics00} introduced \emph{a modality for recursion} that
+allows a stratification of negative recursive types to recover
+consistency.  In essence, each negative recursive occurrence needs to
+be \emph{guarded} by the modality; this coined the term \emph{guarded
+  recursive types} \citep{birkedalMogelberg:lics13}.\footnote{Not to
+  be confused with \emph{Guarded Recursive Datatype Constructors}
+  \citep{xiChenChen:popl03}.} 
+Nakano's modality has found applications in functional reactive
+programming \citep{krishnaswamiBenton:lics11} where it is referred to
+as \emph{later} modality.
 
 
 %%% Local Variables: 
