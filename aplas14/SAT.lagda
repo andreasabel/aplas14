@@ -191,12 +191,12 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 
 \begin{code}
 SATpred : (a : Ty) (n : ℕ) → Set₁
-SATpred a zero    = ⊤
-SATpred a (suc n) = SAT a n
+SATpred a zero     = ⊤
+SATpred a (suc n)  = SAT a n
 
 SATpredSet : {n : ℕ}{a : Ty} → SATpred a n → TmSet a
-SATpredSet {zero}  𝓐 _ = ⊤
-SATpredSet {suc n} 𝓐 = satSet 𝓐 
+SATpredSet {zero}   𝓐   = λ _ → ⊤
+SATpredSet {suc n}  𝓐   = satSet 𝓐 
 \end{code}
 \begin{code}
 module _ {a∞ : ∞Ty} where

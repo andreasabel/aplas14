@@ -40,10 +40,10 @@ open import SAT
 \end{code}
 }
 \begin{code}
-in≤      : ∀ (a : Ty) {n m} (m≤n : m ≤ℕ n) → SAT.satSet (⟦ a ⟧ m) ⊆ SAT.satSet (⟦ a ⟧≤ m≤n)
-out≤     : ∀ (a : Ty) {n m} (m≤n : m ≤ℕ n) → SAT.satSet (⟦ a ⟧≤ m≤n) ⊆ SAT.satSet (⟦ a ⟧ m)
+in≤      : ∀ a {n m} (m≤n : m ≤ℕ n) → SAT.satSet (⟦ a ⟧ m) ⊆ SAT.satSet (⟦ a ⟧≤ m≤n)
+out≤     : ∀ a {n m} (m≤n : m ≤ℕ n) → SAT.satSet (⟦ a ⟧≤ m≤n) ⊆ SAT.satSet (⟦ a ⟧ m)
 
-coerce≤   :  ∀ (a : Ty) {n n' m} (m≤n : m ≤ℕ n) (m≤n' : m ≤ℕ n') 
+coerce≤   :  ∀ a {n n' m} (m≤n : m ≤ℕ n) (m≤n' : m ≤ℕ n') 
              → SAT.satSet (⟦ a ⟧≤′ (≤⇒≤′ m≤n)) ⊆ SAT.satSet (⟦ a ⟧≤′ (≤⇒≤′ m≤n'))
 \end{code}
 
@@ -66,7 +66,7 @@ coerce≤ a ≤1 ≤2 𝑡 = in≤ a ≤2 (out≤ a ≤1 𝑡)
 }
 
 \begin{code}
-map⟦_⟧ : ∀ (a : Ty) → ∀ {m n} → m ≤ℕ n → SAT.satSet (⟦ a ⟧ n) ⊆ SAT.satSet (⟦ a ⟧ m)
+map⟦_⟧ : ∀ a {m n} → m ≤ℕ n → SAT.satSet (⟦ a ⟧ n) ⊆ SAT.satSet (⟦ a ⟧ m)
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -97,13 +97,13 @@ Ext :  ∀ {a n Δ Γ} {t : Tm Δ a} → (𝒕 : t ∈ ⟦ a ⟧ n) →
 Ext {a} 𝒕 θ (zero)   = 𝒕
 Ext {a} 𝒕 θ (suc x)  = θ x
 
-Rename : ∀ {n Δ Δ'} → (ρ : Ren Δ Δ') →
-         ∀ {Γ}{σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C {n} σ) →
-         ⟦ Γ ⟧C (ρ •s σ)
+Rename :  ∀ {n Δ Δ'} → (ρ : Ren Δ Δ') →
+          ∀ {Γ}{σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C {n} σ) →
+          ⟦ Γ ⟧C (ρ •s σ)
 Rename ρ θ {a} x = ↿ SAT.satRename (⟦ a ⟧ _) ρ (⇃ θ x)
 
-Map : ∀ {m n} → (m≤n : m ≤ℕ n) →
-      ∀ {Γ Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C σ) → ⟦ Γ ⟧C σ
+Map :  ∀ {m n} → (m≤n : m ≤ℕ n) →
+       ∀ {Γ Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C σ) → ⟦ Γ ⟧C σ
 Map m≤n θ {a} x = map⟦ a ⟧∈ m≤n (θ x)
 \end{code}
 
@@ -165,7 +165,8 @@ sound (abs t) {σ = σ} θ = ⟦abs⟧ {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧�
 \end{code}
 }
 \begin{code}
-  in (≡.subst (λ tu → tu ∈⟨ l≤m ⟩ (⟦ _ ⟧≤)) eq (↿ in≤ _ l≤m (⇃ sound t (Ext (↿ out≤ _ l≤m (⇃ 𝑢)) ((Rename ρ (Map l≤m θ))))))))
+  in  ≡.subst (λ tu → tu ∈⟨ l≤m ⟩ (⟦ _ ⟧≤)) eq 
+      (↿ in≤ _ l≤m (⇃ sound t (Ext (↿ out≤ _ l≤m (⇃ 𝑢)) ((Rename ρ (Map l≤m θ)))))))
 
 sound {n} (app {a} {b} t u) θ = ↿ out≤ b ≤ℕ.refl 
        (⇃ ⟦app⟧ {n} {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧≤} ≤ℕ.refl (sound t θ) (↿ in≤ a ≤ℕ.refl (⇃ sound u θ))) 

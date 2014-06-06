@@ -9,6 +9,12 @@ open import SizedInfiniteTypes
 
 \end{code}}
 
+\subsection{Well-typed terms}
+
+Instead of a raw syntax and a typing relation, we define directly the type of well-typed terms.
+
+We represent variables by de Brujin indices, so a typing context \AgdaDatatype{Cxt} is just a list of types, 
+the elements of the type \AgdaDatatype{Var} \AgdaBound{Γ} \AgdaBound{a} of variables then represent a position in such a context.
 \begin{code}
 Cxt = List Ty
 
@@ -23,7 +29,14 @@ v₀ : ∀ {a Γ} → Var (a ∷ Γ) a
 v₀ = zero
 \end{code}
 }
-
+  
+Terms are also indexed by a typing context and their type,
+guaranteeing well-typedness and well-scopedness.  The syntax is mostly
+the standard one of a simply typed lambda calculus with
+products. Additionally we have the applicative functor methods of the
+later modality, i.e. the introduction \AgdaInductiveConstructor{next}
+and the operator for application under the modality
+\AgdaInductiveConstructor{\_∗\_},
 
 \begin{code}
 data Tm (Γ : Cxt) : (a : Ty) → Set where
