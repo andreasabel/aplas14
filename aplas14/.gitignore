@@ -1,0 +1,9 @@
+medium.bib
+all.bib
+short.bib
+latex/*.tex
+*_aux
+*.ptb
+*.bst
+test.tex
+Asana-Math.otf
