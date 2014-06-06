@@ -1,0 +1,190 @@
+
+\section{Guarded Recursive Types and Their Semantics}
+\label{sec:syntax}
+
+Nakano' type system \citep{nakano:lics00} is equipped with subtyping,
+but we stick to a simpler variant without, a simply-typed version of
+\citet{birkedalMogelberg:lics13}.  Our rather minimal grammar of types
+includes product $A \times B$ and function types $A \to B$, delayed
+computations $\later A$, variables $X$ and explicit fixed-points $\mu
+X A$.
+\[
+\begin{array}{lrl@{\qquad}l}
+  A, B, C & ::= & A \times B \mid A \to B \mid \later A \mid X \mid
+    \mu X A
+\end{array}
+\]
+Base types and disjoint sum types could be added, but would only give
+breadth rather than depth to our formalization.  As usual, a dot after
+a bound variable shall denote an opening parenthesis that closes as far
+to the right as syntactically possible.  Thus, $\mu X.\, X \to X$
+denotes $\mu X \,(X \to X)$, while $\mu X X \to X$ denotes $(\mu X.X)
+\to X$ (with a free variable $X$).
+
+Formation of fixed-points $\mu X A$ is subject to the side condition that $X$ is
+guarded in $A$, \ie, $X$
+appears in $A$ only under a \emph{later} modality.  
+This rules out all unguarded recursive types like $\mu X.\, A \times
+X$ or $\mu X.\, X \to A$, but allows their variants 
+$\mu X.\, \later (A \times X)$ and  $\mu X.\, A \times \later X$,
+and $\mu X.\, \later (X \to A)$ and $\mu X.\, \later X \to A$. 
+Further, fixed-points give rise to an equality relation on types
+induced by $\mu X A = \subst {\mu X A} X A$.
+
+\begin{figure}[htbp]
+\begin{gather*}
+\ru{\Gamma(x) = A
+  }{\Gamma \der x : A} 
+\qquad
+\ru{\Gamma, x \of A \der t : B
+  }{\Gamma \der \lambda x t : A \to B}
+\qquad
+\ru{\Gamma \der t : A \to B \qquad
+    \Gamma \der u : A
+  }{\Gamma \der t\,u : B}
+\\[2ex]
+\ru{\Gamma \der t_1 : A_1 \qquad 
+    \Gamma \der t_2 : A_2 
+  }{\Gamma \der (t_1, t_2) : A_1 \times A_2}
+\qquad
+\ru{\Gamma \der t : A_1 \times A_2 
+  }{\Gamma \der \fst t : A_1}
+\qquad  
+\ru{\Gamma \der t : A_1 \times A_2 
+  }{\Gamma \der \snd t : A_2}
+\\[2ex]
+\ru{\Gamma \der t : A
+  }{\Gamma \der \pure t : \later A}
+\qquad
+\ru{\Gamma \der t : \later(A \to B) \qquad
+    \Gamma \der u : \later A
+  }{\Gamma \der \apply t u : \later B}
+\qquad
+\ru{\Gamma \der t : A \qquad
+    A = B
+  }{\Gamma \der t : B} 
+\end{gather*}
+\caption{Typing rules.}
+\label{fig:typing}
+\end{figure}
+
+Terms are lambda-terms with pairing and projection plus operations
+that witness \emph{applicative functoriality} of the later modality
+\citep{atkeyMcBride:icfp13}. 
+\[
+\begin{array}{lrl@{\qquad}l}
+  r,s,t,u & ::= & x \mid \lambda x t \mid t\,u \mid (t_1,t_2) \mid
+  \fst t \mid \snd t \mid \pure t \mid \apply t u
+\end{array}
+\]
+Figure~\ref{fig:typing} recapitulates the static semantics.  The
+dynamic semantics induced
+by the following \emph{contractions}:
+\[
+\begin{array}{l@{~~}l@{~~}l}
+  (\lambda x t)\,u          & \contr & \subst u x t \\
+  \fst(t_1,t_2)             & \contr & t_1 \\
+  \snd(t_1,t_2)             & \contr & t_2 \\
+  \applyp{\pure t}{\pure u} & \contr & \pure(t\,u) \\
+\end{array}
+\]
+If we conceive our small-step reduction relation $\red$ as 
+the compatible closure of $\contr$, we obtain a non-normalizing
+calculus, since terms like $\Omega = \omega \; (\pure\omega)$ with
+$\omega = (\lambda x.\, \apply x (\pure x))$ are
+typeable.\footnote{$\der \Omega : A$ with $A = \mu X (\later X)$.  To type
+  $\omega$, we use $x : \mu Y (\later (Y \to A))$.} 
+Unrestricted reduction of $\Omega$ is non-terminating:
+$\Omega \red \pure \Omega \red \pure (\pure \Omega) \red \dots$
+If we let $\tnext$ act as delay operator that blocks reduction inside,
+we regain termination.  In general, we preserve termination if we only
+look under delay operators until a certain depth.  This can be made
+precise by a family $\red_n$ of reduction relations indexed by depth
+$n \in \NN$, see Figure~\ref{fig:red}
+\begin{figure}[htbp]
+\begin{gather*}
+\ru{t \contr t'
+  }{t \red_n t'}
+\qquad
+\ru{t \red_n t'
+  }{\lambda x t \red_n \lambda x t'}
+\qquad
+\ru{t \red_n t' 
+  }{t\,u \red_n t'\,u}
+\qquad
+\ru{u \red_n u'
+  }{t\,u \red_n t\,u'}
+\\[2ex]
+\ru{t \red_n t' 
+  }{(t,u) \red_n (t',u)}
+\qquad
+\ru{u \red_n u'
+  }{(t,u) \red_n (t,u')}
+\qquad
+\ru{t \red_n t'
+  }{\fst t \red_n \fst t'}
+\qquad
+\ru{t \red_n t'
+  }{\snd t \red_n \snd t'}
+\\[2ex]
+\fbox{$
+\ru{t \red_n t'
+  }{\pure t \red_{n+1} \pure t'}
+$}
+\qquad
+\ru{t \red_n t' 
+  }{\apply t u \red_n \apply {t'} u}
+\qquad
+\ru{u \red_n u'
+  }{\apply t u \red_n \apply t u'}
+\end{gather*}
+\caption{Reduction}
+\label{fig:red}
+\end{figure}
+
+
+To show termination, we interpret types as sets $\A,\B,\C$ of
+depth-$n$ strongly normalizing terms. 
+We define semantic versions $\semtimes$,
+$\semto$, and $\semlater$ of product, function space, and delay type
+constructor, plus a terminal (=largest) semantic type $\semtop$.  Then
+the interpretation $\Den A n$ of closed type $A$ at depth $n$ can be given
+recursively as follows, using Kripke-style at function types:
+\[
+\def\arraystretch{1.3}
+\begin{array}{lll}
+  \Den{A \times B}n & = & \Den A n \semtimes \Den B n \\
+  \Den{A \to B}n & = & \bigcap_{n' \leq n} (\Den A {n'} \semto \Den B
+  {n'}) \\
+  \Den{\later A}0 & = & \semtop \\
+  \Den{\later A}{n+1} & = & \semlater \Den A n \\
+  \Den{\mu X A}n & = & \Den{\subst{\mu X A}X A}n \\
+\end{array}
+\]
+% The \emph{stage} $n$ can be seen as \emph{time} or evaluation
+% \emph{depth}.  At function types, we employ a Kripke semantics.
+%
+Due to the last equation $(\mu)$, the type interpretation is ill-defined for
+ungarded recursive types.  However, for guarded types we only return
+to the fixed-point case after we have passed the case for $\later$,
+which decreases the index $n$.  More precisely, $\Den A n$ is defined by
+lexicographic induction on $(n, \tsize(A))$, where $\tsize(A)$ is the
+number of type constructor symbols ($\times$, $\to$, $\mu$)
+that occur \emph{unguarded} in $A$.
+
+While all this sounds straightforward at an informal level, formalization
+of the described type language is quite hairy.  For one, we have to
+enforce the restriction to well-formed (guarded) types.  Secondly, our
+type system contains a conversion rule, getting us into the vincinity
+of dependent types which are still a challenge to completely formal
+treatment \citep{mcBride:wgp10}.  Our first formalization attempt used
+kinding rules for types to keep track of guardedness for formation of
+fixed-point, and a type equality relation, and building on this,
+inductively defined well-typed terms.  However, the complexity was
+discouraging and lead us to a much more economic representation of
+types, which is described in the next section.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "aplas14.tex"
+%%% End: 

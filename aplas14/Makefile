@@ -28,7 +28,7 @@ generatedfiles=SizedInfiniteTypes.tex Terms.tex Substitution.tex NReduction.tex 
       TermShape.tex SN.tex IndRen.tex AntiRename.tex SAT.tex Soundness.tex SNtosn.tex AgdaExamples.tex
 
 # All dependencies
-files=byhand.bib intro.tex syntax.tex strongnormalization.tex soundnessproof.tex SNcorrectness.tex examples.tex concl.tex $(generatedfiles) $(stylefile)
+files=byhand.bib macros.tex intro.tex types.tex syntax.tex strongnormalization.tex soundnessproof.tex SNcorrectness.tex examples.tex concl.tex $(generatedfiles) $(stylefile)
 
 .PRECIOUS : %.tex latex/%.tex aplas14.pdf
 

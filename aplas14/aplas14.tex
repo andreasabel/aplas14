@@ -24,11 +24,11 @@
 
 
 \documentclass{llncs}
-\usepackage{silence}
 
 %\usepackage{times} % ugly mathsf
 \usepackage{mathptmx}
 \usepackage{amsfonts,amssymb,textgreek,stmaryrd}
+\usepackage{amsmath}
 \PDFLATEX{
 \usepackage[postscript]{ucs}
 %\usepackage[postscript,combine]{ucs} %% combine destroys all unicode
@@ -71,8 +71,11 @@
 \DeclareUnicodeCharacter{916}{$\Delta$}
 
 % % silence ucs
+% \usepackage{silence}
 % \WarningsOff[ucs]
 % \ErrorsOff[ucs]
+
+\input{macros}
 
 \begin{document}
 %
@@ -135,6 +138,9 @@ R\"annv\"agen 6, 41296 G\"oteborg, Sweden \\
 }
 
 \input{intro}
+
+\input{types}
+% explicit vs implicit recursion
 
 \input{syntax}
 % Syntax of types

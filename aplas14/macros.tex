@@ -1,0 +1,122 @@
+% evergreens
+\newcommand{\bla}{\ensuremath{\mbox{$$}}} % invisible, but not ignored
+\newcommand{\der}{\,\vdash}
+\newcommand{\of}{{:}}
+\newcommand{\red}{\longrightarrow}
+\newcommand{\contr}{\mapsto}
+\newcommand{\restrict}{\upharpoonright}
+\newcommand{\FV}{\ensuremath{\mathsf{FV}}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\den}[1]{\llbracket #1 \rrbracket}
+\newcommand{\Den}[2]{\llbracket #1 \rrbracket_{#2}}
+
+% latin etc. abbrev
+\newcommand{\abbrev}[1]{#1} % alternative: \emph{#1}
+\newcommand{\cf}{\abbrev{cf.}\ }
+\newcommand{\eg}{\abbrev{e.\,g.}}
+\newcommand{\Eg}{\abbrev{E.\,g.}}
+\newcommand{\ie}{\abbrev{i.\,e.}}
+\newcommand{\Ie}{\abbrev{I.\,e.}}
+\newcommand{\etal}{\abbrev{et.\,al.}}
+\newcommand{\wwlog}{w.\,l.\,o.\,g.} % \wlog is ``write into log file''
+\newcommand{\Wlog}{W.\,l.\,o.\,g.}
+\newcommand{\wrt}{w.\,r.\,t.}
+
+% paragraphs
+\newcommand{\para}[1]{\paragraph*{\it#1}}
+\newcommand{\paradot}[1]{\para{#1.}}
+
+% proof by cases
+\newenvironment{caselist}{%
+  \begin{list}{{\it Case}}{\setlength{\leftmargin}{5ex}}%
+}{\end{list}%
+}
+\newenvironment{subcaselist}{%
+  \begin{list}{{\it Subcase}}{}%
+}{\end{list}%
+}
+
+\newcommand{\nextcase}{\item~}
+% meta-level logic
+\newcommand{\mfor}{\ \mbox{for}\ }
+\newcommand{\mthen}{\ \mbox{then}\ }
+\newcommand{\mif}{\ \mbox{if}\ }
+\newcommand{\miff}{\ \mbox{iff}\ }
+\newcommand{\motherwise}{\ \mbox{otherwise}}
+\newcommand{\mnot}{\mbox{not}\ }
+\newcommand{\mand}{\ \mbox{and}\ }
+\newcommand{\mor}{\ \mbox{or}\ }
+\newcommand{\mimplies}{\ \mbox{implies}\ }
+\newcommand{\mimply}{\ \mbox{imply}\ }
+\newcommand{\mforall}{\ \mbox{for all}\ }
+\newcommand{\mforsome}{\ \mbox{for some}\ }
+\newcommand{\mexists}{\mbox{exists}\ }
+\newcommand{\mexist}{\mbox{exist}\ }
+\newcommand{\mtrue}{\mbox{true}}
+\newcommand{\mwhere}{\ \mbox{where}\ }
+\newcommand{\mwith}{\ \mbox{with}\ }
+\newcommand{\mholds}{\ \mbox{holds}\ }
+\newcommand{\rin}{\ \mbox{in}\ }
+% proofs
+\newcommand{\msince}{\mbox{since}\ }
+\newcommand{\mdef}{\mbox{by def.}}
+\newcommand{\mass}{\mbox{assumption}}
+\newcommand{\mhyp}{\mbox{by hyp.}}
+\newcommand{\mlemma}[1]{\mbox{by Lemma~#1}}
+\newcommand{\mih}[1][]{\mbox{by ind.hyp.}#1}
+\newcommand{\mgoal}[1][]{\mbox{goal\ifthenelse{\equal{#1}{}}{}{~#1}}}
+\newcommand{\mby}[1]{\mbox{by #1}}
+\newcommand{\minfrule}{\mbox{by inference rule}}
+
+
+% Inference rules
+\newcommand{\rulename}[1]{\ensuremath{\mbox{\sc#1}}}
+\newcommand{\ru}[2]{\dfrac{\begin{array}[b]{@{}c@{}} #1 \end{array}}{#2}}
+\newcommand{\rux}[3]{\ru{#1}{#2}\ #3}
+\newcommand{\nru}[3]{#1\ \ru{#2}{#3}}
+\newcommand{\nrux}[4]{#1\ \ru{#2}{#3}\ #4}
+\newcommand{\dstack}[2]{\begin{array}[b]{c}#1\\#2\end{array}}
+\newcommand{\ndru}[4]{#1\ \ru{\dstack{#2}{#3}}{#4}}
+\newcommand{\ndrux}[5]{#1\ \ru{\dstack{#2}{#3}}{#4}\ #5}
+
+% Substitution and function update
+% read ``\subst F X A'' as ``substitute F for X in A''
+%\newcommand{\subst}[3]{#3[#2 := #1]}
+%\newcommand{\subst}[3]{[#1/#2]#3}
+\newcommand{\subst}[3]{#3[#1/#2]}
+% read ``\update \theta X \G'' as update \theta at point X by \G
+\newcommand{\update}[3]{#1[#2 \mapsto #3]}
+%\newcommand{\update}[3]{#1,#2 \is #3}
+
+% Types
+\newcommand{\ta}{\ensuremath{\AgdaBound{a}}}
+\newcommand{\tb}{\ensuremath{\AgdaBound{b}}}
+\newcommand{\tc}{\ensuremath{\AgdaBound{c}}}
+\newcommand{\later}{\mathord{\blacktriangleright}\,}
+\newcommand{\tlater}{\mathord{\blacktriangleright}}
+%\newcommand{\sem}[1]{\mathrel{\den{#1}}}
+\newcommand{\semto}{\mathrel{\den{\to}}}
+\newcommand{\semtimes}{\mathrel{\den{\times}}}
+\newcommand{\semlater}{\mathop{\den{\tlater}}}
+\newcommand{\semtop}{\mathop{\den{\top}}}
+
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\tsize}{\mathsf{size}}
+
+% Terms
+\newcommand{\tfst}{\mathsf{fst}}
+\newcommand{\tsnd}{\mathsf{snd}}
+\newcommand{\tnext}{\mathsf{next}}
+\newcommand{\fst}[1]{\tfst\;#1}
+\newcommand{\snd}[1]{\tsnd\;#1}
+\newcommand{\pure}[1]{\tnext\;#1}
+\newcommand{\apply}[2]{#1 \mathop{∗} #2}
+\newcommand{\applyp}[2]{\apply{(#1)}{(#2)}}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "aplas14.tex"
+%%% End: 
