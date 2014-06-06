@@ -9,10 +9,10 @@ module Library where
 open import Data.Fin using (Fin; zero; suc) public
 open import Data.List using (List; []; _∷_; map) public
 open import Data.Nat
-  using    (ℕ; zero; suc; z≤n; s≤s; pred)
+  using    (ℕ; zero; suc; z≤n; s≤s; pred; _≤′_; ≤′-refl; ≤′-step)
   renaming (_≤_ to _≤ℕ_; decTotalOrder to decTotalOrderℕ; _⊔_ to max)
   public
-open import Data.Nat.Properties using (_+-mono_) public
+open import Data.Nat.Properties using (_+-mono_; ≤⇒≤′) public
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂) renaming (map to map×) public
 
 open import Function using (id; _∘_) public
