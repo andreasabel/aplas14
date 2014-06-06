@@ -1,6 +1,13 @@
 # Named arguments
 s/\\AgdaSymbol{\\{}\([a-zA-Z?]\+\) \\AgdaSymbol{=}/\\AgdaSymbol{\\{}\\AgdaSymbol{\1} \\AgdaSymbol{=}/g
 
+# Combined characters
+# s:\(→̂\):\\SetUnicodeOption\{combine\}\1\\SetUnicodeOption\{nocombine\}:g
+#s:\(.\)̂:\\ensuremath\{\\hat\{\1\}\}:g
+s:→̂:\\ensuremath\{\\hat\{\\to\}\}:g
+s:×̂:\\ensuremath\{\\hat\{\\times\}\}:g
+s:▸̂:\\ensuremath\{\\hat\{\\blacktriangleright\}\}:g
+
 # Equational reasoning
 # Only replace the eq-reasoning identifiers in code blocks,
 # hence the initial ']' which comes from polytable

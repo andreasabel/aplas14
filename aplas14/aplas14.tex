@@ -24,7 +24,7 @@
 
 
 \documentclass{llncs}
-
+\usepackage{silence}
 
 %\usepackage{times}
 \usepackage{mathptmx}
@@ -70,6 +70,10 @@
 \DeclareUnicodeCharacter{10215}{$]\!]$}
 \DeclareUnicodeCharacter{916}{$\Delta$}
 
+% silence ucs
+\WarningsOff[ucs]
+\ErrorsOff[ucs]
+
 \begin{document}
 %
 \frontmatter          % for the preliminaries
@@ -92,15 +96,15 @@ Andrea Vezzosi\inst{1}
 %Vetenskapsr\aa{}det framework grant to the ProgLog group (Thierry Coquand et al.) of
 %the Department of Computer Science and Engineering at Chalmers and
 %Gothenburg University} 
-\and 
-Lars Birkedal\inst{2} 
-\and 
-Ranald Clouston\inst{2}
-\and
-Hans Bugge Grathwohl\inst{2}
+% \and 
+% Lars Birkedal\inst{2} 
+% \and 
+% Ranald Clouston\inst{2}
+% \and
+% Hans Bugge Grathwohl\inst{2}
 }
 %
-\authorrunning{Abel, Vezzosi, Birkedal, Clouston, Grathwohl} % abbreviated author list (for running head)
+\authorrunning{Abel, Vezzosi} %, Birkedal, Clouston, Grathwohl} % abbreviated author list (for running head)
 %
 %%%% list of authors for the TOC (use if author list has to be modified)
 %\tocauthor{Ivar Ekeland, Roger Temam, Jeffrey Dean, David Grove,
@@ -108,11 +112,11 @@ Hans Bugge Grathwohl\inst{2}
 %
 \institute{
 Computer Science and Engineering, Chalmers and Gothenburg University,\\
-R\"annv\"agen 6, 41296 G\"oteborg, Sweden,
+R\"annv\"agen 6, 41296 G\"oteborg, Sweden \\
 \email{andreas.abel@gu.se,vezzosi@chalmers.se}
-\and 
-Department of Computer Science, Aarhus University, Denmark\\
-\email{\{birkedal,hbugge,ranald.clouston\}@cs.au.dk}
+% \and 
+% Department of Computer Science, Aarhus University, Denmark\\
+% \email{\{birkedal,hbugge,ranald.clouston\}@cs.au.dk}
 }
 
 
