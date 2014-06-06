@@ -10,6 +10,10 @@ open import Terms
 \end{code}
 }
 
+\section{Renaming and Substitution}
+\label{sec:subst}
+
+
 \begin{code}
 -- VarTm n specifies whether the substitution produces variables or terms.
 -- The index is used to impose an order on the constructors

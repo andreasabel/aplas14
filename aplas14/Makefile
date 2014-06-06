@@ -22,8 +22,9 @@ bibliography=all.bib
 sedfile=postprocess.sed
 
 stylefile=latex/agda.sty
-files=byhand.bib intro.tex syntax.tex strongnormalization.tex soundnessproof.tex concl.tex SizedInfiniteTypes.tex Terms.tex Substitution.tex NReduction.tex sn.tex \
-      TermShape.tex SN.tex IndRen.tex AntiRename.tex SAT.tex Soundness.tex SNtosn.tex \
+files=byhand.bib intro.tex syntax.tex strongnormalization.tex soundnessproof.tex SNcorrectness.tex examples.tex concl.tex \
+      SizedInfiniteTypes.tex Terms.tex Substitution.tex NReduction.tex sn.tex \
+      TermShape.tex SN.tex IndRen.tex AntiRename.tex SAT.tex Soundness.tex SNtosn.tex AgdaExamples.tex \
   $(stylefile)
 
 default : aplas14.pdf
