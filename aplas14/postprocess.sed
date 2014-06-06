@@ -7,6 +7,7 @@ s/\\AgdaSymbol{\\{}\([a-zA-Z?]\+\) \\AgdaSymbol{=}/\\AgdaSymbol{\\{}\\AgdaSymbol
 s:→̂:\\ensuremath\{\\hat\{\\to\}\}:g
 s:×̂:\\ensuremath\{\\hat\{\\times\}\}:g
 s:▸̂:\\ensuremath\{\\hat\{\\blacktriangleright\}\}:g
+s:μ̂:\\ensuremath\{\\hat\{\\mu\}\}:g
 
 # Equational reasoning
 # Only replace the eq-reasoning identifiers in code blocks,

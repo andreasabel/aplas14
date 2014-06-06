@@ -26,9 +26,9 @@
 \documentclass{llncs}
 \usepackage{silence}
 
-%\usepackage{times}
+%\usepackage{times} % ugly mathsf
 \usepackage{mathptmx}
-%\usepackage{amsfonts,amssymb,textgreek,stmaryrd}
+\usepackage{amsfonts,amssymb,textgreek,stmaryrd}
 \PDFLATEX{
 \usepackage[postscript]{ucs}
 %\usepackage[postscript,combine]{ucs} %% combine destroys all unicode
@@ -52,7 +52,7 @@
 }
 \DeclareMathAlphabet      {\mathbfit}{OML}{cmm}{b}{it}
 \DeclareUnicodeCharacter{8718}{$\blacksquare$}
-\DeclareUnicodeCharacter{8759}{::}
+%\DeclareUnicodeCharacter{8759}{::} % duplicate
 \DeclareUnicodeCharacter{9656}{$\blacktriangleright$}
 \DeclareUnicodeCharacter{9733}{$\star$}
 \DeclareUnicodeCharacter{10214}{$\llbracket$}
@@ -66,13 +66,13 @@
 \DeclareUnicodeCharacter{119912}{$\mathbfit{A}$}
 \DeclareUnicodeCharacter{120016}{$\mathcal{A}$} %% \mathscr didn't do anything
 \DeclareUnicodeCharacter{120017}{$\mathcal{B}$}
-\DeclareUnicodeCharacter{10214}{$[\![$}
-\DeclareUnicodeCharacter{10215}{$]\!]$}
+%\DeclareUnicodeCharacter{10214}{$[\![$} % duplicate
+%\DeclareUnicodeCharacter{10215}{$]\!]$} % duplicate
 \DeclareUnicodeCharacter{916}{$\Delta$}
 
-% silence ucs
-\WarningsOff[ucs]
-\ErrorsOff[ucs]
+% % silence ucs
+% \WarningsOff[ucs]
+% \ErrorsOff[ucs]
 
 \begin{document}
 %
