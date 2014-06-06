@@ -36,7 +36,7 @@ the standard one of a simply typed lambda calculus with
 products. Additionally we have the applicative functor methods of the
 later modality, i.e. the introduction \AgdaInductiveConstructor{next}
 and the operator for application under the modality
-\AgdaInductiveConstructor{\_∗\_},
+\AgdaInductiveConstructor{\_∗\_}.
 
 \begin{code}
 data Tm (Γ : Cxt) : (a : Ty) → Set where
