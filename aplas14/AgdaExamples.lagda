@@ -9,11 +9,18 @@ open import SizedInfiniteTypes
 open import Terms
 \end{code}
 }
+\AgdaHide{
 \begin{code}
 μ̂ : ∀{i} → (∀{j : Size< i} → ∞Ty {j} → Ty {j}) → ∞Ty {i}
 (force (μ̂ {i} F)) {j} = F (μ̂ {j} F)
 \end{code}
+}
 
+Which terms are accepted by this well-typed syntax is affected by
+which types are considered equal.  Unfortunately Agda's own notion of
+equality is too intensional, we can however define bisimulation
+explicitly as a coinductive type, and prove it is in fact an
+equivalence relation.
 
 \begin{code}
 mutual
@@ -28,8 +35,6 @@ mutual
     field        ≅force : force a∞ ≅ force b∞
 open _∞≅_ public
 \end{code}
-
-
 \begin{code}
 ≅refl  : ∀{a}     → a ≅ a
 ≅sym   : ∀{a b}   → a ≅ b → b ≅ a
@@ -38,6 +43,7 @@ open _∞≅_ public
 
 \AgdaHide{
 \begin{code}
+
 ≅refl∞ : ∀{a∞} → a∞ ∞≅ a∞
 
 ≅refl {a ×̂ b}  = (≅refl {a}) ×̂ (≅refl {b})
@@ -46,7 +52,6 @@ open _∞≅_ public
 
 ≅force ≅refl∞ = ≅refl
 
-
 ≅sym∞ : ∀{a∞ b∞} → a∞ ∞≅ b∞ → b∞ ∞≅ a∞
 
 ≅sym (eq ×̂ eq₁)  = (≅sym eq) ×̂ (≅sym eq₁)
@@ -54,7 +59,6 @@ open _∞≅_ public
 ≅sym (▸̂ a≅)      = ▸̂ (≅sym∞ a≅)
 
 ≅force (≅sym∞ eq) = ≅sym (≅force eq)
-
 
 ≅trans∞ : ∀{a∞ b∞ c∞} → a∞ ∞≅ b∞ → b∞ ∞≅ c∞ → a∞ ∞≅ c∞
 
@@ -66,41 +70,62 @@ open _∞≅_ public
 \end{code}
 } % END AGDAHIDE
 
+It is consistent to postulate that bisimulation implies equality,
+similarly to the functional extensionality principle for function
+types. The alternative would be to work with setoids across all our
+developement, which would add complexity without strenghtening our result.
 \begin{code}
 postulate
   ≅-to-≡ : ∀ {a b} → a ≅ b → a ≡ b
 \end{code}
 
+This let us define the function cast to convert terms between
+bisimilar types, and a variant of application under later with a more
+general type.
+\begin{code}
+cast : ∀{Γ a b} (eq : a ≅ b) (t : Tm Γ a) → Tm Γ b
+\end{code}
 \AgdaHide{
 \begin{code}
-postulate
+cast = TODO
 \end{code}
 }
-
-
 \begin{code}
-  cast : ∀{Γ a b} (eq : a ≅ b) (t : Tm Γ a) → Tm Γ b
+▸app : ∀{Γ c∞ b∞}{a : Ty} (eq : c∞ ∞≅ (delay a ⇒ b∞))
+                          (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
+▸app eq t u = cast (▸̂ eq) t ∗ u
 \end{code}
 
-\begin{code}
-▹app : ∀{Γ c∞ b∞}{a : Ty} (eq : c∞ ∞≅ (delay a ⇒ b∞))
-                          (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
-▹app eq t u = cast (▸̂ eq) t ∗ u
 
+We can adapt the Y combinator from the untyped lambda calculus to
+define a guarded fixed point combinator.  The type \AgdaFunction{Fix}
+\AgdaBound{A} allows safe self application, since the input will only
+be available "later". This fits with the type we want for the
+\AgdaFunction{fix} combinator, the function of which we are taking the
+fixed point will only be able to use its input in the next time slot.
+
+\begin{code}
 Fix_ : Ty → ∞Ty
 force Fix A = ▸̂ Fix A →̂ A
 
 omega : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
-omega x = ▹app (≅delay ≅refl) x (next x)
+omega x = ▸app (≅delay ≅refl) x (next x)
 
-Y : ∀{Γ A} → Tm Γ ((▸ A →̂ A) →̂ A)
-Y = abs (app L (next L))
+fix : ∀{Γ A} → Tm Γ ((▸ A →̂ A) →̂ A)
+fix = abs (app L (next L))
   where
     f = var (suc v₀)
     x = var v₀
     L = abs (app f (omega x))
 \end{code}
 
+The definition above correponds to the following with named variables.
+\begin{verbatim}
+fix = λ f. (λ x. f (omega x)) (next (λ x. f (omega x)))
+\end{verbatim}
+
+Another standard example is the type of streams, which we can also
+define through a corecursive definition.
 \begin{code}
 mutual
   Stream : Ty → Ty
@@ -118,4 +143,21 @@ head s = fst s
 tail : ∀{Γ A} → Tm Γ (Stream A) → Tm Γ (▸ Stream A)
 tail s = cast (▸̂ (≅delay ≅refl)) (snd s)
 \end{code}
+
+Note that \AgdaFunction{tail} returns a stream inside the later
+modality.  This ensures that functions that transform streams have to
+be causal, i.e. can only have access to the first $n$ elements of the
+input when producing the $n$th element of the output.
+A simple example is mapping a function over a stream.
+\begin{code}
+mapS : ∀{Γ A B} → Tm Γ ((A →̂ B) →̂ (Stream A →̂ Stream B))
+\end{code}
+\AgdaHide{
+\begin{code}
+mapS = TODO
+\end{code}
+}
+\begin{verbatim}
+mapS = λ f. fix λ mapS s. pair (f s) (▸app (≅delay ≅refl) mapS (tail s))
+\end{verbatim}
 

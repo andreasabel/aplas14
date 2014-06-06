@@ -46,5 +46,8 @@ n≤sn = (z≤n {1}) +-mono DecTotalOrderℕ.refl
 pred≤ℕ : ∀{n m} → suc n ≤ℕ suc m → n ≤ℕ m
 pred≤ℕ (s≤s p) = p
 
+postulate
+  TODO : ∀ {a} {A : Set a} → A
+
 \end{code}
 }
