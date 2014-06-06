@@ -27,6 +27,8 @@ files=byhand.bib intro.tex syntax.tex strongnormalization.tex soundnessproof.tex
       TermShape.tex SN.tex IndRen.tex AntiRename.tex SAT.tex Soundness.tex SNtosn.tex AgdaExamples.tex \
   $(stylefile)
 
+.PRECIOUS : *.tex 
+
 default : aplas14.pdf
 
 all : default ship
@@ -51,7 +53,7 @@ aplas14.zip : aplas14.tex aplas14.bbl latex/agda.sty textgreek.sty $(files) # au
 	sed --file=$(sedfile) < $< > $@
 
 latex/%.tex : %.lagda
-	agda --latex -i. -i$(stdlib) $<
+	agda --latex -i. -i$(stdlib) $< +RTS -M1.5g -RTS
 
 # aplas14.pdf : aplas14.lagda
 #	pdflatex $<
