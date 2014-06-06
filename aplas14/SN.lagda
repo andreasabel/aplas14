@@ -211,6 +211,9 @@ renameSNe   :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
                SNe n t → SNe n (rename ρ t)
 renameSN    :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
                SN n t → SN n (rename ρ t)
+rename⇒      :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t t' : Tm Δ a} → 
+               t ⟨ n ⟩⇒ t' → rename ρ t ⟨ n ⟩⇒ rename ρ t'
+
 varSN       :  ∀ {Γ a n x} → var x ∈ SN {Γ = Γ} n {a}
 appVarSN    :  ∀ {Γ a b n}{t : Tm Γ (a →̂ b)}{x} → 
                t ∈ SN n → app t (var x) ∈ SN n
@@ -228,6 +231,7 @@ renameSNe ρ = substSNe (renSN ρ)
 
 renameSN ρ = substSN (renSN ρ)
 
+rename⇒ ρ = subst⇒ (renSN ρ)
 -- Variables are SN.
 
 varSN = ne (var _)

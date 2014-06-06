@@ -40,18 +40,18 @@ open import SAT
 \end{code}
 }
 \begin{code}
-in≤      : ∀ a {n m} (m≤n : m ≤ℕ n) → SAT.satSet (⟦ a ⟧ m) ⊆ SAT.satSet (⟦ a ⟧≤ m≤n)
-out≤     : ∀ a {n m} (m≤n : m ≤ℕ n) → SAT.satSet (⟦ a ⟧≤ m≤n) ⊆ SAT.satSet (⟦ a ⟧ m)
+in≤      : ∀ a {n m} (m≤n : m ≤ℕ n) → satSet (⟦ a ⟧ m) ⊆ satSet (⟦ a ⟧≤ m≤n)
+out≤     : ∀ a {n m} (m≤n : m ≤ℕ n) → satSet (⟦ a ⟧≤ m≤n) ⊆ satSet (⟦ a ⟧ m)
 
 coerce≤   :  ∀ a {n n' m} (m≤n : m ≤ℕ n) (m≤n' : m ≤ℕ n') 
-             → SAT.satSet (⟦ a ⟧≤′ (≤⇒≤′ m≤n)) ⊆ SAT.satSet (⟦ a ⟧≤′ (≤⇒≤′ m≤n'))
+             → satSet (⟦ a ⟧≤′ (≤⇒≤′ m≤n)) ⊆ satSet (⟦ a ⟧≤′ (≤⇒≤′ m≤n'))
 \end{code}
 
 \AgdaHide{
 \begin{code}
 
-in≤′      : ∀ (a : Ty) {n m} (m≤n : m ≤′ n) → SAT.satSet (⟦ a ⟧ m) ⊆ SAT.satSet (⟦ a ⟧≤′ m≤n)
-out≤′     : ∀ (a : Ty) {n m} (m≤n : m ≤′ n) → SAT.satSet (⟦ a ⟧≤′ m≤n) ⊆ SAT.satSet (⟦ a ⟧ m)
+in≤′      : ∀ (a : Ty) {n m} (m≤n : m ≤′ n) → satSet (⟦ a ⟧ m) ⊆ satSet (⟦ a ⟧≤′ m≤n)
+out≤′     : ∀ (a : Ty) {n m} (m≤n : m ≤′ n) → satSet (⟦ a ⟧≤′ m≤n) ⊆ satSet (⟦ a ⟧ m)
 
 in≤ a m≤n 𝑡 = in≤′ a (≤⇒≤′ m≤n) 𝑡
 out≤ a m≤n 𝑡 = out≤′ a (≤⇒≤′ m≤n) 𝑡
@@ -66,7 +66,7 @@ coerce≤ a ≤1 ≤2 𝑡 = in≤ a ≤2 (out≤ a ≤1 𝑡)
 }
 
 \begin{code}
-map⟦_⟧ : ∀ a {m n} → m ≤ℕ n → SAT.satSet (⟦ a ⟧ n) ⊆ SAT.satSet (⟦ a ⟧ m)
+map⟦_⟧ : ∀ a {m n} → m ≤ℕ n → satSet (⟦ a ⟧ n) ⊆ satSet (⟦ a ⟧ m)
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -118,7 +118,7 @@ Map m≤n θ {a} x = map⟦ a ⟧∈ m≤n (θ x)
 ⟦∗⟧ (↿ next0) (↿ exp t⇒ 𝑡) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧ (↿ next0) (↿ 𝑡)) 
 ⟦∗⟧ {a = a} {b∞ = b∞}  (↿ (next 𝑡)) (↿ (next {t = u} 𝑢)) 
  =  ↿ exp β▸
-     (next (≡.subst (λ t → SAT.satSet (⟦ force b∞ ⟧ _) (app t u))
+     (next (≡.subst (λ t → satSet (⟦ force b∞ ⟧ _) (app t u))
           renId (out≤ (force b∞) ≤ℕ.refl (𝑡 _ ≤ℕ.refl id (in≤ a ≤ℕ.refl 𝑢))))) 
 ⟦∗⟧ {a = a} {b∞ = b∞}  (↿ (next 𝒕)) (↿ ne 𝒏) = ↿ ne (elim 𝒏 (∗r (next (SAT.satSN (⟦ a ⟧≤ ⟦→⟧ ⟦ force b∞ ⟧≤) 𝒕))))
 ⟦∗⟧ (↿ (next 𝑡))    (↿ exp t⇒ 𝑢) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧  (↿ (next 𝑡)) (↿ 𝑢))
