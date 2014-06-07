@@ -47,8 +47,8 @@ data Tm (Γ : Cxt) : (a : Ty) → Set where
   fst   : ∀{a b}         (t : Tm Γ (a ×̂ b))               → Tm Γ a
   snd   : ∀{a b}         (t : Tm Γ (a ×̂ b))               → Tm Γ b
   next  : ∀{a∞}          (t : Tm Γ (force a∞))             → Tm Γ (▸̂ a∞)
-  _∗_   : ∀{a : Ty}{b∞}  (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
-                         (u : Tm Γ (▸ a))                  → Tm Γ (▸̂ b∞)
+  _∗_   : ∀{a∞}{b∞}  (t : Tm Γ (▸̂  (a∞ ⇒ b∞)))
+                         (u : Tm Γ (▸̂  a∞))                  → Tm Γ (▸̂ b∞)
 \end{code}
 
 \AgdaHide{

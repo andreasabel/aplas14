@@ -20,8 +20,8 @@ data ECxt (Γ : Cxt) : (a b : Ty) → Set where
   appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
   fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a
   snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
-  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → ECxt Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞)
-  ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → ECxt Γ (▸ a) (▸̂ b∞)
+  _∗l   : ∀ {a∞ b∞} (u : Tm Γ (▸̂ a∞)) → ECxt Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞)
+  ∗r_   : ∀ {a∞}{b∞} (t : Tm Γ (force a∞ →̂ force b∞)) → ECxt Γ (▸̂ a∞) (▸̂ b∞)
 \end{code}
 }
 
@@ -34,8 +34,8 @@ data Ehole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → S
   appl  : ∀ {a b t} (u : Tm Γ a)  → Ehole (app t u) (appl u) (t ∶ (a →̂ b))
   fst   : ∀ {a b t} → Ehole {a = a ×̂ b} (fst t) fst t
   snd   : ∀ {a b t} → Ehole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a)) → Ehole {a = (▸̂ (delay a ⇒ b∞))} (t ∗ u) (u ∗l) t
-  ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (a →̂ force b∞)) → Ehole (((next t) ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
+  _∗l   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞)) → Ehole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (u ∗l) t
+  ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (force a∞ →̂ force b∞)) → Ehole (((next t) ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
 \end{code}
 }
 
@@ -85,11 +85,11 @@ data PCxt  {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) :
 
   snd   : ∀ {a b t}                 → PCxt P (snd t) snd (t ∶ (a ×̂ b))
 
-  _∗l   : ∀ {a b∞ t u} (𝒖 : P u) → PCxt P (t ∗ (u ∶ ▸ a) ∶ ▸̂ b∞) (u ∗l) t
+  _∗l   : ∀ {a∞ b∞ t u} (𝒖 : P u) → PCxt P (t ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (u ∗l) t
 
-  ∗r_   :  ∀ {a : Ty}{b∞}{u t}
-           (𝒕 : P (next {a∞ = delay a ⇒ b∞} t)) → 
-           PCxt P ((next t) ∗ (u ∶ ▸ a) ∶ ▸̂ b∞) (∗r t) u
+  ∗r_   :  ∀ {a∞}{b∞}{u t}
+           (𝒕 : P (next {a∞ = a∞ ⇒ b∞} t)) → 
+           PCxt P ((next t) ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (∗r t) u
 
 
 
@@ -108,8 +108,8 @@ data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
            → (𝒖 : P u)
            → P / (app (abs t) u) ⇒ subst0 u t
 
-  β▸    :  ∀ {a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
-           → P / (next t ∗ next u) ⇒ (next {a∞ = b∞} (app t u))
+  β▸    :  ∀ {a∞ b∞}{t : Tm Γ (force (a∞ ⇒ b∞))}{u : Tm Γ (force a∞)}
+           → P / (next t ∗ next {a∞ = a∞} u) ⇒ (next {a∞ = b∞} (app t u))
 
   βfst  :  ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
            → (𝒖 : P u)
@@ -191,7 +191,7 @@ mapPNe P⊆Q (var x) = var x
 mapPNe P⊆Q (elim t∈Ne E∈SNh) = elim (mapPNe P⊆Q t∈Ne) (mapPCxt P⊆Q E∈SNh)
 
 mapP⇒ P⊆Q (β t∈P) = β (P⊆Q t∈P)
-mapP⇒ P⊆Q (β▸ {a = a}) = β▸ {a = a}
+mapP⇒ P⊆Q β▸ = β▸
 mapP⇒ P⊆Q (βfst t∈P) = βfst (P⊆Q t∈P)
 mapP⇒ P⊆Q (βsnd t∈P) = βsnd (P⊆Q t∈P)
 mapP⇒ P⊆Q (cong Et Et' t→t') = cong Et Et' (mapP⇒ P⊆Q t→t')

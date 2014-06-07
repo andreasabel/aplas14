@@ -117,7 +117,7 @@ mapSN {m = suc m}{n = suc n} sm≤sn (next t∈SN) = next (mapSN (pred≤ℕ sm�
 mapSN m≤n (exp t→t' t∈SN) = exp (map⇒ m≤n t→t') (mapSN m≤n t∈SN)
 
 map⇒ m≤n (β t∈SN) = β (mapSN m≤n t∈SN)
-map⇒ m≤n (β▸ {a = a}) = β▸ {a = a}
+map⇒ m≤n (β▸ ) = β▸
 map⇒ m≤n (βfst t∈SN) = βfst (mapSN m≤n t∈SN)
 map⇒ m≤n (βsnd t∈SN) = βsnd (mapSN m≤n t∈SN)
 map⇒ m≤n (cong Et Et' t→t') = cong Et Et' (map⇒ m≤n t→t')
@@ -174,7 +174,7 @@ mutual
                                                    (sgs-lifts-term {σ = σ} {u} {t})
                                                    (β {t = subst (lifts σ) t} (substSN (σ , σ∈Ne) x))
 
-  subst⇒         σ (β▸ {a = a})        = β▸ {a = a}
+  subst⇒         σ (β▸)        = β▸
   subst⇒         σ (βfst t∈SN)           = βfst (substSN σ t∈SN)
   subst⇒         σ (βsnd u∈SN)           = βsnd (substSN σ u∈SN)
   subst⇒ {n = n} σ (cong Eh Eh' t→t')    = cong (substEh (theSubst σ) Eh) (substEh (theSubst σ) Eh') (subst⇒ σ t→t')

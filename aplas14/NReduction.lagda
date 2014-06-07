@@ -72,8 +72,8 @@ data _⟨_⟩⇒β_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
   β     : ∀ {n a b}{t : Tm (a ∷ Γ) b}{u}
         → app (abs t) u ⟨ n ⟩⇒β subst0 u t
 
-  β▸    : ∀ {n a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
-        → (next t ∗ next u) ⟨ n ⟩⇒β (next {a∞ = b∞} (app t u))
+  β▸    : ∀ {n a∞ b∞}{t : Tm Γ (force a∞ →̂  force b∞)}{u : Tm Γ (force a∞)}
+        → (next t ∗ next {a∞ = a∞} u) ⟨ n ⟩⇒β (next {a∞ = b∞} (app t u))
 
   βfst  : ∀ {n a b}{t : Tm Γ a}{u : Tm Γ b}
         → fst (pair t u) ⟨ n ⟩⇒β t

@@ -22,7 +22,7 @@ data IndRen  {Γ Δ} (σ : RenSub `Var Γ Δ) :
   next   : ∀{a∞}{t : Tm Γ (force a∞)}{t'} → IndRen σ t t' → IndRen σ (next {a∞ = a∞} t) (next t')
 
   -- `applicative'
-  _∗_  : ∀{a : Ty}{b∞}{t : Tm Γ (▸̂ (delay a ⇒ b∞))} {u : Tm Γ (▸ a)}{t' u'}
+  _∗_  : ∀{a∞}{b∞}{t : Tm Γ (▸̂ (a∞ ⇒ b∞))} {u : Tm Γ (▸̂  a∞)}{t' u'}
          →  IndRen σ t t' → IndRen σ u u' → IndRen σ (t ∗ u) (t' ∗ u')
 
 Ind→prop : ∀ {Γ Δ} (σ : RenSub `Var Γ Δ) {τ} {t : Tm Γ τ} {t' : Tm Δ τ} → IndRen σ t t' → subst σ t ≡ t'

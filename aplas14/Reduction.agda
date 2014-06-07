@@ -19,8 +19,8 @@ data βECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → Set where
   pairr : ∀ {a b} (t : Tm Γ a)                        → βECxt Γ Γ b (a ×̂ b)
   fst   : ∀ {a b}                                     → βECxt Γ Γ (a ×̂ b) a
   snd   : ∀ {a b}                                     → βECxt Γ Γ (a ×̂ b) b
-  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a))                   → βECxt Γ Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞)
-  ∗r_   : ∀{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → βECxt Γ Γ (▸ a) (▸̂ b∞)
+  _∗l   : ∀ {a∞ b∞} (u : Tm Γ (▸̂  a∞))                   → βECxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) 
+  ∗r_   : ∀ {a∞}{b∞} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → βECxt Γ Γ (▸̂  a∞) (▸̂ b∞)
   abs   : ∀ {a b}                                     → βECxt Γ (a ∷ Γ) b (a →̂  b)
   next    : ∀ {a∞}                                      → βECxt Γ Γ (force a∞) (▸̂  a∞)
 
@@ -31,8 +31,8 @@ data βEhole {Γ : Cxt} : {Δ : Cxt} {b a : Ty} → Tm Γ b → βECxt Γ Δ a b
   pairr : ∀ {a b}{u} (t : Tm Γ a)                         → βEhole (pair t u) (pairr t) (u ∶ b)
   fst   : ∀ {a b t}                                       → βEhole {a = a ×̂ b} (fst t) fst t
   snd   : ∀ {a b t}                                       → βEhole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a))                     → βEhole {a = (▸̂ (delay a ⇒ b∞))} (t ∗ u) (u ∗l) t
-  ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → βEhole ((t ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
+  _∗l   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂  a∞))                   → βEhole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (u ∗l) t
+  ∗r_   : ∀ {a∞}{b∞}{u} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → βEhole ((t ∗ (u ∶ ▸̂  a∞)) ∶ ▸̂ b∞) (∗r t) u
   abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → βEhole (abs t) abs t
   next    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → βEhole (next {a∞ = a∞} t) next t
 
@@ -54,8 +54,8 @@ data _⇒β_ {Γ} : ∀ {a} → Tm Γ a → Tm Γ a → Set where
   β     : ∀ {a b}{t : Tm (a ∷ Γ) b}{u}
           → (app (abs t) u) ⇒β subst0 u t
 
-  β▸    : ∀ {a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
-           → (next t ∗ next u) ⇒β (next {a∞ = b∞} (app t u))
+  β▸    : ∀ {a∞ b∞}{t : Tm Γ (force a∞ →̂  force b∞)}{u : Tm Γ (force a∞)}
+           → (next t ∗ next {a∞ = a∞} u) ⇒β (next {a∞ = b∞} (app t u))
 
   βfst  : ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
           → fst (pair t u) ⇒β t
@@ -159,8 +159,8 @@ mutual
   subst⇒β* σ₁ (fst t) = cong* fst fst (subst⇒β* σ₁ t)
   subst⇒β* σ₁ (snd t) = cong* snd snd (subst⇒β* σ₁ t)
   subst⇒β* σ₁ (next t) = cong* next next (subst⇒β* σ₁ t)
-  subst⇒β* σ₁ (t ∗ t₁) = cong* (_ ∗l) (_ ∗l) (subst⇒β* σ₁ t) ++β
-                           cong* (∗r _) (∗r _) (subst⇒β* σ₁ t₁)
+  subst⇒β* σ₁ (t ∗ t₁) =  cong* (_ ∗l) (_ ∗l) (subst⇒β* σ₁ t) ++β
+                           cong* (∗r _) (∗r _) (subst⇒β* σ₁ t₁) 
 
   lifts⇒β* : ∀ {m vt a Γ} {Δ} {σ ρ : RenSub {m} vt Γ Δ} → (∀ {b} (x : Var Γ b) → vt2tm _ (σ x) ⇒β* vt2tm _ (ρ x))
              →  (∀ {b} (x : Var (a ∷ Γ) b) → vt2tm _ (lifts {a = a} σ x) ⇒β* vt2tm _ (lifts {a = a} ρ x))
