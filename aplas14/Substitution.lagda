@@ -10,10 +10,7 @@ open import Terms
 \end{code}
 }
 
-\section{Renaming and Substitution}
-\label{sec:subst}
-
-
+\AgdaHide{
 \begin{code}
 -- VarTm n specifies whether the substitution produces variables or terms.
 -- The index is used to impose an order on the constructors
@@ -110,7 +107,7 @@ Ren : (Γ Δ : Cxt) → Set
 Ren = RenSub `Var
 
 _≤_  : (Γ Δ : Cxt) → Set
-_≤_ Γ Δ = RenSub `Var Δ Γ
+_≤_ Γ Δ = ∀ {a} → Var Δ a → Var Γ a
 
 rename : ∀ {Γ Δ : Cxt} {a : Ty} (η : Γ ≤ Δ) (x : Tm Δ a) → Tm Γ a
 rename = subst
@@ -263,4 +260,5 @@ cons-to-sgs u σ (suc x) = begin
   ∎
   where open ≡-Reasoning
 \end{code}
+}
 }
