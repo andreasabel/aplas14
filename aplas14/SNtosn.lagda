@@ -26,23 +26,24 @@ sn⇒β :  ∀ {Γ} {n : ℕ} {a} {t t' : Tm Γ a} → sn n t → t ⟨ n ⟩⇒
 sn⇒β (acc h) r = h r
 \end{code}
 }
-
+\AgdaHide{
 \begin{code}
 varsn   :  ∀ {Γ} {n : ℕ} {a} (x : Var Γ a) → sn n (var x)
 abssn   :  ∀ {Γ} {n : ℕ} {a b} {t : Tm (a ∷ Γ) b} → sn n t → sn n (abs t)
 next0sn :  ∀ {Γ} {a∞} {t : Tm Γ _} → sn 0 (next t ∶ ▸̂ a∞)
 nextsn  :  ∀ {Γ} {n : ℕ} {a∞} {t : Tm Γ _} → sn n t → sn (suc n) (next t ∶ ▸̂ a∞)
-Fstsn   :  ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ a}{u : Tm Γ b} → sn n (pair t u) → sn n t
-Sndsn   :  ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ a}{u : Tm Γ b} → sn n (pair t u) → sn n u
 fstsn   :  ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ (a ×̂  b)} → sn n t → sn n (fst t)
 sndsn   :  ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ (a ×̂  b)} → sn n t → sn n (snd t)
 pairsn  :  ∀ {Γ a b n}{t : Tm Γ a}{u : Tm Γ b}
            → (𝒕 : sn n t) (𝒖 : sn n u)
            → sn n (pair t u)
 \end{code}
-
+}
 \AgdaHide{
 \begin{code}
+Fstsn   :  ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ a}{u : Tm Γ b} → sn n (pair t u) → sn n t
+Sndsn   :  ∀ {Γ} {n : ℕ} {a b} {t : Tm Γ a}{u : Tm Γ b} → sn n (pair t u) → sn n u
+
 varsn x = acc λ { (cong () _ _) }
 
 abssn (acc f) = acc (λ { {._} (cong abs abs x)  → abssn (f x) })
@@ -79,7 +80,7 @@ pairsn t u = acc (λ x → helper t u x) where
   helper t₂ (acc f) (cong (pairr t₁) (pairr .t₁) t⇒) = pairsn t₂ (f t⇒)
 \end{code}
 }
-
+\AgdaHide{
 \begin{code}
 appsn   :  ∀{n Γ a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
            sn n t → sn n u → SNe n t →
@@ -91,7 +92,7 @@ elimsn  :  ∀ {n Γ a b}{E : ECxt Γ a b}{t : Tm Γ a}{Et : Tm Γ b} →
            sn n t → PCxt (sn n) Et E t → SNe n t →
            sn n Et
 \end{code}
-
+}
 \AgdaHide{
 \begin{code}
 appsn' : ∀{n Γ a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} → sn n t → sn n u → SNe n t →
@@ -140,7 +141,6 @@ subexpsn E = subsn \ x -> cong*2 E x
 \end{code}
 }
 
-\input{ECxtList}
+%%\input{ECxtList}
 
 \input{SNtosn2}
-\input{SNtosnR}

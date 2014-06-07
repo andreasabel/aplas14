@@ -30,18 +30,28 @@ mutual
 \end{code}
 }
 
+To complete our strong normalization proof we need to show that
+\AgdaDatatype{SN} is included in the characterization of strong
+normalization as a well-founded predicate \AgdaDatatype{sn}.
+
 \begin{code}
   fromSN    :  ∀ {i} {Γ} {n : ℕ} {a} {t : Tm Γ a} → 
                SN {i} n t → sn n t
+\end{code}
+
+The cases for canonical and neutral forms are straightforward, since
+no reduction can happen at the top of the expression and we cover the
+others through the induction hypotheses.
+\begin{code}
+  fromSNe   :  ∀ {i Γ n a} {t : Tm Γ a} → 
+               SNe {i} n t → sn n t
+
   fromSN (ne 𝒏)        = fromSNe 𝒏
   fromSN (abs 𝒕)       = abssn (fromSN 𝒕)
   fromSN (pair 𝒕 𝒖)    = pairsn (fromSN 𝒕) (fromSN 𝒖)
   fromSN next0         = next0sn
   fromSN (next 𝒕)      = nextsn (fromSN 𝒕)
-  fromSN (exp t⇒ 𝒕₁)   = expsn t⇒ 𝒕₁ (fromSN 𝒕₁)
-
-  fromSNe   :  ∀ {i Γ n a} {t : Tm Γ a} → 
-               SNe {i} n t → sn n t
+  fromSN (exp t⇒ 𝒕₁)   = acc (expsn t⇒ 𝒕₁ (fromSN 𝒕₁))
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -50,22 +60,56 @@ mutual
 \end{code}
 }
 
+The expansion case is more challenging instead, we can not in fact
+prove \AgdaFunction{expsn} by induction directly.
+
 \begin{code}
-  expsn     :  ∀ {i j Γ n a} {t th : Tm Γ a}  →
+  expsn     :  ∀ {i j Γ n a} {t th to : Tm Γ a} →
                i size t ⟨ n ⟩⇒ th → SN {j} n th → sn n th → 
-               sn n t
+               t ⟨ n ⟩⇒β to → sn n to
+\end{code}
+
+We can see the problem by looking at one of the congruence cases, in
+particular reduction on the left of an application.  There we would
+have $t \, u \in sn$, $t →h t_1$ and $t →\beta t_2$, and need to prove $t_2
+\, u \in sn$.  By induction we could obtain $t_2 \in sn$ but then there
+would be no easy way to obtain $t_2 \, u \in sn$, since strong
+normalization is not closed under application.
+
+The solution is to instead generalize the statement to work under a
+sequence of head reduction evaluation contexts.  We represent such
+sequences with the type \AgdaDatatype{ECxt*}, and denote their
+application to a term with the operator \AgdaFunction{\_[\_]*}.
+
+
+\begin{code}
   expsnCxt  :  ∀ {i j Γ n a b} {t th to : Tm Γ a} → 
                (Es : ECxt* Γ a b) → i size t ⟨ n ⟩⇒ th → 
                SN {j} n (Es [ th ]*) → sn n (Es [ th ]*) → 
                t ⟨ n ⟩⇒β to → sn n (Es [ to ]*)
-  expsn t⇒ 𝒕 𝑡 = acc (expsnCxt [] t⇒ 𝒕 𝑡)
+  expsn t⇒ 𝒕 𝑡 t⇒β = expsnCxt [] t⇒ 𝒕 𝑡 t⇒β
 
 \end{code}
+
+In this way the congruence cases are solved just by induction with a larger context.
+\begin{code}
+  expsnCxt E (cong (appl u) (appl .u) th⇒) 𝒕h 𝑡h (cong (appl .u) (appl .u) t⇒) 
+    = expsnCxt (appl u ∷ E) th⇒ 𝒕h 𝑡h t⇒
+\end{code}
+
+This generalization however affects the lemmata that handle the
+reduction cases, which also need to work under a sequence of
+evaluation contexts. Fortunately the addition of a premise $E [ z ] \in
+sn$, about an unrelated term $z$, allows to conveniently handle all the
+reductions that target the context.
+
+\input{SNtosnR}
+
 
 
 \AgdaHide{
 \begin{code}
-  expsnCxt = TODO
+  expsnCxt _ _ _ _ _ = TODO
 {-
 expsnCxt E (β 𝒖)    𝒕h 𝑡h β    = 𝑡h
 expsnCxt E β▸       𝒕h 𝑡h β▸   = 𝑡h
