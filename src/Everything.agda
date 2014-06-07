@@ -9,9 +9,9 @@ import Examples
 import Substitution
 import SN
 import SN.AntiRename
-import SN.AntiSubst
 import Reduction
-import SAT2
--- import Soundness
--- import SAT
+import NReduction
+import SAT3
+import Soundness
+import DeclSN
 

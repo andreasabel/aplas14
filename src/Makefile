@@ -1,4 +1,8 @@
 stdlib=$(HOME)/tmp/Agda2/std-lib/src
+dest=$(HOME)/public_html/guarded-normalization
+
+publish :
+	time agda -i. -i$(stdlib) --html --html-dir=$(dest) Everything.agda +RTS -M1.5g -s -RTS 
 
 typecheck : 
 	agda -i. -i$(stdlib) Everything.agda +RTS -M1g 
