@@ -155,7 +155,7 @@ Ext 𝒕 θ  (suc x)  = θ x
           (∀ {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
               u ∈⟨ m≤n ⟩ 𝓐 → subst (u ∷s (ρ •s σ)) t ∈⟨ m≤n ⟩ 𝓑 ) → subst σ (abs t) ∈ (𝓐 ⟦→⟧ 𝓑)
 (⇃ ⟦abs⟧ {t = t} {σ} 𝒕) m m≤n ρ {u} 𝒖 = SAT≤.satExp ⟦ _ ⟧≤ m≤n (β (SAT≤.satSN ⟦ _ ⟧≤ m≤n 𝒖))
-                                        (≡.subst (λ tu → satSet (⟦ _ ⟧≤ m≤n) tu) eq (⇃ 𝒕 m≤n ρ (↿ 𝒖))) 
+                                        (≡.subst (λ tu → satSet (⟦ _ ⟧≤ m≤n) tu) eq (⇃ 𝒕 m≤n ρ (↿ 𝒖)))
    where
       open ≡-Reasoning
       eq : subst (u ∷s (ρ •s σ)) t ≡ subst0 u (subst (lifts ρ) (subst (lifts σ) t))
@@ -199,27 +199,27 @@ Ext 𝒕 θ  (suc x)  = θ x
 }
 
 
-The soundness proof, showing that every term of \lambdanext is a
+The soundness proof, showing that every term of \lambdalater{} is a
 member of our saturated sets and so strongly normalizing, is now a
 simple matter of interpreting each operation in the language to its
 equivalent in the semantics that we have defined so far.
 
-The interpretation of \AgdaInductive{next} depends on the depth, at
+The interpretation of $\anext$ depends on the depth, at
 $0$ we are done, otherwise we recurse on the subterm with a smaller
 depth, \AgdaFunction{Map}ing the environment to it.  Being able to
 perform this operation is the reason we have ensured antitonicity so
 far.
 
 \begin{code}
-sound :  ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} → 
+sound :  ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} →
          (θ : ⟦ Γ ⟧C {n} σ) → subst σ t ∈ ⟦ a ⟧ n
 sound (var x) θ = θ x
 sound (abs t) θ = ⟦abs⟧ {t = t} λ m≤n ρ 𝑢 →
     ↿ in≤ _ m≤n (⇃ sound t (Ext (↿ out≤ _ m≤n (⇃ 𝑢)) (Rename ρ (Map m≤n θ))))
 sound (app t u)   θ  = ⟦app⟧ (sound t θ) (sound u θ)
 sound (pair t u)  θ  = ⟦pair⟧ (sound t θ) (sound u θ)
-sound (fst t)     θ  = ⟦fst⟧ (sound t θ) 
-sound (snd t)     θ  = ⟦snd⟧ (sound t θ) 
+sound (fst t)     θ  = ⟦fst⟧ (sound t θ)
+sound (snd t)     θ  = ⟦snd⟧ (sound t θ)
 sound (t ∗ u)     θ  = ⟦∗⟧ (sound t θ) (sound u θ)
 sound {zero}  (next t)  θ  = ↿ next0
 sound {suc n} (next t)  θ  = ↿ (next (⇃ sound t (Map n≤sn θ)))
