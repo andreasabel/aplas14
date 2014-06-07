@@ -11,10 +11,28 @@ open import InfiniteTypes
 
 \subsection{Well-typed terms}
 
-Instead of a raw syntax and a typing relation, we define directly the type of well-typed terms.
+Instead of a raw syntax and a typing relation, we represent well-typed
+terms directly by an inductive family
+\citep{dybjer:inductiveFamilies}.
+Our main motivation for this
+choice is the beautiful inductive definition of strongly normalizing terms to
+follow in Section~\ref{sec:sn}.  Since it relies on a classification
+of terms into the three shapes \emph{introduction},
+\emph{elimination}, and \emph{weak head redex}, it does not deal well with
+junk terms such as $\fst (\lambda x x)$ contained in raw syntax.  Of
+course, statically well-typed terms come also at cost: for almost all
+our predicates on terms we need to show that they are natural in the
+typing context, \ie, closed under well-typed renamings.  This expense
+might be compensated by the extra assistance Agda can give us in
+proof construction, which is due to the strong constraints on possible
+solutions imposed by the rich typing.
 
-We represent variables by de Brujin indices, so a typing context \AgdaDatatype{Cxt} is just a list of types,
-the elements of the type \AgdaDatatype{Var} \AgdaBound{Γ} \AgdaBound{a} of variables then represent a position in such a context.
+Our encoding of well-typed terms follows closely \citet{alti:monadic,mcBride:renSubst,bentonHurKennedyMcBride:jar12}.
+We represent variables $\vx : \Var\;\Gam\;\va$
+by de Brujin indices, \ie, positions in a typing context $\Gam : \Cxt$
+which is just a list of types.
+% We represent variables by de Brujin indices, thus, a typing context \AgdaDatatype{Cxt} is just a list of types,
+% the elements of the type \AgdaDatatype{Var} \AgdaBound{Γ} \AgdaBound{a} of variables then represent a position in such a context.
 \begin{code}
 Cxt = List Ty
 
@@ -40,15 +58,15 @@ and the operator for application under the modality
 
 \begin{code}
 data Tm (Γ : Cxt) : (a : Ty) → Set where
-  var   : ∀{a}           (x : Var Γ a)                     → Tm Γ a
-  abs   : ∀{a b}         (t : Tm (a ∷ Γ) b)                → Tm Γ (a →̂ b)
-  app   : ∀{a b}         (t : Tm Γ (a →̂ b)) (u : Tm Γ a)  → Tm Γ b
-  pair  : ∀{a b}         (t : Tm Γ a) (u : Tm Γ b)         → Tm Γ (a ×̂ b)
-  fst   : ∀{a b}         (t : Tm Γ (a ×̂ b))               → Tm Γ a
-  snd   : ∀{a b}         (t : Tm Γ (a ×̂ b))               → Tm Γ b
-  next  : ∀{a∞}          (t : Tm Γ (force a∞))             → Tm Γ (▸̂ a∞)
-  _∗_   : ∀{a : Ty}{b∞}  (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
-                         (u : Tm Γ (▸ a))                  → Tm Γ (▸̂ b∞)
+  var   : ∀{a}      (x : Var Γ a)                     → Tm Γ a
+  abs   : ∀{a b}    (t : Tm (a ∷ Γ) b)                → Tm Γ (a →̂ b)
+  app   : ∀{a b}    (t : Tm Γ (a →̂ b)) (u : Tm Γ a)  → Tm Γ b
+  pair  : ∀{a b}    (t : Tm Γ a) (u : Tm Γ b)         → Tm Γ (a ×̂ b)
+  fst   : ∀{a b}    (t : Tm Γ (a ×̂ b))               → Tm Γ a
+  snd   : ∀{a b}    (t : Tm Γ (a ×̂ b))               → Tm Γ b
+  next  : ∀{a∞}     (t : Tm Γ (force a∞))             → Tm Γ (▸̂ a∞)
+  _∗_   : ∀{a b∞}   (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
+                    (u : Tm Γ (▸ a))                  → Tm Γ (▸̂ b∞)
 \end{code}
 
 \AgdaHide{
