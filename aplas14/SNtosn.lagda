@@ -1,10 +1,6 @@
 \AgdaHide{
 \begin{code}
 {-# OPTIONS --copatterns --sized-types #-}
-{-# OPTIONS --no-termination-check #-}
---{-# OPTIONS --allow-unsolved-metas #-}
-
---{-# OPTIONS --show-implicit #-}
 module SNtosn where
 
 open import Data.Sum
@@ -141,6 +137,3 @@ subexpsn E = subsn \ x -> cong*2 E x
 \end{code}
 }
 
-%%\input{ECxtList}
-
-\input{SNtosn2}
