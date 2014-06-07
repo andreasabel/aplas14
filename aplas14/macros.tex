@@ -88,6 +88,9 @@
 \newcommand{\update}[3]{#1[#2 \mapsto #3]}
 %\newcommand{\update}[3]{#1,#2 \is #3}
 
+% The calculus
+\newcommand{\lambdalater}{\ensuremath{\lambda^{\tlater}}}
+
 % Types
 \newcommand{\ta}{\ensuremath{\AgdaBound{a}}}
 \newcommand{\tb}{\ensuremath{\AgdaBound{b}}}
@@ -104,6 +107,12 @@
 \newcommand{\B}{\mathcal{B}}
 \newcommand{\C}{\mathcal{C}}
 \newcommand{\tsize}{\mathsf{size}}
+
+\newcommand{\hatted}[1]{\AgdaInductiveConstructor{\ensuremath{\hat{#1}}}}
+\newcommand{\hatto}{\hatted{\to}}
+\newcommand{\hattimes}{\hatted{\times}}
+\newcommand{\hatlater}{\hatted{\later}}
+\newcommand{\hatmu}{\hatted{\mu}}
 
 % Terms
 \newcommand{\tfst}{\mathsf{fst}}

@@ -1,7 +1,7 @@
 {-# OPTIONS --copatterns #-}
 
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import AgdaExamples hiding (omega)
 

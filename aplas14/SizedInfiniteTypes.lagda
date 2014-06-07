@@ -27,10 +27,16 @@ open ∞Ty public
 
 \begin{code}
 ▸_ : ∀{i} → Ty {i} → Ty {↑ i}
-▸ A = ▸̂ delay A
+▸ a = ▸̂ delay a
 
 _⇒_ : ∀{i} (a∞ b∞ : ∞Ty {i}) → ∞Ty {i}
 force (a∞ ⇒ b∞) = force a∞ →̂ force b∞
 \end{code}
 
 
+\AgdaHide{
+\begin{code}
+μ̂ : ∀{i} → (∀{j : Size< i} → ∞Ty {j} → Ty {j}) → ∞Ty {i}
+(force (μ̂ {i} F)) {j} = F (μ̂ {j} F)
+\end{code}
+}

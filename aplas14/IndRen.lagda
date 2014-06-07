@@ -2,13 +2,13 @@
 \begin{code}
 module IndRen where
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import Substitution
 \end{code}
 }
 \begin{code}
-data IndRen  {Γ Δ} (σ : RenSub `Var Γ Δ) : 
+data IndRen  {Γ Δ} (σ : RenSub `Var Γ Δ) :
              ∀ {τ} → Tm Γ τ → Tm Δ τ → Set where
 \end{code}
 \AgdaHide{

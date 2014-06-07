@@ -5,7 +5,7 @@
 module Terms where
 
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 
 \end{code}}
 
@@ -13,7 +13,7 @@ open import SizedInfiniteTypes
 
 Instead of a raw syntax and a typing relation, we define directly the type of well-typed terms.
 
-We represent variables by de Brujin indices, so a typing context \AgdaDatatype{Cxt} is just a list of types, 
+We represent variables by de Brujin indices, so a typing context \AgdaDatatype{Cxt} is just a list of types,
 the elements of the type \AgdaDatatype{Var} \AgdaBound{Γ} \AgdaBound{a} of variables then represent a position in such a context.
 \begin{code}
 Cxt = List Ty
@@ -29,7 +29,7 @@ v₀ : ∀ {a Γ} → Var (a ∷ Γ) a
 v₀ = zero
 \end{code}
 }
-  
+
 Terms are also indexed by a typing context and their type,
 guaranteeing well-typedness and well-scopedness.  The syntax is mostly
 the standard one of a simply typed lambda calculus with

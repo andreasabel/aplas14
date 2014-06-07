@@ -5,7 +5,7 @@
 module Substitution where
 
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 \end{code}
 }
@@ -162,14 +162,14 @@ lifts-ext {vt1 = `Tm} {`Tm} f≐g (suc x) = ≡.cong (subst suc) (f≐g x)
 \begin{code}
 subst-∙ :  ∀ {Γ₀ Γ₁ Γ₂}
            {n}{vt2 : VarTm n}(τ : RenSub vt2 Γ₁ Γ₂)
-           {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁) 
+           {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁)
            → ∀ {a} (t : Tm Γ₀ a) → subst (τ •s σ) t ≡ subst τ (subst σ t)
 \end{code}
 \AgdaHide{
 \begin{code}
 lifts-∙ :  ∀ {Γ₀ Γ₁ Γ₂}
            {n}{vt2 : VarTm n}(τ : RenSub vt2 Γ₁ Γ₂)
-           {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁) 
+           {m}{vt1 : VarTm m}(σ : RenSub vt1 Γ₀ Γ₁)
            → ∀ {a} → lifts {a = a} (τ •s σ) ≡s (lifts τ •s lifts σ)
 subst-∙ τ {vt1 = `Var} σ (var x) = ≡.refl
 subst-∙ τ {vt1 = `Tm} σ (var x) = ≡.refl
@@ -217,7 +217,7 @@ lifts-id {vt = `Tm}  (suc x) = ≡.refl
 
 %% not sure how many of these we want to show
 \begin{code}
-sgs-lifts :  ∀ {m vt Γ Δ a} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a} 
+sgs-lifts :  ∀ {m vt Γ Δ a} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a}
              → (sgs (subst σ u) •s lifts σ) ≡s (σ •s sgs u)
 sgs-lifts-term : ∀ {m vt Γ Δ a b} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a}{t : Tm (a ∷ Γ) b}
                  → subst (sgs (subst σ u)) (subst (lifts σ) t) ≡ subst σ (subst (sgs u) t)

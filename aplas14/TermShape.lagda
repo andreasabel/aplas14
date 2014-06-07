@@ -5,7 +5,7 @@ module TermShape where
 open import Relation.Unary using (_∈_; _⊆_)
 open import Size
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import Substitution
 \end{code}
@@ -74,7 +74,7 @@ mkEHole (∗r t)    = _ , ∗r t
 %% Should we try to avoid this parametrization, for simplicity?
 %% Andrea: Tried to but the termination checker didn't like it.
 \begin{code}
-data PCxt  {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) : 
+data PCxt  {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) :
            {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
 
   appl  : ∀ {a b t u}
@@ -101,7 +101,7 @@ data PNe {Γ} (P : ∀{c} → Tm Γ c → Set) {b} : Tm Γ b → Set where
         → (𝒏 : PNe P t) (𝑬𝒕 : PCxt P Et E t)  → PNe P Et
 
 
-data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) : 
+data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
             ∀ {a} → Tm Γ a → Tm Γ a → Set where
 
   β     :  ∀ {a b}{t : Tm (a ∷ Γ) b}{u}
@@ -171,7 +171,7 @@ pneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
 
 %%% -- Functoriality of the notions wrt. P.
 \begin{code}
-mapPCxt  : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t) 
+mapPCxt  : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t)
          {a b} {E : ECxt Γ a b} {Et t} → PCxt P Et E t → PCxt Q Et E t
 mapPNe   : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t)
          {a} {t : Tm Γ a} → PNe P t → PNe Q t

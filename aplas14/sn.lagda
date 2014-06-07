@@ -3,7 +3,7 @@
 module sn where
 open import Data.Sum
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import Substitution
 open import NReduction

@@ -7,7 +7,7 @@
 module Soundness where
 
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import Substitution
 open import SN
@@ -23,7 +23,7 @@ open import SAT
 ⟦_⟧_  : (a : Ty) (n : ℕ) → SAT a n
 ⟦ a  →̂  b  ⟧  n  = ⟦ a ⟧≤ {n}  ⟦→⟧  ⟦ b ⟧≤ {n}
 ⟦ a  ×̂  b  ⟧  n  = ⟦ a ⟧ n     ⟦×⟧  ⟦ b ⟧ n
-⟦ ▸̂ a∞     ⟧  n  = ⟦▸⟧ P n   
+⟦ ▸̂ a∞     ⟧  n  = ⟦▸⟧ P n
   where
     P : ∀ n → SATpred (force a∞) n
     P zero     = _
@@ -43,7 +43,7 @@ open import SAT
 in≤      : ∀ a {n m} (m≤n : m ≤ℕ n) → satSet (⟦ a ⟧ m) ⊆ satSet (⟦ a ⟧≤ m≤n)
 out≤     : ∀ a {n m} (m≤n : m ≤ℕ n) → satSet (⟦ a ⟧≤ m≤n) ⊆ satSet (⟦ a ⟧ m)
 
-coerce≤   :  ∀ a {n n' m} (m≤n : m ≤ℕ n) (m≤n' : m ≤ℕ n') 
+coerce≤   :  ∀ a {n n' m} (m≤n : m ≤ℕ n) (m≤n' : m ≤ℕ n')
              → satSet (⟦ a ⟧≤′ (≤⇒≤′ m≤n)) ⊆ satSet (⟦ a ⟧≤′ (≤⇒≤′ m≤n'))
 \end{code}
 
@@ -71,17 +71,17 @@ map⟦_⟧ : ∀ a {m n} → m ≤ℕ n → satSet (⟦ a ⟧ n) ⊆ satSet (⟦
 \AgdaHide{
 \begin{code}
 
-map⟦_⟧ (a →̂ b) m≤n 𝑡          = λ l l≤m ρ 𝑢 → let l≤n = ≤ℕ.trans l≤m m≤n in 
-                                  coerce≤ b l≤n l≤m (𝑡 l l≤n ρ (coerce≤ a l≤m l≤n 𝑢)) 
+map⟦_⟧ (a →̂ b) m≤n 𝑡          = λ l l≤m ρ 𝑢 → let l≤n = ≤ℕ.trans l≤m m≤n in
+                                  coerce≤ b l≤n l≤m (𝑡 l l≤n ρ (coerce≤ a l≤m l≤n 𝑢))
 map⟦_⟧ (a ×̂ b) m≤n (t1 , t2) = map⟦ a ⟧ m≤n t1 , map⟦ b ⟧ m≤n t2
 map⟦_⟧ (▸̂ a∞) {m = zero}  m≤n next0         = next0
-map⟦_⟧ (▸̂ a∞) {m = suc m} ()  next0 
+map⟦_⟧ (▸̂ a∞) {m = suc m} ()  next0
 map⟦_⟧ (▸̂ a∞) {m = zero}  m≤n (next 𝒕)      = next0
 map⟦_⟧ (▸̂ a∞) {m = suc m} m≤n (next 𝒕)      = next (map⟦ force a∞ ⟧ (pred≤ℕ m≤n) 𝒕)
 map⟦_⟧ (▸̂ a∞)             m≤n (ne 𝒏)     = ne (mapSNe m≤n 𝒏)
 map⟦_⟧ (▸̂ a∞)             m≤n (exp t⇒ 𝑡) = exp (map⇒ m≤n t⇒) (map⟦ (▸̂ a∞) ⟧ m≤n 𝑡)
 
-map⟦_⟧∈ : ∀ (a : Ty) → ∀ {m n} → (m ≤ℕ n) → ∀ {Γ} {t : Tm Γ a} → t ∈ (⟦ a ⟧ n) 
+map⟦_⟧∈ : ∀ (a : Ty) → ∀ {m n} → (m ≤ℕ n) → ∀ {Γ} {t : Tm Γ a} → t ∈ (⟦ a ⟧ n)
                                             → t ∈ (⟦ a ⟧ m)
 map⟦_⟧∈ a m≤n (↿ 𝑡) = ↿ map⟦ a ⟧ m≤n 𝑡
 \end{code}
@@ -115,11 +115,11 @@ Map m≤n θ {a} x = map⟦ a ⟧∈ m≤n (θ x)
 \begin{code}
 ⟦∗⟧ (↿ next0) (↿ next0)       = ↿ exp β▸ next0
 ⟦∗⟧ (↿ next0) (↿ ne 𝒏)     = ↿ (ne (elim 𝒏 (∗r next0)))
-⟦∗⟧ (↿ next0) (↿ exp t⇒ 𝑡) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧ (↿ next0) (↿ 𝑡)) 
-⟦∗⟧ {a = a} {b∞ = b∞}  (↿ (next 𝑡)) (↿ (next {t = u} 𝑢)) 
+⟦∗⟧ (↿ next0) (↿ exp t⇒ 𝑡) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧ (↿ next0) (↿ 𝑡))
+⟦∗⟧ {a = a} {b∞ = b∞}  (↿ (next 𝑡)) (↿ (next {t = u} 𝑢))
  =  ↿ exp β▸
      (next (≡.subst (λ t → satSet (⟦ force b∞ ⟧ _) (app t u))
-          renId (out≤ (force b∞) ≤ℕ.refl (𝑡 _ ≤ℕ.refl id (in≤ a ≤ℕ.refl 𝑢))))) 
+          renId (out≤ (force b∞) ≤ℕ.refl (𝑡 _ ≤ℕ.refl id (in≤ a ≤ℕ.refl 𝑢)))))
 ⟦∗⟧ {a = a} {b∞ = b∞}  (↿ (next 𝒕)) (↿ ne 𝒏) = ↿ ne (elim 𝒏 (∗r (next (SAT.satSN (⟦ a ⟧≤ ⟦→⟧ ⟦ force b∞ ⟧≤) 𝒕))))
 ⟦∗⟧ (↿ (next 𝑡))    (↿ exp t⇒ 𝑢) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧  (↿ (next 𝑡)) (↿ 𝑢))
 ⟦∗⟧ (↿ ne 𝒏)     (↿ 𝑡) = ↿ ne (elim 𝒏 (SAT.satSN (⟦ _ ⟧ _) 𝑡 ∗l))
@@ -129,9 +129,9 @@ Map m≤n θ {a} x = map⟦ a ⟧∈ m≤n (θ x)
 \begin{code}
 sound : ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} → (θ : ⟦ Γ ⟧C {n} σ) → subst σ t ∈ ⟦ a ⟧ n
 sound (var x) θ = θ x
-sound (abs t) {σ = σ} θ = ⟦abs⟧ {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧≤} (λ l≤m ρ {u} 𝑢 → 
+sound (abs t) {σ = σ} θ = ⟦abs⟧ {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧≤} (λ l≤m ρ {u} 𝑢 →
   let
-\end{code} 
+\end{code}
 \AgdaHide{
 \begin{code}
       open ≡-Reasoning
@@ -165,11 +165,11 @@ sound (abs t) {σ = σ} θ = ⟦abs⟧ {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧�
 \end{code}
 }
 \begin{code}
-  in  ≡.subst (λ tu → tu ∈⟨ l≤m ⟩ (⟦ _ ⟧≤)) eq 
+  in  ≡.subst (λ tu → tu ∈⟨ l≤m ⟩ (⟦ _ ⟧≤)) eq
       (↿ in≤ _ l≤m (⇃ sound t (Ext (↿ out≤ _ l≤m (⇃ 𝑢)) ((Rename ρ (Map l≤m θ)))))))
 
-sound {n} (app {a} {b} t u) θ = ↿ out≤ b ≤ℕ.refl 
-       (⇃ ⟦app⟧ {n} {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧≤} ≤ℕ.refl (sound t θ) (↿ in≤ a ≤ℕ.refl (⇃ sound u θ))) 
+sound {n} (app {a} {b} t u) θ = ↿ out≤ b ≤ℕ.refl
+       (⇃ ⟦app⟧ {n} {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧≤} ≤ℕ.refl (sound t θ) (↿ in≤ a ≤ℕ.refl (⇃ sound u θ)))
 sound (pair t u) θ = ⟦pair⟧ (sound t θ) (sound u θ)
 sound (fst t)    θ = ⟦fst⟧ {𝓐 = ⟦ _ ⟧ _} {𝓑 = ⟦ _ ⟧ _} (sound t θ)
 sound (snd t)    θ = ⟦snd⟧ {𝓐 = ⟦ _ ⟧ _} {𝓑 = ⟦ _ ⟧ _} (sound t θ)

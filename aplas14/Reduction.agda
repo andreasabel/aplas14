@@ -6,7 +6,7 @@ module Reduction where
 
 open import Data.Sum
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import Substitution
 open import TermShape
@@ -111,7 +111,7 @@ cong* next         next          []       = []
 cong* E1         E2          (x ∷ t⇒) = cong E1 (proj₂ (mkHole _)) x ∷ cong* (proj₂ (mkHole _)) E2 t⇒
 
 mutual
-  EC→βEC : ∀ {Γ} {a b} (E : ECxt Γ a b) → βECxt Γ Γ a b 
+  EC→βEC : ∀ {Γ} {a b} (E : ECxt Γ a b) → βECxt Γ Γ a b
   EC→βEC (appl u) = appl u
   EC→βEC fst = fst
   EC→βEC snd = snd

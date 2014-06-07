@@ -4,7 +4,7 @@
 module NReduction where
 open import Data.Sum
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import Substitution
 
@@ -14,30 +14,30 @@ open import Substitution
 
 \begin{code}
 data NβECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → (n n' : ℕ) → Set where
-  next    : ∀ {n a∞}                                      → NβECxt Γ Γ (force a∞) (▸̂  a∞) n (suc n) 
+  next    : ∀ {n a∞}                                      → NβECxt Γ Γ (force a∞) (▸̂  a∞) n (suc n)
   -- other cases omitted
 \end{code}
 \AgdaHide{
 \begin{code}
-  appl  : ∀ {n a b} (u : Tm Γ a)                        → NβECxt Γ Γ (a →̂ b) b n n 
-  appr  : ∀ {n a b} (t : Tm Γ (a →̂  b))                 → NβECxt Γ Γ a b n n 
-  pairl : ∀ {n a b} (u : Tm Γ b)                        → NβECxt Γ Γ a (a ×̂ b) n n 
-  pairr : ∀ {n a b} (t : Tm Γ a)                        → NβECxt Γ Γ b (a ×̂ b) n n 
-  fst   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) a n n 
-  snd   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) b n n 
-  _∗l   : ∀ {n a b∞} (u : Tm Γ (▸ a))                   → NβECxt Γ Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞) n n 
-  ∗r_   : ∀ {n}{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → NβECxt Γ Γ (▸ a) (▸̂ b∞) n n 
-  abs   : ∀ {n a b}                                     → NβECxt Γ (a ∷ Γ) b (a →̂  b) n n 
+  appl  : ∀ {n a b} (u : Tm Γ a)                        → NβECxt Γ Γ (a →̂ b) b n n
+  appr  : ∀ {n a b} (t : Tm Γ (a →̂  b))                 → NβECxt Γ Γ a b n n
+  pairl : ∀ {n a b} (u : Tm Γ b)                        → NβECxt Γ Γ a (a ×̂ b) n n
+  pairr : ∀ {n a b} (t : Tm Γ a)                        → NβECxt Γ Γ b (a ×̂ b) n n
+  fst   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) a n n
+  snd   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) b n n
+  _∗l   : ∀ {n a b∞} (u : Tm Γ (▸ a))                   → NβECxt Γ Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞) n n
+  ∗r_   : ∀ {n}{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → NβECxt Γ Γ (▸ a) (▸̂ b∞) n n
+  abs   : ∀ {n a b}                                     → NβECxt Γ (a ∷ Γ) b (a →̂  b) n n
 \end{code}
 }
 
 \begin{code}
-data NβEhole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} → 
+data NβEhole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
               Tm Γ b → NβECxt Γ Δ a b n n' → Tm Δ a → Set where
 \end{code}
 \AgdaHide{
 \begin{code}
-  appl  : ∀ {a b t} (u : Tm Γ a)                          → NβEhole (app t u) (appl u) (t ∶ (a →̂ b)) 
+  appl  : ∀ {a b t} (u : Tm Γ a)                          → NβEhole (app t u) (appl u) (t ∶ (a →̂ b))
   appr  : ∀ {a b u} (t : Tm Γ (a →̂  b))                   → NβEhole (app t u) (appr t) u
   pairl : ∀ {a b}{t} (u : Tm Γ b)                         → NβEhole (pair t u) (pairl u) (t ∶ a)
   pairr : ∀ {a b}{u} (t : Tm Γ a)                         → NβEhole (pair t u) (pairr t) (u ∶ b)

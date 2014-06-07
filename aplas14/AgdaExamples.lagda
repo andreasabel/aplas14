@@ -5,14 +5,8 @@
 module AgdaExamples where
 
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
-\end{code}
-}
-\AgdaHide{
-\begin{code}
-μ̂ : ∀{i} → (∀{j : Size< i} → ∞Ty {j} → Ty {j}) → ∞Ty {i}
-(force (μ̂ {i} F)) {j} = F (μ̂ {j} F)
 \end{code}
 }
 
@@ -73,7 +67,7 @@ open _∞≅_ public
 It is consistent to postulate that bisimulation implies equality,
 similarly to the functional extensionality principle for function
 types. The alternative would be to work with setoids across all our
-developement, which would add complexity without strenghtening our result.
+development, which would add complexity without strengthening our result.
 \begin{code}
 postulate
   ≅-to-≡ : ∀ {a b} → a ≅ b → a ≡ b

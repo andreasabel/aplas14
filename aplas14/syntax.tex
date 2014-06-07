@@ -1,8 +1,39 @@
 
-\section{Syntax}
+\section{Formalized Syntax}
 \label{sec:syntax}
 
-\input{SizedInfiniteTypes}
+In this section, we discuss the formalization of types, terms, and
+typing of $\lambdalater$ in Agda.  It will be necessary to talk about
+meta-level types, \ie, Agda's types, thus, we will refer to
+$\lambdalater$'s type constructors as $\hattimes$, $\hatto$,
+$\hatlater$, and $\hatmu$.
+
+\subsection{Types Represented Coinductively}
+
+Instead of representing fixed-points as syntactic construction on
+types, which would require a non-trivial equality on types induced by
+$\hatmu X A = \subst{\hatmu X A}X A$, we use \emph{meta-level} fixed-points,
+\ie, Agda's recursion mechanism.  Extensionally, we are implementing
+\emph{infinite type expressions} over the constructors $\hattimes$,
+$\hatto$, and $\hatlater$.  The guard condition on recursive types is then
+becoming an instance of Agda's ``guard condition'', \ie, the condition
+the termination checker imposes on recursive programs.
+
+Viewed as infinite expressions, guarded types are regular trees with
+an infinite number of $\hatlater$-nodes on each infinite path.  This
+can be expressed as the mixed coinductive-inductive (meta-level) type
+\[
+  \nu X \mu Y.\; (Y \times Y) + (Y \times Y) + X. 
+\]
+The first summand stands for the binary constructor $\hattimes$, the
+second for $\hatto$, and the third for the unary $\hatlater$.  The
+nesting of a least-fixed point ($\mu$) inside a greatest fixed-point
+($\nu$) ensures that on each path, we can only take alternatives
+$\hattimes$ and $\hatto$ a finite number of times before we have to
+choose the third alternative $\hatlater$ and restart the process.
+
+
+\input{InfiniteTypes}
 
 \input{Terms}
 

@@ -7,7 +7,7 @@ module AntiRename where
 open import Relation.Unary using (_∈_; _⊆_)
 
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import Substitution
 open import IndRen
@@ -21,7 +21,7 @@ open import SN
 unRenameSNe  :  ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a}{t'} → IndRen ρ t t' →
                 SNe n t' → SNe n t
 
-unRenameSN   :  ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t'} → IndRen ρ t t' → 
+unRenameSN   :  ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t'} → IndRen ρ t t' →
                 SN n t' → SN n t
 \end{code}
 
@@ -74,9 +74,9 @@ unRename⇒1 ((next is) ∗ is₁)      (cong (∗r t₂) (∗r .t₂) tρ→t')
 }
 
 \begin{code}
-absVarSNe  :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → 
+absVarSNe  :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
                app t (var zero) ∈ SNe n → t ∈ SNe n
-absVarSN   :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} → 
+absVarSN   :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
                app t (var zero) ∈ SN n → t ∈ SN n
 \end{code}
 

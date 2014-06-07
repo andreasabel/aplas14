@@ -6,7 +6,7 @@ module SN where
 open import Relation.Unary using (_∈_; _⊆_)
 open import Size
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import Substitution
 open import TermShape public
@@ -211,11 +211,11 @@ renameSNe   :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
                SNe n t → SNe n (rename ρ t)
 renameSN    :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
                SN n t → SN n (rename ρ t)
-rename⇒      :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t t' : Tm Δ a} → 
+rename⇒      :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t t' : Tm Δ a} →
                t ⟨ n ⟩⇒ t' → rename ρ t ⟨ n ⟩⇒ rename ρ t'
 
 varSN       :  ∀ {Γ a n x} → var x ∈ SN {Γ = Γ} n {a}
-appVarSN    :  ∀ {Γ a b n}{t : Tm Γ (a →̂ b)}{x} → 
+appVarSN    :  ∀ {Γ a b n}{t : Tm Γ (a →̂ b)}{x} →
                t ∈ SN n → app t (var x) ∈ SN n
 fstSN       :  ∀ {n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (fst t)
 sndSN       :  ∀ {n a b Γ}{t : Tm Γ (a ×̂ b)} → SN n t → SN n (snd t)

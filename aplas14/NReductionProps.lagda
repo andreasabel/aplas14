@@ -4,7 +4,7 @@
 module NReductionProps where
 open import Data.Sum
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 open import Substitution
 open import NReduction
@@ -47,7 +47,7 @@ _++β_ : ∀ {n} {Γ} {a} {t₀ t₁ t₂ : Tm Γ a} → t₀ ⟨ n ⟩⇒β* t�
 []       ++β ys = ys
 (x ∷ xs) ++β ys = x ∷ (xs ++β ys)
 
-cong* :  ∀ {n n' a Γ Δ} {b} {t tβ* : Tm Γ a} {E : NβECxt Δ Γ a b n n'}{E[t] E[tβ*]} → 
+cong* :  ∀ {n n' a Γ Δ} {b} {t tβ* : Tm Γ a} {E : NβECxt Δ Γ a b n n'}{E[t] E[tβ*]} →
          NβEhole E[t] E t → NβEhole E[tβ*] E tβ* → t ⟨ n ⟩⇒β* tβ* → E[t] ⟨ n' ⟩⇒β* E[tβ*]
 \end{code}
 \AgdaHide{
@@ -93,8 +93,8 @@ nβ⇒β (cong E1 E2 t⇒) = cong (help E1) (help E2) (nβ⇒β t⇒)
     help' abs = abs
     help' next = next
 
-    help : ∀ {n a Γ} {t : Tm Γ a} {n₁ Δ a₁} {t₁ : Tm Δ a₁} 
-           {E : NβECxt Γ Δ a₁ a n₁ n} 
+    help : ∀ {n a Γ} {t : Tm Γ a} {n₁ Δ a₁} {t₁ : Tm Δ a₁}
+           {E : NβECxt Γ Δ a₁ a n₁ n}
            (E1 : NβEhole t E t₁) →
            βEhole t (help' E) t₁
     help (appl u) = appl u
@@ -111,7 +111,7 @@ nβ⇒β (cong E1 E2 t⇒) = cong (help E1) (help E2) (nβ⇒β t⇒)
 
 nβ*⇒β* : ∀ {n a Γ} {t t' : Tm Γ a} → t ⟨ n ⟩⇒β* t' → t ⇒β* t'
 nβ*⇒β* [] = []
-nβ*⇒β* (x ∷ xs) = nβ⇒β x ∷ nβ*⇒β* xs 
+nβ*⇒β* (x ∷ xs) = nβ⇒β x ∷ nβ*⇒β* xs
 \end{code}
 
 \begin{code}
@@ -120,7 +120,7 @@ mapNβSN   : ∀ {i n m a Γ} {t t' : Tm Γ a} → t ⟨ m ⟩⇒β t' → SN {i
 \end{code}
 \AgdaHide{
 \begin{code}
-mapNβSNe t⇒ 𝒕 = mapβSNe (nβ⇒β t⇒) 𝒕 
+mapNβSNe t⇒ 𝒕 = mapβSNe (nβ⇒β t⇒) 𝒕
 mapNβSN t⇒ 𝒕 = mapβSN (nβ⇒β t⇒) 𝒕
 \end{code}
 }
@@ -189,9 +189,9 @@ data _Redex {Γ} : ∀ {a} → Tm Γ a → Set where
           → snd (pair t u) Redex
 \end{code}
 \begin{code}
-split : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ : Tm Γ a}{t₂ Et₁ : Tm Γ b} → 
-         Ehole* Et₁ E t₁ → t₁ Redex → 
-         Et₁ ⟨ n ⟩⇒β t₂ → (Σ _ \ t₃ → Ehole* t₂ E t₃ × t₁ ⟨ n ⟩⇒β t₃) 
+split : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ : Tm Γ a}{t₂ Et₁ : Tm Γ b} →
+         Ehole* Et₁ E t₁ → t₁ Redex →
+         Et₁ ⟨ n ⟩⇒β t₂ → (Σ _ \ t₃ → Ehole* t₂ E t₃ × t₁ ⟨ n ⟩⇒β t₃)
          ⊎ (Σ _ \ E₁ → Ehole* t₂ E₁ t₁ × (∀ t → E [ t ]* ⟨ n ⟩⇒β E₁ [ t ]*))
 \end{code}
 \AgdaHide{
@@ -202,32 +202,32 @@ split ._ (appl u ∷ (() ∷ eq)) r β
 split ._ ((._ ∗l) ∷ []) () β▸
 split ._ ((._ ∗l) ∷ (() ∷ eq)) r β▸
 split .((∗r t) ∷ []) ((∗r t) ∷ []) () β▸
-split ._ ((∗r t) ∷ (() ∷ eq)) r β▸ 
+split ._ ((∗r t) ∷ (() ∷ eq)) r β▸
 split ._ (fst ∷ (() ∷ eq)) r βfst
 split .(fst ∷ []) (fst ∷ []) () βfst
 split .(snd ∷ []) (snd ∷ []) () βsnd
 split ._ (snd ∷ (() ∷ eq)) r βsnd
 split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) with split _ eq r t⇒
 split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) | inj₁ (x , eq0 , t⇒') = inj₁ (_ , ((appl u) ∷ eq0) , t⇒')
-split ._ (_∷_ {Es = Es} (appl u) eq) r (cong (appl .u) (appl .u) t⇒) | inj₂ (Es' , eq0 , f) = inj₂ (_ , ((appl u ∷ eq0) , 
+split ._ (_∷_ {Es = Es} (appl u) eq) r (cong (appl .u) (appl .u) t⇒) | inj₂ (Es' , eq0 , f) = inj₂ (_ , ((appl u ∷ eq0) ,
                                                         (λ t → cong (mkHole3 (appl u) {Es}) (mkHole3 (appl u) {Es'}) (f t))))
-split ._ (_∷_ {Es = Es} (appl t) eq) r (cong (appr Est) (appr .Est) t⇒) = inj₂ (_ , ((appl _ ∷ eq) , 
+split ._ (_∷_ {Es = Es} (appl t) eq) r (cong (appr Est) (appr .Est) t⇒) = inj₂ (_ , ((appl _ ∷ eq) ,
       (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong (appr (Es [ t₁ ]*)) (appr (Es [ t₁ ]*)) t⇒))))
-split ._ (fst ∷ eq) r (cong fst fst t⇒) with split _ eq r t⇒ 
+split ._ (fst ∷ eq) r (cong fst fst t⇒) with split _ eq r t⇒
 split ._ (fst ∷ eq) r (cong fst fst t⇒) | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , (fst ∷ eq0) , t⇒')
-split ._ (_∷_ {Es = Es} fst eq) r (cong fst fst t⇒) | inj₂ (Es' , eq0 , f) 
+split ._ (_∷_ {Es = Es} fst eq) r (cong fst fst t⇒) | inj₂ (Es' , eq0 , f)
       = inj₂ (_ , (fst ∷ eq0) , (λ t → cong (mkHole3 fst {Es}) (mkHole3 fst {Es'}) (f t)))
-split ._ (snd ∷ eq) r (cong snd snd t⇒) with split _ eq r t⇒ 
+split ._ (snd ∷ eq) r (cong snd snd t⇒) with split _ eq r t⇒
 split ._ (snd ∷ eq) r (cong snd snd t⇒) | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , (snd ∷ eq0) , t⇒')
-split ._ (_∷_ {Es = Es} snd eq) r (cong snd snd t⇒) | inj₂ (Es' , eq0 , f) 
+split ._ (_∷_ {Es = Es} snd eq) r (cong snd snd t⇒) | inj₂ (Es' , eq0 , f)
       = inj₂ (_ , (snd ∷ eq0) , (λ t → cong (mkHole3 snd {Es}) (mkHole3 snd {Es'}) (f t)))
-split ._ (_∷_ {Es = Es} (u ∗l) eq) r (cong (.u ∗l) (.u ∗l) t⇒) with split _ eq r t⇒ 
+split ._ (_∷_ {Es = Es} (u ∗l) eq) r (cong (.u ∗l) (.u ∗l) t⇒) with split _ eq r t⇒
 ... | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , u ∗l ∷ eq0 , t⇒')
 ... | inj₂ (Es' , eq0 , f)   = inj₂ (_ , (u ∗l) ∷ eq0 , (λ t → cong (mkHole3 (u ∗l) {Es}) (mkHole3 (u ∗l) {Es'}) (f t)))
-split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (Est ∗l) (.Est ∗l) (cong next next t⇒)) = inj₂ (_ , (∗r _ ∷ eq) , 
-      (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong ((Es [ t₁ ]*) ∗l) ((Es [ t₁ ]*) ∗l) (cong next next t⇒)))) -- 
+split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (Est ∗l) (.Est ∗l) (cong next next t⇒)) = inj₂ (_ , (∗r _ ∷ eq) ,
+      (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong ((Es [ t₁ ]*) ∗l) ((Es [ t₁ ]*) ∗l) (cong next next t⇒)))) --
 split ._ (_∷_ {Es = Es} (t ∗l) eq) r (cong (∗r Est) (∗r .Est) t⇒) = inj₂ (_ , (_ ∗l) ∷ eq , (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong (∗r _) (∗r _) t⇒)))
-split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (∗r .(next t)) (∗r .(next t)) t⇒) with split _ eq r t⇒ 
+split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (∗r .(next t)) (∗r .(next t)) t⇒) with split _ eq r t⇒
 ... | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , ∗r t ∷ eq0 , t⇒')
 ... | inj₂ (Es' , eq0 , f)   = inj₂ (_ , ∗r t ∷ eq0 , (λ t1 → cong (mkHole3 (∗r t) {Es}) (mkHole3 (∗r t) {Es'}) (f t1)))
 
