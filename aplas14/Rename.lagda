@@ -5,7 +5,7 @@
 module Rename where
 
 open import Library
-open import SizedInfiniteTypes
+open import InfiniteTypes
 open import Terms
 import Substitution as S
 \end{code}
