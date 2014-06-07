@@ -117,8 +117,8 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
              (𝓑.satSN ≤ℕ.refl (𝒕 _ ≤ℕ.refl suc (𝓐.satSNe ≤ℕ.refl (var v₀)))))
 
     CExp : ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
-    CExp t⇒ 𝒕 m m≤n ρ 𝒖 =
-       𝓑.satExp m≤n ((cong (appl _) (appl _) (map⇒ m≤n (subst⇒ (renSN ρ) t⇒)))) (𝒕 m m≤n ρ 𝒖)
+    CExp t⇒ 𝒕 m m≤n ρ 𝒖 = 
+       𝓑.satExp m≤n ((cong (appl _) (appl _) (map⇒ m≤n (rename⇒ ρ t⇒)))) (𝒕 m m≤n ρ 𝒖)
 \end{code}
 
 
@@ -160,8 +160,8 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
     CSN (𝒕 , 𝒖) = bothProjSN (satSN 𝓐 𝒕) (satSN 𝓑 𝒖)
 
     CExp : ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
-    CExp t⇒ (𝒕 , 𝒖)  = satExp 𝓐 (cong fst fst t⇒) 𝒕
-                     , satExp 𝓑 (cong snd snd t⇒) 𝒖
+    CExp t⇒ (𝒕 , 𝒖)  =  satExp 𝓐 (cong fst fst t⇒) 𝒕
+                     ,  satExp 𝓑 (cong snd snd t⇒) 𝒖
 \end{code}
 
 \begin{code}

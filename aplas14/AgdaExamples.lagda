@@ -119,7 +119,7 @@ fix = λ f. (λ x. f (omega x)) (next (λ x. f (omega x)))
 \end{verbatim}
 
 Another standard example is the type of streams, which we can also
-define through a corecursive definition.
+define through corecursion.
 \begin{code}
 mutual
   Stream : Ty → Ty
