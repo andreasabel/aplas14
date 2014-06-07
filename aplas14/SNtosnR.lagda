@@ -103,29 +103,3 @@ open import SNtosn
 \end{code}
 }
 
-\begin{code}
-βsn :  ∀ {i n a b c Γ} {u : Tm Γ a} {t : Tm (a ∷ Γ) b}{z}
-       (Es : ECxt* Γ b c) → sn n (Es [ z ]*) → 
-       sn n t → SN {i} n (Es [ subst0 u t ]*) → sn n u → 
-       sn n (Es [ app (abs t) u ]*) 
-\end{code}
-\AgdaHide{
-\begin{code}
-βsn = TODO
-{- It's mutually defined with fromSN
-βsn Es x t t[u] u = acc (λ t⇒ → help {Es = Es} x t t[u] u (mkEhole* Es) t⇒) where
-  help : ∀ {i n a b c Γ} {u : Tm Γ a} {t : Tm (a ∷ Γ) b} {t' : Tm Γ c} {x}  {z}{Es : ECxt* Γ b c} → sn n (Es [ x ]*) → sn n t → 
-       SN {i} n (Es [ subst (u ∷s var) t ]*) →
-       sn n u → Ehole* z Es (app (abs t) u) → z ⟨ n ⟩⇒β t' → sn n t'
-  help {Es = Es} x t t[u]∈sn u∈sn eq t⇒ with split Es eq β t⇒ 
-  help x t₂ t[u]∈sn u∈sn eq t⇒ | inj₁ (._ , a₁ , β) rewrite hole*→≡ a₁ = fromSN t[u]∈sn
-  help {Es = Es} x (acc t₃) t[u]∈sn u∈sn eq t⇒ | inj₁ (._ , a₁ , cong (appl u₁) (appl .u₁) (cong abs abs b₁)) rewrite hole*→≡ a₁ 
-    = βsn Es x (t₃ b₁) (mapNβSN (cong*2 Es (NR.subst⇒β (sgs u₁) b₁)) t[u]∈sn) u∈sn
-  help {t = t} {Es = Es} x t₃ t[u]∈sn (acc u∈sn) eq t⇒ | inj₁ (._ , a₁ , cong (appr ._) (appr ._) b₁) rewrite hole*→≡ a₁ 
-    = βsn Es x t₃ (mapβ*SN (cong*4 Es
-                                        (subst⇒β* (λ { {._} zero → nβ⇒β b₁ ∷ [] ; (suc n) → [] }) t)) t[u]∈sn) (u∈sn b₁)
-  help {x = x} (acc f) t₂ t[u]∈sn u∈sn eq t⇒ | inj₂ (Es' , a , g) rewrite hole*→≡ a 
-       = βsn Es' (f (g x)) t₂ (mapNβSN (g _) t[u]∈sn) u∈sn
--}
-\end{code}
-}
