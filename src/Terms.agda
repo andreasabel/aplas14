@@ -171,10 +171,10 @@ castC eqC eq         (fst t)     = fst (castC eqC (eq ×̂ ≅refl) t)
 castC eqC eq         (snd t)     = snd (castC eqC (≅refl ×̂ eq) t)
 castC eqC (▸̂ a≅)     (▹ t)       = ▹ (castC eqC (≅force a≅) t)
 castC eqC (▸̂ a≅)     (t ∗ t₁)    = (castC eqC (▸̂ (≅delay (≅refl →̂ (≅force a≅)))) t) ∗ (castC eqC ≅refl t₁)
-{-
+
 cast : ∀{Γ a b} (eq : a ≅ b) (t : Tm Γ a) → Tm Γ b
 cast = castC (≅L.refl ≅refl)
--}
+
 coh : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (t : Tm Γ a) → castC eqC eq t ≅T t
 coh eqC eq         (var x)     = var (cohV eqC eq x)
 coh eqC (eq →̂ eq₁) (abs t)     = abs (coh (≅sym eq ∷ eqC) eq₁ t)
@@ -187,14 +187,14 @@ coh eqC (▸̂ a≅)     (t ∗ t₁)    = coh eqC (▸̂ ≅delay (≅refl →�
 
 
 -- Variants of _∗_.
-{-
+
 ▹app : ∀{Γ c∞ b∞}{a : Ty} (eq : c∞ ∞≅ (delay a ⇒ b∞))
                           (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
 ▹app eq t u = cast (▸̂ eq) t ∗ u
 
 _∗'_  : ∀{Γ a∞ b∞} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) (u : Tm Γ (▸̂ a∞)) → Tm Γ (▸̂ b∞)
 _∗'_ {a∞ = a∞} t u = _∗_ {a = force a∞} (cast (▸̂ (≅delay ≅refl)) t) (cast ((▸̂ (≅delay ≅refl))) u)
--}
+
 _<$>_ : ∀{Γ}{a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
 t <$> u = ▹ t ∗ u
 
