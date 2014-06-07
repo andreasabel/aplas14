@@ -48,7 +48,8 @@ record IsSAT (n : ℕ) {a} (𝑨 : TmSet a) : Set where
     satSNe     : SNe n ⊆ 𝑨
     satSN      : 𝑨 ⊆ SN n
     satExp     : Closed n 𝑨
-    satRename  : ∀ {Γ Δ} → (ρ : Ren Γ Δ) → ∀ {t} → 𝑨 t → 𝑨 (subst ρ t)
+    satRename  :  ∀ {Γ Δ} → (ρ : Ren Γ Δ) → 
+                  ∀ {t} → 𝑨 t → 𝑨 (rename ρ t)
 
 record SAT (a : Ty) (n : ℕ) : Set₁ where
   field
@@ -124,7 +125,7 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
 
 \begin{code}
 ⟦abs⟧  :  ∀{n a b}{𝓐 : SAT≤ a n}{𝓑 : SAT≤ b n}{Γ}{t : Tm (a ∷ Γ) b} →
-          (∀  {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
+          (∀ {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
               u ∈⟨ m≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ m≤n ⟩ 𝓑 ) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
 (⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) m m≤n ρ 𝒖 =
   SAT≤.satExp 𝓑 m≤n (β (SAT≤.satSN 𝓐 m≤n 𝒖)) (⇃ 𝒕 m≤n ρ (↿ 𝒖))
@@ -167,7 +168,8 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 \begin{code}
 ⟦pair⟧  :   ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
             → t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
-⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} (↿ 𝒕) (↿ 𝒖) = satExp 𝓐 (βfst (satSN 𝓑 𝒖)) 𝒕 , satExp 𝓑 (βsnd (satSN 𝓐 𝒕)) 𝒖
+⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} (↿ 𝒕) (↿ 𝒖)  =  satExp 𝓐 (βfst (satSN 𝓑 𝒖)) 𝒕 
+                                      ,  satExp 𝓑 (βsnd (satSN 𝓐 𝒕)) 𝒖
 
 ⟦fst⟧   :   ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂  b)}
             → t ∈ (𝓐 ⟦×⟧ 𝓑) → fst t ∈ 𝓐

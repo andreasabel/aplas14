@@ -17,7 +17,8 @@ open import ECxtList public
 \begin{code}
 mutual
 
-  SNhole : ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
+  SNhole :  ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} → 
+            Tm Γ b → ECxt Γ a b → Tm Γ a → Set
   SNhole {i} n = PCxt (SN {i} n)
 
   SNe : ∀ {i : Size} (n : ℕ) {Γ} {b} → Tm Γ b → Set
