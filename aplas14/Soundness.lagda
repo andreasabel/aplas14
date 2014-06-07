@@ -17,8 +17,18 @@ open import SAT hiding (⟦abs⟧; ⟦app⟧; ⟦fst⟧; ⟦snd⟧)
 -- Type interpretation
 \end{code}
 }
+
+Following Section~\ref{sec:syntax} we can assemble the combinators for
+saturated sets into a semantics for the types of \lambdalater.  The
+definition of \AgdaFunction{⟦\_⟧\_} proceeds by recursion on the
+inductive part of the type, and otherwise by well-founded recursion on
+the depth. Crucially the interpretation of the later modality only
+needs the interpretation of its type parameter at a smaller depth,
+which is then decreasing exactly when the representation of types
+becomes coinductive and would no longer support recursion.
+
 \begin{code}
-⟦_⟧≤  : (a : Ty) {n : ℕ} → SAT≤ a n
+⟦_⟧≤  : (a : Ty) {n : ℕ} → ∀ {m} → m ≤ℕ n → SAT a m
 
 ⟦_⟧_  : (a : Ty) (n : ℕ) → SAT a n
 ⟦ a  →̂  b  ⟧  n  = ⟦ a ⟧≤ {n}  ⟦→⟧  ⟦ b ⟧≤ {n}
@@ -28,6 +38,7 @@ open import SAT hiding (⟦abs⟧; ⟦app⟧; ⟦fst⟧; ⟦snd⟧)
     P : ∀ n → SATpred (force a∞) n
     P zero     = _
     P (suc n)  = ⟦ force a∞ ⟧ n
+
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -40,6 +51,12 @@ open import SAT hiding (⟦abs⟧; ⟦app⟧; ⟦fst⟧; ⟦snd⟧)
 ⟦_⟧≤′ a .{suc n} {m} (≤′-step {n} m≤n) = ⟦ a ⟧≤′ {n} m≤n
 \end{code}
 }
+
+Well-founded recursion on the depth is accomplished through the
+auxiliary definition \AgdaFunction{⟦\_⟧≤} which recurses on the
+inequality proof. It is however straightforward to convert in and out
+of the original interpretation, or between different upper bounds.
+
 \begin{code}
 in≤      : ∀ a {n m} (m≤n : m ≤ℕ n) → satSet (⟦ a ⟧ m) ⊆ satSet (⟦ a ⟧≤ m≤n)
 out≤     : ∀ a {n m} (m≤n : m ≤ℕ n) → satSet (⟦ a ⟧≤ m≤n) ⊆ satSet (⟦ a ⟧ m)
@@ -67,53 +84,60 @@ coerce≤ a ≤1 ≤2 𝑡 = in≤ a ≤2 (out≤ a ≤1 𝑡)
 \end{code}
 }
 
+As will be necessary later for the interpretation of
+\AgdaInductiveConstructor{next}, the interpretation of types is also
+antitone. For most types this follows by recursion, while for function
+types antitonicity is embedded in their semantics and we only need to
+convert between different upper bounds.
 \begin{code}
 map⟦_⟧ : ∀ a {m n} → m ≤ℕ n → satSet (⟦ a ⟧ n) ⊆ satSet (⟦ a ⟧ m)
+map⟦_⟧ (a →̂ b) m≤n 𝑡                        = λ l l≤m ρ 𝑢 → let l≤n = ≤ℕ.trans l≤m m≤n in
+                                                coerce≤ b l≤n l≤m (𝑡 l l≤n ρ (coerce≤ a l≤m l≤n 𝑢))
+map⟦_⟧ (a ×̂ b) m≤n (𝑡 , 𝑢)                  = map⟦ a ⟧ m≤n 𝑡 , map⟦ b ⟧ m≤n 𝑢
+map⟦_⟧ (▸̂ a∞) {m = zero}  m≤n next0         = next0
+map⟦_⟧ (▸̂ a∞) {m = suc m} ()  next0
+map⟦_⟧ (▸̂ a∞) {m = zero}  m≤n (next _)      = next0
+map⟦_⟧ (▸̂ a∞) {m = suc m} m≤n (next 𝑡)      = next (map⟦ force a∞ ⟧ (pred≤ℕ m≤n) 𝑡)
+map⟦_⟧ (▸̂ a∞)             m≤n (ne 𝒏)        = ne (mapSNe m≤n 𝒏)
+map⟦_⟧ (▸̂ a∞)             m≤n (exp t⇒ 𝑡)    = exp (map⇒ m≤n t⇒) (map⟦ (▸̂ a∞) ⟧ m≤n 𝑡)
 \end{code}
 \AgdaHide{
 \begin{code}
-map⟦_⟧ (a →̂ b) m≤n 𝑡                        = λ l l≤m ρ 𝑢 → let l≤n = ≤ℕ.trans l≤m m≤n in
-                                                coerce≤ b l≤n l≤m (𝑡 l l≤n ρ (coerce≤ a l≤m l≤n 𝑢))
-map⟦_⟧ (a ×̂ b) m≤n (t1 , t2)                = map⟦ a ⟧ m≤n t1 , map⟦ b ⟧ m≤n t2
-map⟦_⟧ (▸̂ a∞) {m = zero}  m≤n next0         = next0
-map⟦_⟧ (▸̂ a∞) {m = suc m} ()  next0
-map⟦_⟧ (▸̂ a∞) {m = zero}  m≤n (next 𝒕)      = next0
-map⟦_⟧ (▸̂ a∞) {m = suc m} m≤n (next 𝒕)      = next (map⟦ force a∞ ⟧ (pred≤ℕ m≤n) 𝒕)
-map⟦_⟧ (▸̂ a∞)             m≤n (ne 𝒏)        = ne (mapSNe m≤n 𝒏)
-map⟦_⟧ (▸̂ a∞)             m≤n (exp t⇒ 𝑡)    = exp (map⇒ m≤n t⇒) (map⟦ (▸̂ a∞) ⟧ m≤n 𝑡)
-
 map⟦_⟧∈ : ∀ (a : Ty) → ∀ {m n} → (m ≤ℕ n) → ∀ {Γ} {t : Tm Γ a} → t ∈ (⟦ a ⟧ n)
                                             → t ∈ (⟦ a ⟧ m)
 map⟦_⟧∈ a m≤n (↿ 𝑡) = ↿ map⟦ a ⟧ m≤n 𝑡
 \end{code}
 }
 
-%%-- Context interpretation (semantic substitutions)
+We lift the interpretation of types to the interpretation of typing
+contexts pointwise, as predicates on substitutions, which take the
+role of environments. These predicates inherit antitonicity and
+closure under renaming. We will need \AgdaFunction{Ext} to extend the
+environment for the interpretation of lambda abstraction.
 \begin{code}
 ⟦_⟧C : ∀ Γ {n} → ∀ {Δ} (σ : Subst Γ Δ) → Set
 ⟦ Γ ⟧C {n} σ = ∀ {a} (x : Var Γ a) → σ x ∈ ⟦ a ⟧ n
 
-Ext :  ∀ {a n Δ Γ} {t : Tm Δ a} → (𝒕 : t ∈ ⟦ a ⟧ n) →
-       ∀ {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C σ) → ⟦ a ∷ Γ ⟧C (t ∷s σ)
-Ext {a} 𝒕 θ (zero)   = 𝒕
-Ext {a} 𝒕 θ (suc x)  = θ x
+Map :  ∀ {m n} → (m≤n : m ≤ℕ n) →
+       ∀ {Γ Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C {n} σ) → ⟦ Γ ⟧C {m} σ
+Map m≤n θ {a} x = map⟦ a ⟧∈ m≤n (θ x)
 
 Rename :  ∀ {n Δ Δ'} → (ρ : Ren Δ Δ') →
           ∀ {Γ}{σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C {n} σ) →
           ⟦ Γ ⟧C (ρ •s σ)
-Rename ρ θ {a} x = ↿ SAT.satRename (⟦ a ⟧ _) ρ (⇃ θ x)
+Rename ρ θ {a} x = ↿ satRename (⟦ a ⟧ _) ρ (⇃ θ x)
 
-Map :  ∀ {m n} → (m≤n : m ≤ℕ n) →
-       ∀ {Γ Δ} {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C σ) → ⟦ Γ ⟧C σ
-Map m≤n θ {a} x = map⟦ a ⟧∈ m≤n (θ x)
+Ext :  ∀ {a n Δ Γ} {t : Tm Δ a} → (𝒕 : t ∈ ⟦ a ⟧ n) →
+       ∀ {σ : Subst Γ Δ} (θ : ⟦ Γ ⟧C σ) → ⟦ a ∷ Γ ⟧C (t ∷s σ)
+Ext 𝒕 θ  (zero)   = 𝒕
+Ext 𝒕 θ  (suc x)  = θ x
+
 \end{code}
 
+\AgdaHide{
 \begin{code}
 ⟦∗⟧ : ∀ {n Γ}{a∞} {b∞} {t : Tm Γ (▸̂ (a∞ ⇒ b∞))} {u : Tm Γ (▸̂ a∞)}
       → t ∈ (⟦ ▸̂ (a∞ ⇒ b∞) ⟧ n) → u ∈ (⟦ ▸̂ a∞ ⟧ n) → (t ∗ u) ∈ (⟦ ▸̂ b∞ ⟧ n)
-\end{code}
-\AgdaHide{
-\begin{code}
 ⟦∗⟧ (↿ next0) (↿ next0)    = ↿ exp β▸ next0
 ⟦∗⟧ (↿ next0) (↿ ne 𝒏)     = ↿ (ne (elim 𝒏 ((∗r next0))))
 ⟦∗⟧ (↿ next0) (↿ exp t⇒ 𝑡) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧ (↿ next0) (↿ 𝑡))
@@ -175,18 +199,28 @@ Map m≤n θ {a} x = map⟦ a ⟧∈ m≤n (θ x)
 }
 
 
+The soundness proof, showing that every term of \lambdanext is a
+member of our saturated sets and so strongly normalizing, is now a
+simple matter of interpreting each operation in the language to its
+equivalent in the semantics that we have defined so far.
+
+The interpretation of \AgdaInductive{next} depends on the depth, at
+$0$ we are done, otherwise we recurse on the subterm with a smaller
+depth, \AgdaFunction{Map}ing the environment to it.  Being able to
+perform this operation is the reason we have ensured antitonicity so
+far.
 
 \begin{code}
 sound :  ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} → 
          (θ : ⟦ Γ ⟧C {n} σ) → subst σ t ∈ ⟦ a ⟧ n
 sound (var x) θ = θ x
-sound (abs t) θ = ⟦abs⟧ {t = t} λ m≤n ρ {u} 𝑢 →
+sound (abs t) θ = ⟦abs⟧ {t = t} λ m≤n ρ 𝑢 →
     ↿ in≤ _ m≤n (⇃ sound t (Ext (↿ out≤ _ m≤n (⇃ 𝑢)) (Rename ρ (Map m≤n θ))))
 sound (app t u)   θ  = ⟦app⟧ (sound t θ) (sound u θ)
 sound (pair t u)  θ  = ⟦pair⟧ (sound t θ) (sound u θ)
 sound (fst t)     θ  = ⟦fst⟧ (sound t θ) 
 sound (snd t)     θ  = ⟦snd⟧ (sound t θ) 
 sound (t ∗ u)     θ  = ⟦∗⟧ (sound t θ) (sound u θ)
-sound {zero}  (next t) θ = ↿ next0
-sound {suc n} (next t) θ = ↿ (next (⇃ sound t (Map n≤sn θ)))
+sound {zero}  (next t)  θ  = ↿ next0
+sound {suc n} (next t)  θ  = ↿ (next (⇃ sound t (Map n≤sn θ)))
 \end{code}
