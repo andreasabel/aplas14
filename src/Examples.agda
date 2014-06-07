@@ -15,27 +15,27 @@ open import Terms
 Fix_ : Ty → ∞Ty
 force Fix A = ▸̂ Fix A →̂ A
 
-omega : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
-omega x = ▹app (≅delay ≅refl) x (▹ x)
+selfApp : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
+selfApp x = ▹app (≅delay ≅refl) x (▹ x)
 
 Y : ∀{Γ A} → Tm Γ ((▸ A →̂ A) →̂ A)
 Y = abs (app L (▹ L))
   where
     f = var (suc v₀)
     x = var v₀
-    L = abs (app f (omega x))
+    L = abs (app f (selfApp x))
 
--- Alternative definition of omega
+-- Alternative definition of selfApp
 
 Fix∞_ : ∞Ty → ∞Ty
 force Fix∞ A = ▸̂ Fix∞ A →̂ force A
 
-omega' : ∀{Γ a∞} → Tm Γ (▸̂ Fix∞ a∞) → Tm Γ (▸̂ a∞)
-omega' x = ▹app (≅delay ≅refl) x (▹ x)
+selfApp' : ∀{Γ a∞} → Tm Γ (▸̂ Fix∞ a∞) → Tm Γ (▸̂ a∞)
+selfApp' x = ▹app (≅delay ≅refl) x (▹ x)
 
 -- Y' : ∀{Γ}{a∞ : ∞Ty {∞}} → Tm Γ ((▸̂ a∞ →̂ force a∞) →̂ force a∞)
 -- Y' = abs {!(app L {!(▹ L)!})!}
---   where L = abs (app (var (suc zero)) (omega (var zero)))
+--   where L = abs (app (var (suc zero)) (selfApp (var zero)))
 
 -- Example: Streams
 

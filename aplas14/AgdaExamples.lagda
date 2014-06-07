@@ -14,29 +14,29 @@ open import TypeEquality
 
 We can adapt the Y combinator from the untyped lambda calculus to
 define a guarded fixed point combinator.  The type \AgdaFunction{Fix}
-\AgdaBound{A} allows safe self application, since the input will only
+\va allows safe self application, since the input will only
 be available "later". This fits with the type we want for the
 \AgdaFunction{fix} combinator, the function of which we are taking the
 fixed point will only be able to use its input in the next time slot.
 
 \begin{code}
 Fix_ : Ty → ∞Ty
-force Fix A = ▸̂ Fix A →̂ A
+force (Fix a) = ▸̂ Fix a →̂ a
 
-omega : ∀{Γ A} → Tm Γ (▸̂ Fix A) → Tm Γ (▸ A)
-omega x = ▸app (≅delay ≅refl) x (next x)
+selfApp : ∀{Γ a} → Tm Γ (▸̂ Fix a) → Tm Γ (▸ a)
+selfApp x = ▸app (≅delay ≅refl) x (next x)
 
-fix : ∀{Γ A} → Tm Γ ((▸ A →̂ A) →̂ A)
+fix : ∀{Γ a} → Tm Γ ((▸ a →̂ a) →̂ a)
 fix = abs (app L (next L))
   where
-    f = var (suc v₀)
-    x = var v₀
-    L = abs (app f (omega x))
+    f = var (suc zero)
+    x = var zero
+    L = abs (app f (selfApp x))
 \end{code}
 
 The definition above correponds to the following with named variables.
 \begin{verbatim}
-fix = λ f. (λ x. f (omega x)) (next (λ x. f (omega x)))
+fix = λ f. (λ x. f (selfApp x)) (next (λ x. f (selfApp x)))
 \end{verbatim}
 
 Another standard example is the type of streams, which we can also
@@ -44,18 +44,18 @@ define through corecursion.
 \begin{code}
 mutual
   Stream : Ty → Ty
-  Stream A = A ×̂ ▸̂ Stream∞ A
+  Stream a = a ×̂ ▸̂ Stream∞ a
 
   Stream∞ : Ty → ∞Ty
-  force (Stream∞ A) = Stream A
+  force (Stream∞ a) = Stream a
 
-cons : ∀{Γ A} → Tm Γ A → Tm Γ (▸ Stream A) → Tm Γ (Stream A)
+cons : ∀{Γ a} → Tm Γ a → Tm Γ (▸ Stream a) → Tm Γ (Stream a)
 cons a s = pair a (cast (▸̂ (≅delay ≅refl)) s)
 
-head : ∀{Γ A} → Tm Γ (Stream A) → Tm Γ A
+head : ∀{Γ a} → Tm Γ (Stream a) → Tm Γ a
 head s = fst s
 
-tail : ∀{Γ A} → Tm Γ (Stream A) → Tm Γ (▸ Stream A)
+tail : ∀{Γ a} → Tm Γ (Stream a) → Tm Γ (▸ Stream a)
 tail s = cast (▸̂ (≅delay ≅refl)) (snd s)
 \end{code}
 
@@ -65,11 +65,15 @@ be causal, i.e. can only have access to the first $n$ elements of the
 input when producing the $n$th element of the output.
 A simple example is mapping a function over a stream.
 \begin{code}
-mapS : ∀{Γ A B} → Tm Γ ((A →̂ B) →̂ (Stream A →̂ Stream B))
+mapS : ∀{Γ a b} → Tm Γ ((a →̂ b) →̂ (Stream a →̂ Stream b))
 \end{code}
 \AgdaHide{
 \begin{code}
-mapS = TODO
+mapS = abs (app fix (abs (abs
+  (let f   = var (suc (suc v₀))
+       map = var (suc v₀)
+       s   = var v₀
+   in pair (app f (head s)) (▸app (≅delay ≅refl) map (tail s))))))
 \end{code}
 }
 \begin{verbatim}

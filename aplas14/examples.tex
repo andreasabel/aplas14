@@ -2,6 +2,22 @@
 \subsection{Type Equality}
 \label{sec:tyeq}
 
+Although our coinductive representation of $\lambdalater$ types saved
+us from type variables, type substitution, and fixed-point unrolling,
+the question of type equality is not completely settled.  
+The propositional equality $\propeq$ of Martin-L\"of Type Theory is intensional
+in the sense that only objects with the same \emph{code} (modulo
+definitional equality) are considered equal.  Thus, $\propeq$ is
+adequate only for finite objects (such as natural numbers and lists)
+but not for infinite objects like functions, streams, or
+$\lambdalater$ types.
+
+However, we can define extensional equality or \emph{bisimulation} 
+on $\Ty$ as a mixed
+coinductive-inductive relation $\bisim/\bisiminf$ that follows the
+structure of $\Ty/\infTy$ (hence, we reuse the constructor names
+$\hattimes$, $\hatto$, and $\hatlater$).
+  
 \input{TypeEquality}
 
 \subsection{Examples}
