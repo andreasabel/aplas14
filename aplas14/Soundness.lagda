@@ -12,7 +12,7 @@ open import Terms
 open import Substitution
 open import SN
 open import AntiRename
-open import SAT
+open import SAT hiding (⟦abs⟧; ⟦app⟧; ⟦fst⟧; ⟦snd⟧)
 
 -- Type interpretation
 \end{code}
@@ -109,40 +109,32 @@ Map m≤n θ {a} x = map⟦ a ⟧∈ m≤n (θ x)
 \end{code}
 
 \begin{code}
-⟦∗⟧ : ∀ {n Γ}{a : Ty} {b∞} {t : Tm Γ (▸̂ ((delay a) ⇒ b∞))} {u : Tm Γ (▸ a)}
-      → t ∈ (⟦ ▸̂ ((delay a) ⇒ b∞) ⟧ n) → u ∈ (⟦ ▸̂ (delay a) ⟧ n) → (t ∗ u) ∈ (⟦ ▸̂ b∞ ⟧ n)
+⟦∗⟧ : ∀ {n Γ}{a∞} {b∞} {t : Tm Γ (▸̂ (a∞ ⇒ b∞))} {u : Tm Γ (▸̂ a∞)}
+      → t ∈ (⟦ ▸̂ (a∞ ⇒ b∞) ⟧ n) → u ∈ (⟦ ▸̂ a∞ ⟧ n) → (t ∗ u) ∈ (⟦ ▸̂ b∞ ⟧ n)
 \end{code}
 \AgdaHide{
 \begin{code}
 ⟦∗⟧ (↿ next0) (↿ next0)    = ↿ exp β▸ next0
-⟦∗⟧ (↿ next0) (↿ ne 𝒏)     = ↿ (ne (elim 𝒏 (∗r next0)))
+⟦∗⟧ (↿ next0) (↿ ne 𝒏)     = ↿ (ne (elim 𝒏 ((∗r next0))))
 ⟦∗⟧ (↿ next0) (↿ exp t⇒ 𝑡) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧ (↿ next0) (↿ 𝑡))
-⟦∗⟧ {a = a} {b∞ = b∞}  (↿ (next 𝑡)) (↿ (next {t = u} 𝑢))
+⟦∗⟧ {a∞ = a∞} {b∞ = b∞}  (↿ (next 𝑡)) (↿ (next {t = u} 𝑢))
  =  ↿ exp β▸
      (next (≡.subst (λ t → satSet (⟦ force b∞ ⟧ _) (app t u))
-          renId (out≤ (force b∞) ≤ℕ.refl (𝑡 _ ≤ℕ.refl id (in≤ a ≤ℕ.refl 𝑢)))))
-⟦∗⟧ {a = a} {b∞ = b∞}  (↿ (next 𝒕)) (↿ ne 𝒏) = ↿ ne (elim 𝒏 (∗r (next (satSN (⟦ a ⟧≤ ⟦→⟧ ⟦ force b∞ ⟧≤) 𝒕))))
+          renId (out≤ (force b∞) ≤ℕ.refl (𝑡 _ ≤ℕ.refl id (in≤ (force a∞) ≤ℕ.refl 𝑢)))))
+⟦∗⟧ {a∞ = a∞} {b∞ = b∞}  (↿ (next 𝒕)) (↿ ne 𝒏) = ↿ ne (elim 𝒏 (∗r next (satSN (⟦ force a∞ ⟧≤ ⟦→⟧ ⟦ force b∞ ⟧≤) 𝒕)))
 ⟦∗⟧ (↿ (next 𝑡))    (↿ exp t⇒ 𝑢) = ↿ exp (cong (∗r _) (∗r _) t⇒) (⇃ ⟦∗⟧  (↿ (next 𝑡)) (↿ 𝑢))
 ⟦∗⟧ (↿ ne 𝒏)     (↿ 𝑡) = ↿ ne (elim 𝒏 (satSN (⟦ _ ⟧ _) 𝑡 ∗l))
 ⟦∗⟧ (↿ exp t⇒ 𝑡) (↿ 𝑢) = ↿ exp (cong (_ ∗l) (_ ∗l) t⇒) (⇃ ⟦∗⟧ (↿ 𝑡) (↿ 𝑢))
-\end{code}
-}
-\begin{code}
-sound :  ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} → 
-         (θ : ⟦ Γ ⟧C {n} σ) → subst σ t ∈ ⟦ a ⟧ n
-sound (var x) θ = θ x
-sound (abs t) {σ = σ} θ = ⟦abs⟧ {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧≤} (λ m≤n ρ {u} 𝑢 →
-  let
-\end{code}
-\AgdaHide{
-\begin{code}
+
+-- versions specialized for sound
+⟦abs⟧  :  ∀{n a b}(let 𝓐 = ⟦ a ⟧≤ {n})(let 𝓑 = ⟦ b ⟧≤ {n}){Γ Γ'}{t : Tm (a ∷ Γ') b} {σ : Subst Γ' Γ} →
+          (∀ {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
+              u ∈⟨ m≤n ⟩ 𝓐 → subst (u ∷s (ρ •s σ)) t ∈⟨ m≤n ⟩ 𝓑 ) → subst σ (abs t) ∈ (𝓐 ⟦→⟧ 𝓑)
+(⇃ ⟦abs⟧ {t = t} {σ} 𝒕) m m≤n ρ {u} 𝒖 = SAT≤.satExp ⟦ _ ⟧≤ m≤n (β (SAT≤.satSN ⟦ _ ⟧≤ m≤n 𝒖))
+                                        (≡.subst (λ tu → satSet (⟦ _ ⟧≤ m≤n) tu) eq (⇃ 𝒕 m≤n ρ (↿ 𝒖))) 
+   where
       open ≡-Reasoning
-\end{code}}
-\begin{code}
       eq : subst (u ∷s (ρ •s σ)) t ≡ subst0 u (subst (lifts ρ) (subst (lifts σ) t))
-\end{code}
-\AgdaHide{
-\begin{code}
       eq = begin
 
              subst (u ∷s (ρ •s σ)) t
@@ -163,17 +155,38 @@ sound (abs t) {σ = σ} θ = ⟦abs⟧ {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧�
 
              subst0 u (subst (lifts ρ) (subst (lifts σ) t))
            ∎
-\end{code}}
-\begin{code}
-  in  ≡.subst (λ tu → tu ∈⟨ m≤n ⟩ (⟦ _ ⟧≤)) eq
-      (↿ in≤ _ m≤n (⇃ sound t (Ext (↿ out≤ _ m≤n (⇃ 𝑢)) ((Rename ρ (Map m≤n θ)))))))
 
-sound {n} (app {a} {b} t u) θ = ↿ out≤ b ≤ℕ.refl
-  (⇃ ⟦app⟧ {n} {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧≤} ≤ℕ.refl (sound t θ) (↿ in≤ a ≤ℕ.refl (⇃ sound u θ)))
-sound (pair t u) θ = ⟦pair⟧ (sound t θ) (sound u θ)
-sound (fst t)    θ = ⟦fst⟧ {𝓐 = ⟦ _ ⟧ _} {𝓑 = ⟦ _ ⟧ _} (sound t θ)
-sound (snd t)    θ = ⟦snd⟧ {𝓐 = ⟦ _ ⟧ _} {𝓑 = ⟦ _ ⟧ _} (sound t θ)
-sound (t ∗ u)    θ = ⟦∗⟧ (sound t θ) (sound u θ)
+
+⟦app⟧  :  ∀ {n a b} {Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
+          t ∈ ⟦ (a →̂ b) ⟧ n → u ∈ ⟦ a ⟧ n → app t u ∈ ⟦ b ⟧ n
+⟦app⟧ {n} {a = a} {b = b} 𝑡 𝑢 = ↿ out≤ b ≤ℕ.refl
+  (⇃ SAT.⟦app⟧ {n} {𝓐 = ⟦ _ ⟧≤} {𝓑 = ⟦ _ ⟧≤} ≤ℕ.refl 𝑡 (↿ in≤ a ≤ℕ.refl (⇃ 𝑢)))
+
+
+⟦fst⟧   :   ∀ {n a b} {Γ} {t : Tm Γ (a ×̂  b)}
+            → t ∈ ⟦ (a ×̂  b) ⟧ n → fst t ∈ ⟦ a ⟧ n
+⟦fst⟧ = SAT.⟦fst⟧ {𝓐 = ⟦ _ ⟧ _} {𝓑 = ⟦ _ ⟧ _}
+
+⟦snd⟧   :   ∀ {n a b} {Γ} {t : Tm Γ (a ×̂  b)}
+            → t ∈ ⟦ (a ×̂  b) ⟧ n → snd t ∈ ⟦ b ⟧ n
+⟦snd⟧ = SAT.⟦snd⟧ {𝓐 = ⟦ _ ⟧ _} {𝓑 = ⟦ _ ⟧ _}
+
+\end{code}
+}
+
+
+
+\begin{code}
+sound :  ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} → 
+         (θ : ⟦ Γ ⟧C {n} σ) → subst σ t ∈ ⟦ a ⟧ n
+sound (var x) θ = θ x
+sound (abs t) θ = ⟦abs⟧ {t = t} λ m≤n ρ {u} 𝑢 →
+    ↿ in≤ _ m≤n (⇃ sound t (Ext (↿ out≤ _ m≤n (⇃ 𝑢)) (Rename ρ (Map m≤n θ))))
+sound (app t u)   θ  = ⟦app⟧ (sound t θ) (sound u θ)
+sound (pair t u)  θ  = ⟦pair⟧ (sound t θ) (sound u θ)
+sound (fst t)     θ  = ⟦fst⟧ (sound t θ) 
+sound (snd t)     θ  = ⟦snd⟧ (sound t θ) 
+sound (t ∗ u)     θ  = ⟦∗⟧ (sound t θ) (sound u θ)
 sound {zero}  (next t) θ = ↿ next0
 sound {suc n} (next t) θ = ↿ (next (⇃ sound t (Map n≤sn θ)))
 \end{code}
