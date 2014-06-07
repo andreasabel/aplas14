@@ -61,6 +61,11 @@ open _∞≅_ public
 ≅trans (▸̂ eq) (▸̂ eq')             = ▸̂ (≅trans∞ eq eq')
 
 ≅force (≅trans∞ eq eq') = ≅trans (≅force eq) (≅force eq')
+
+-- Type equality lifted to contexts.
+
+_≅C_ : Cxt → Cxt → Set
+_≅C_ = ≅L _≅_
 \end{code}
 } % END AGDAHIDE
 
@@ -81,7 +86,22 @@ cast : ∀{Γ a b} (eq : a ≅ b) (t : Tm Γ a) → Tm Γ b
 \end{code}
 \AgdaHide{
 \begin{code}
-cast = TODO
+castVar : ∀{Γ Δ a b} (Γ≅Δ : Γ ≅C Δ) (a≅b : a ≅ b) (x : Var Γ a) → Var Δ b
+castVar (a'≅b' ∷ Γ≅Δ) a≅b zero rewrite ≅-to-≡ (≅trans (≅sym a'≅b') a≅b) = zero
+castVar (_     ∷ Γ≅Δ) a≅b (suc x)                                       = suc  (castVar Γ≅Δ a≅b x)
+
+
+castC : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b)  (t : Tm Γ a)      → Tm Δ b
+castC eqC eq         (var x)     = var (castVar eqC eq x)
+castC eqC (eq →̂ eq₁) (abs t)     = abs (castC (≅sym eq ∷ eqC) eq₁ t)
+castC eqC eq         (app t t₁)  = app (castC eqC (≅refl →̂ eq) t) (castC eqC ≅refl t₁)
+castC eqC (eq ×̂ eq₁) (pair t t₁) = pair (castC eqC eq t) (castC eqC eq₁ t₁)
+castC eqC eq         (fst t)     = fst (castC eqC (eq ×̂ ≅refl) t)
+castC eqC eq         (snd t)     = snd (castC eqC (≅refl ×̂ eq) t)
+castC eqC (▸̂ a≅)     (next t)       = next (castC eqC (≅force a≅) t)
+castC eqC (▸̂ a≅)     (t ∗ t₁)    = (castC eqC (▸̂ (≅delay (≅refl →̂ (≅force a≅)))) t) ∗ (castC eqC ≅refl t₁)
+
+cast = castC (≅L.refl ≅refl)
 \end{code}
 }
 \begin{code}

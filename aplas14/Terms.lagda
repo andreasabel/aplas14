@@ -19,8 +19,8 @@ the elements of the type \AgdaDatatype{Var} \AgdaBound{Γ} \AgdaBound{a} of vari
 Cxt = List Ty
 
 data Var : (Γ : Cxt) (a : Ty) → Set where
-  zero : ∀{Γ a}                 → Var (a ∷ Γ) a
-  suc  : ∀{Γ a b} (x : Var Γ a) → Var (b ∷ Γ) a
+  zero : ∀{Γ a}                  → Var (a ∷ Γ) a
+  suc  : ∀{Γ a b} (x : Var Γ a)  → Var (b ∷ Γ) a
 \end{code}
 
 \AgdaHide{

@@ -8,7 +8,9 @@ open import Library
 \end{code}
 }
 
-In Agda~2.4, mixed coinductive-inductive types are represented by a datatype (inductive component) mutually defined with a record (coinductive component).
+In Agda~2.4, we represent this mixed coinductive-inductive type by a
+datatype $\Ty$ (inductive component) mutually defined with a record
+$\infTy$ (coinductive component).
 
 \begin{code}
 mutual
@@ -28,7 +30,39 @@ mutual
 open ∞Ty public
 \end{code}
 }
+While the arguments $\va$ and $\vb$ of the infix constructors
+$\hattimes$ and $\hatto$ are again in $\Ty$, the prefix constructor
+$\hatlater$ expects and argument $\vainf$ in $\infTy$, which is
+basically a wrapping of $\Ty$.\footnote{Similar to a \texttt{newtype}
+  in the functional programming language Haskell.}
+\[
+\begin{array}{lll}
+  \tdelay & : & \Ty \to \infTy \\
+  \tforce & : & \infTy \to \Ty \\
+\end{array}
+\]
+However, since $\infTy$ is declared $\tcoinductive$, its inhabitants
+are not evaluated until $\tforce$d.  This allows us to represent
+infinite type expressions, like $\ttop = \hatmu X (\hatlater X)$.
 
+\begin{code}
+top : ∞Ty
+force top = ▸̂ top   
+\end{code}
+
+Technically, $\ttop$ is defined by \emph{copattern} matching
+\citep{abelPientkaThibodeauSetzer:popl13}; $\ttop$ is uniquely defined
+by the value of its only field, $\tforce\;\ttop$, which is given as
+$\hatlater \ttop$.  Agda will use the given equation for its
+internal normalization procedure during type-checking.  Alternatively,
+we could have tried to define $\ttop : \Ty$ by $\ttop = \hatlater
+\tdelay\; \ttop$.  However, Agda will rightfully complain here since rewriting with
+this equation is clearly non-terminating.  In contrast, rewriting with
+the original equation is terminating since at each step, one
+application of $\tforce$ is removed.
+
+The following two defined type constructors will prove useful in the
+definition of well-typed terms to follow.
 \begin{code}
 ▸_ : Ty → Ty
 ▸ a = ▸̂ delay a
