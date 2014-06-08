@@ -14,16 +14,16 @@ open import Substitution
 
 \begin{code}
 data NβECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → (n n' : ℕ) → Set where
-  next    : ∀ {n a∞}                                      → NβECxt Γ Γ (force a∞) (▸̂  a∞) n (suc n)
-  appl  : ∀ {n a b} (u : Tm Γ a)                        → NβECxt Γ Γ (a →̂ b) b n n
-  appr  : ∀ {n a b} (t : Tm Γ (a →̂  b))                 → NβECxt Γ Γ a b n n
-  pairl : ∀ {n a b} (u : Tm Γ b)                        → NβECxt Γ Γ a (a ×̂ b) n n
-  pairr : ∀ {n a b} (t : Tm Γ a)                        → NβECxt Γ Γ b (a ×̂ b) n n
-  fst   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) a n n
-  snd   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) b n n
-  _∗l   : ∀ {n a∞ b∞} (u : Tm Γ (▸̂ a∞))                   → NβECxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) n n
-  ∗r_   : ∀ {n a∞ b∞} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → NβECxt Γ Γ (▸̂ a∞) (▸̂ b∞) n n
-  abs   : ∀ {n a b}                                     → NβECxt Γ (a ∷ Γ) b (a →̂  b) n n
+  next   : ∀ {n a∞}                               → NβECxt Γ Γ (force a∞) (▸̂  a∞) n (suc n)
+  appl   : ∀ {n a b} (u : Tm Γ a)                 → NβECxt Γ Γ (a →̂ b) b n n
+  appr   : ∀ {n a b} (t : Tm Γ (a →̂  b))         → NβECxt Γ Γ a b n n
+  pairl  : ∀ {n a b} (u : Tm Γ b)                 → NβECxt Γ Γ a (a ×̂ b) n n
+  pairr  : ∀ {n a b} (t : Tm Γ a)                 → NβECxt Γ Γ b (a ×̂ b) n n
+  fst    : ∀ {n a b}                              → NβECxt Γ Γ (a ×̂ b) a n n
+  snd    : ∀ {n a b}                              → NβECxt Γ Γ (a ×̂ b) b n n
+  _∗l    : ∀ {n a∞ b∞} (u : Tm Γ (▸̂ a∞))         → NβECxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) n n
+  ∗r_    : ∀ {n a∞ b∞} (t : Tm Γ (▸̂ (a∞ ⇒ b∞)))  → NβECxt Γ Γ (▸̂ a∞) (▸̂ b∞) n n
+  abs    : ∀ {n a b}                              → NβECxt Γ (a ∷ Γ) b (a →̂  b) n n
 \end{code}
 
 \begin{code}
