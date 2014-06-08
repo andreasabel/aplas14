@@ -81,7 +81,7 @@ pairsn t u = acc (λ x → helper t u x) where
 appsn   :  ∀{n Γ a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
            sn n t → sn n u → SNe n t →
            sn n (app t u)
-∗sn     :  ∀ {n Γ} {a : Ty}{b∞} {t : Tm Γ (▸̂ (delay a ⇒ b∞))} {u : Tm Γ (▸ a)} →
+∗sn     :  ∀ {n Γ} {a∞}{b∞} {t : Tm Γ (▸̂ (a∞ ⇒ b∞))} {u : Tm Γ (▸̂ a∞)} →
            sn n t → sn n u → SNe n t ⊎ SNe n u →
            sn n (t ∗ u)
 elimsn  :  ∀ {n Γ a b}{E : ECxt Γ a b}{t : Tm Γ a}{Et : Tm Γ b} →
@@ -96,8 +96,8 @@ appsn' : ∀{n Γ a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} → sn n t → sn n u
 
 elimsn'  :  ∀ {n Γ a b}{E : ECxt Γ a b}{t : Tm Γ a}{Et : Tm Γ b} → sn n t → PCxt (sn n) Et E t → SNe n t →
            ∀ {Et' : Tm Γ b} → Et ⟨ n ⟩⇒β Et' → sn n Et'
-∗sn' : ∀ {n Γ} {a : Ty}{b∞} {t : Tm Γ (▸̂ ((delay a) ⇒ b∞))}
-         {u : Tm Γ (▸ a)} {Et' : Tm Γ (▸̂ b∞)} → sn n t → sn n u → SNe n t ⊎ SNe n u → (t ∗ u) ⟨ n ⟩⇒β Et' → sn n Et'
+∗sn' : ∀ {n Γ} {a∞}{b∞} {t : Tm Γ (▸̂ (a∞ ⇒ b∞))}
+         {u : Tm Γ (▸̂ a∞)} {Et' : Tm Γ (▸̂ b∞)} → sn n t → sn n u → SNe n t ⊎ SNe n u → (t ∗ u) ⟨ n ⟩⇒β Et' → sn n Et'
 
 ∗sn t u e = acc (∗sn' t u e)
 appsn t u 𝒏 = acc (appsn' t u 𝒏)

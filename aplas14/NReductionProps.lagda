@@ -179,8 +179,8 @@ data _Redex {Γ} : ∀ {a} → Tm Γ a → Set where
   β     : ∀ {a b}{t : Tm (a ∷ Γ) b}{u}
           → (app (abs t) u) Redex
 
-  β▸    : ∀ {a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
-           → (next {a∞ = (delay a) ⇒ b∞} t ∗ next u) Redex
+  β▸    : ∀ {a∞ b∞}{t : Tm Γ (force (a∞ ⇒ b∞))}{u : Tm Γ (force a∞)}
+           → (next {a∞ = a∞ ⇒ b∞} t ∗ next u) Redex
 
   βfst  : ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
           → fst (pair t u) Redex

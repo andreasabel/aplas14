@@ -15,21 +15,16 @@ open import Substitution
 \begin{code}
 data NβECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → (n n' : ℕ) → Set where
   next    : ∀ {n a∞}                                      → NβECxt Γ Γ (force a∞) (▸̂  a∞) n (suc n)
-  -- other cases omitted
-\end{code}
-\AgdaHide{
-\begin{code}
   appl  : ∀ {n a b} (u : Tm Γ a)                        → NβECxt Γ Γ (a →̂ b) b n n
   appr  : ∀ {n a b} (t : Tm Γ (a →̂  b))                 → NβECxt Γ Γ a b n n
   pairl : ∀ {n a b} (u : Tm Γ b)                        → NβECxt Γ Γ a (a ×̂ b) n n
   pairr : ∀ {n a b} (t : Tm Γ a)                        → NβECxt Γ Γ b (a ×̂ b) n n
   fst   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) a n n
   snd   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) b n n
-  _∗l   : ∀ {n a b∞} (u : Tm Γ (▸ a))                   → NβECxt Γ Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞) n n
-  ∗r_   : ∀ {n}{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → NβECxt Γ Γ (▸ a) (▸̂ b∞) n n
+  _∗l   : ∀ {n a∞ b∞} (u : Tm Γ (▸̂ a∞))                   → NβECxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) n n
+  ∗r_   : ∀ {n a∞ b∞} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → NβECxt Γ Γ (▸̂ a∞) (▸̂ b∞) n n
   abs   : ∀ {n a b}                                     → NβECxt Γ (a ∷ Γ) b (a →̂  b) n n
 \end{code}
-}
 
 \begin{code}
 data NβEhole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
@@ -43,8 +38,8 @@ data NβEhole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
   pairr : ∀ {a b}{u} (t : Tm Γ a)                         → NβEhole (pair t u) (pairr t) (u ∶ b)
   fst   : ∀ {a b t}                                       → NβEhole {a = a ×̂ b} (fst t) fst t
   snd   : ∀ {a b t}                                       → NβEhole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a))                     → NβEhole {a = (▸̂ (delay a ⇒ b∞))} (t ∗ u) (u ∗l) t
-  ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → NβEhole ((t ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
+  _∗l   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞))                     → NβEhole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (u ∗l) t
+  ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → NβEhole ((t ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
   abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → NβEhole (abs t) abs t
   next    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → NβEhole (next {a∞ = a∞} t) next t
 \end{code}

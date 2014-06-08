@@ -25,22 +25,22 @@ open import SNtosn
 
 %%% Redexes
 \begin{code}
-β▸sn :  ∀ {n Γ b} {a b∞} {z} {t : Tm Γ (a →̂ (force b∞))} {u : Tm Γ a}
+β▸sn :  ∀ {n Γ b} {a∞ b∞} {z} {t : Tm Γ (force (a∞ ⇒ b∞))} {u : Tm Γ (force a∞)}
         (E : ECxt* Γ (▸̂ b∞) b) → sn (suc n) (E [ z ]*) →
         sn n t → sn n u → sn (suc n) (E [ next (app t u) ]*) →
-        sn (suc n) (E [ next t ∗ next u ]*)
+        sn (suc n) (E [ next t ∗ next {a∞ = a∞} u ]*)
 \end{code}
 \AgdaHide{
 \begin{code}
 β▸sn E z t u r = acc (λ x → help E z t u r (mkEhole* E) x) where
-  help : ∀ {Γ b a b∞} {z : Tm Γ (▸̂ b∞)} {q}
-       {t : Tm Γ (a →̂ (force b∞))} {u : Tm Γ a} {n} {t' : Tm Γ b}
+  help : ∀ {Γ b a∞ b∞} {z : Tm Γ (▸̂ b∞)} {q}
+       {t : Tm Γ (force (a∞ ⇒ b∞))} {u : Tm Γ (force a∞)} {n} {t' : Tm Γ b}
        (E : ECxt* Γ (▸̂ b∞) b) →
      sn (suc n) (E [ z ]*) →
      sn n t →
      sn n u →
      sn (suc n) (E [ next (app t u) ]*) →
-     Ehole* q E ((next t) ∗ (next u))  →  q ⟨ suc n ⟩⇒β t' → sn (suc n) t'
+     Ehole* q E ((next t) ∗ (next {a∞ = a∞} u))  →  q ⟨ suc n ⟩⇒β t' → sn (suc n) t'
   help E z t u r eq t⇒ with split E eq β▸ t⇒
   help E₁ z₂ t₂ u₂ r₁ eq t⇒ | inj₁ (._ , a₁ , β▸) rewrite hole*→≡ a₁ = r₁
   help E₁ z₂ (acc t₃) u₂ r₁ eq t⇒ | inj₁ (._ , a₁ , cong (._ ∗l) (._ ∗l) (cong next next t⇒')) rewrite hole*→≡ a₁ 

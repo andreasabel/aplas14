@@ -118,13 +118,12 @@ reductions that target the context.
 
   expsnCxt E β▸       𝒕h 𝑡h (cong (._ ∗l)   (._ ∗l) (cong next next t⇒)) 
      = β▸sn E 𝑡h (sn⇒β (subsn (λ x → cong*2 E (cong next next (cong (appl _) (appl _) x))) 𝑡h) t⇒) 
-                       (subsn (λ x → cong*2 E (cong next next (cong (appr _) (appr _) x))) 𝑡h) 
-                 (sn⇒β 𝑡h (cong*2 E (cong next next (cong (appl _) (appl _) t⇒))))
-  expsnCxt E β▸       𝒕h 𝑡h (cong (∗r ._)   (∗r ._) (cong next next t⇒)) = β▸sn E 𝑡h 
-            (subsn (λ x → cong*2 E (cong next next (cong (appl _) (appl _) x))) 𝑡h) 
-      (sn⇒β (subsn (λ x → cong*2 E (cong next next (cong (appr _) (appr _) x))) 𝑡h) t⇒)
-      (sn⇒β 𝑡h (cong*2 E (cong next next (cong (appr _) (appr _) t⇒))))
-
+            (subsn (λ x → cong*2 E (cong next next (cong (appr _) (appr _) x))) 𝑡h) 
+            (sn⇒β 𝑡h (cong*2 E (cong next next (cong (appl _) (appl _) t⇒))))
+  expsnCxt E β▸       𝒕h 𝑡h (cong (∗r ._)   (∗r ._) (cong (next {a∞ = a∞}) next t⇒)) 
+     = β▸sn E 𝑡h (subsn (λ x → cong*2 E (cong next next (cong (appl _) (appl _) x))) 𝑡h) 
+            (sn⇒β (subsn (λ x → cong*2 E (cong next next (cong (appr _) (appr _) x))) 𝑡h) t⇒)
+            (sn⇒β 𝑡h (cong*2 E (cong next next (cong (appr _) (appr _) t⇒))))
   expsnCxt E (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairl _) (pairl ._) t⇒)) = βfstsn E 𝑡h (sn⇒β (subexpsn E 𝑡h) t⇒) (fromSN 𝒖) (sn⇒β 𝑡h (cong*2 E t⇒))
   expsnCxt E (βfst 𝒖) 𝒕h 𝑡h (cong fst fst (cong (pairr _) (pairr ._) t⇒)) = βfstsn E 𝑡h (subexpsn E 𝑡h) (sn⇒β (fromSN 𝒖) t⇒) 𝑡h
 
