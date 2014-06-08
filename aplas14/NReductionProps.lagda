@@ -47,7 +47,7 @@ _++β_ : ∀ {n} {Γ} {a} {t₀ t₁ t₂ : Tm Γ a} → t₀ ⟨ n ⟩⇒β* t�
 []       ++β ys = ys
 (x ∷ xs) ++β ys = x ∷ (xs ++β ys)
 
-cong* :  ∀ {n n' a Γ Δ} {b} {t tβ* : Tm Γ a} {E : NβCxt Δ Γ a b n n'}{E[t] E[tβ*]} →
+cong* :  ∀ {n n' a Γ Δ} {b} {t tβ* : Tm Δ a} {E : NβCxt Δ Γ a b n n'}{E[t] E[tβ*]} →
          NβHole E[t] E t → NβHole E[tβ*] E tβ* → t ⟨ n ⟩⇒β* tβ* → E[t] ⟨ n' ⟩⇒β* E[tβ*]
 \end{code}
 \AgdaHide{
@@ -81,7 +81,7 @@ nβ⇒β βsnd = βsnd
 nβ⇒β (cong E1 E2 t⇒) = cong (help E1) (help E2) (nβ⇒β t⇒)
  where
     help' : ∀ {n a Γ} {n₁ Δ a₁}
-           (E : NβCxt Γ Δ a₁ a n₁ n) → βECxt Γ Δ a₁ a
+           (E : NβCxt Δ Γ a₁ a n₁ n) → βECxt Γ Δ a₁ a
     help' (appl u) = appl u
     help' (appr t) = appr t
     help' (pairl u) = pairl u
@@ -94,7 +94,7 @@ nβ⇒β (cong E1 E2 t⇒) = cong (help E1) (help E2) (nβ⇒β t⇒)
     help' next = next
 
     help : ∀ {n a Γ} {t : Tm Γ a} {n₁ Δ a₁} {t₁ : Tm Δ a₁}
-           {E : NβCxt Γ Δ a₁ a n₁ n}
+           {E : NβCxt Δ Γ a₁ a n₁ n}
            (E1 : NβHole t E t₁) →
            βEhole t (help' E) t₁
     help (appl u) = appl u
