@@ -13,22 +13,18 @@ open import Substitution
 
 \begin{code}
 data ECxt (Γ : Cxt) : (a b : Ty) → Set
+data EHole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
 \end{code}
 \AgdaHide{
 \begin{code}
+data ECxt (Γ : Cxt) -- : (a b : Ty) → Set
  where
   appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
   fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a
   snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
   ∗l_   : ∀ {a∞ b∞} (u : Tm Γ (▸̂ a∞)) → ECxt Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞)
   ∗r_   : ∀ {a∞}{b∞} (t : Tm Γ (force a∞ →̂ force b∞)) → ECxt Γ (▸̂ a∞) (▸̂ b∞)
-\end{code}
-}
-\begin{code}
-data EHole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
-\end{code}
-\AgdaHide{
-\begin{code}
+data EHole {Γ : Cxt} -- : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
  where
   appl  : ∀ {a b t} (u : Tm Γ a)  → EHole (app t u) (appl u) (t ∶ (a →̂ b))
   fst   : ∀ {a b t} → EHole {a = a ×̂ b} (fst t) fst t
@@ -37,7 +33,9 @@ data EHole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → S
   ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (force a∞ →̂ force b∞)) → EHole (((next t) ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
 \end{code}
 }
-
+$\Ehole\;\vEt\;\vE\;\vt$ witnesses the splitting of a term $\vEt$ into
+evaluation context $\vE$ and hole content $\vt$.
+%
 \AgdaHide{
 \begin{code}
 substEC : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ECxt Γ a b → ECxt Δ a b
@@ -63,15 +61,23 @@ mkEHole (∗l u)    = _ , ∗l u
 mkEHole (∗r t)    = _ , ∗r t
 \end{code}
 }
-
+%
 %% -- Inductive definition of strong normalization.
-
-
+%
+%
 %% -- Parameterized evaluation contexts
 %% -- Parameterized neutral terms.
 %% -- Parametrized weak head reduction
 %% Should we try to avoid this parametrization, for simplicity?
 %% Andrea: Tried to but the termination checker didn't like it.
+%
+A generalization of $\Ehole$ is $\PCxt\;\vP$ which additionally
+requires that all terms contained in the evaluation context (that is
+one or zero terms) satisfy predicate $\vP$.  This allows us the
+formulation of $\vP$-neutrals as terms of the form $\vec E[x]$ for
+some $\vec E[\_] = E_1[\dots E_n[\_]]$
+and a variable $x$ where all immediate subterms satisfy $\vP$.
+
 \begin{code}
 data PCxt  {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) :
            {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
@@ -89,8 +95,12 @@ data PNe {Γ} (P : ∀{c} → Tm Γ c → Set) {b} : Tm Γ b → Set where
   var   :  ∀ x                                 → PNe P (var x)
   elim  :  ∀ {a} {t : Tm Γ a} {E Et}
         →  (𝒏 : PNe P t) (𝑬𝒕 : PCxt P Et E t)  → PNe P Et
+\end{code}
 
+Weak head reduction is a reduction of the form $\vec E[t] \red \vec
+E[t']$ where $t \contr t'$.
 
+\begin{code}
 data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
             ∀ {a} → Tm Γ a → Tm Γ a → Set where
 
