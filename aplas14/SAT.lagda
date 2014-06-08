@@ -211,7 +211,7 @@ renamings.
 The \af{TmSet} for product types is directly saturated, inclusion into
 \af{SN} uses \af{fromFstSN} to derive \af{SN} \ab{n} \ab{t} from the
 membership into \af{SN} of \aic{fst} \ab{t}, which follows from the
-inclusion of \ab \ab{𝓐} into \af{SN}.
+inclusion of \ab{𝓐} into \af{SN}.
 \begin{code}
 _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 𝓐 ⟦×⟧ 𝓑 = record
