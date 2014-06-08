@@ -11,25 +11,26 @@ open import Substitution
 \end{code}
 }
 
-
+\begin{small}
 \begin{code}
-data NβCxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → (n n' : ℕ) → Set where
-  abs    :  ∀  {n a b}                         → NβCxt Γ (a ∷ Γ) b (a →̂  b) n n
-  appl   :  ∀  {n a b} (u : Tm Γ a)            → NβCxt Γ Γ (a →̂ b) b n n
-  appr   :  ∀  {n a b} (t : Tm Γ (a →̂ b))     → NβCxt Γ Γ a b n n
-  pairl  :  ∀  {n a b} (u : Tm Γ b)            → NβCxt Γ Γ a (a ×̂ b) n n
-  pairr  :  ∀  {n a b} (t : Tm Γ a)            → NβCxt Γ Γ b (a ×̂ b) n n
-  fst    :  ∀  {n a b}                         → NβCxt Γ Γ (a ×̂ b) a n n
-  snd    :  ∀  {n a b}                         → NβCxt Γ Γ (a ×̂ b) b n n
-  next   :  ∀  {n a∞}                          → NβCxt Γ Γ (force a∞) (▸̂ a∞) n (suc n)
-  _∗l    :  ∀  {n a∞ b∞} (u : Tm Γ (▸̂ a∞))    → NβCxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) n n
-  ∗r_    :  ∀  {n a∞ b∞}
-               (t : Tm Γ (▸̂ (a∞ ⇒ b∞)))       → NβCxt Γ Γ (▸̂ a∞) (▸̂ b∞) n n
+data NβCxt : (Γ Δ : Cxt) (a b : Ty) (n n' : ℕ) → Set where
+  abs    :  ∀  {Γ n a b}                         → NβCxt (a ∷ Γ) Γ b (a →̂  b) n n
+  appl   :  ∀  {Γ n a b} (u : Tm Γ a)            → NβCxt Γ Γ (a →̂ b) b n n
+  appr   :  ∀  {Γ n a b} (t : Tm Γ (a →̂ b))     → NβCxt Γ Γ a b n n
+  pairl  :  ∀  {Γ n a b} (u : Tm Γ b)            → NβCxt Γ Γ a (a ×̂ b) n n
+  pairr  :  ∀  {Γ n a b} (t : Tm Γ a)            → NβCxt Γ Γ b (a ×̂ b) n n
+  fst    :  ∀  {Γ n a b}                         → NβCxt Γ Γ (a ×̂ b) a n n
+  snd    :  ∀  {Γ n a b}                         → NβCxt Γ Γ (a ×̂ b) b n n
+  next   :  ∀  {Γ n a∞}                          → NβCxt Γ Γ (force a∞) (▸̂ a∞) n (suc n)
+  _∗l    :  ∀  {Γ n a∞ b∞} (u : Tm Γ (▸̂ a∞))    → NβCxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) n n
+  ∗r_    :  ∀  {Γ n a∞ b∞}
+               (t : Tm Γ (▸̂ (a∞ ⇒ b∞)))         → NβCxt Γ Γ (▸̂ a∞) (▸̂ b∞) n n
 \end{code}
+\end{small}
 
 \begin{code}
 data NβHole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
-              Tm Γ b → NβCxt Γ Δ a b n n' → Tm Δ a → Set
+              Tm Γ b → NβCxt Δ Γ a b n n' → Tm Δ a → Set
 \end{code}
 \AgdaHide{
 \begin{code}
