@@ -25,9 +25,19 @@ From this, we get the special case of substituting de Bruijn index 0.
 
 \input{Subst0}
 
-
+Reduction $t \red_n t'$ is formalized as inductive family $\vt \nred n
+\vtprime$ with four constructors \AgdaInductiveConstructor{β...} 
+representing the contraction rules and one congruence rule $\tcong$ to
+reduce in subterms.
 
 \input{NReduction}
+
+The congruence rule says that we can reduce a term, suggestively
+called $\vEt$, to a term $\vEtprime$, if $\vEt$ decomposes into a
+context $\vE$ filled by $\vt$
+
+
+\input{NContexts}
 
 %%% Local Variables: 
 %%% mode: latex

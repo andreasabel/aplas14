@@ -47,8 +47,8 @@ _++β_ : ∀ {n} {Γ} {a} {t₀ t₁ t₂ : Tm Γ a} → t₀ ⟨ n ⟩⇒β* t�
 []       ++β ys = ys
 (x ∷ xs) ++β ys = x ∷ (xs ++β ys)
 
-cong* :  ∀ {n n' a Γ Δ} {b} {t tβ* : Tm Γ a} {E : NβECxt Δ Γ a b n n'}{E[t] E[tβ*]} →
-         NβEhole E[t] E t → NβEhole E[tβ*] E tβ* → t ⟨ n ⟩⇒β* tβ* → E[t] ⟨ n' ⟩⇒β* E[tβ*]
+cong* :  ∀ {n n' a Γ Δ} {b} {t tβ* : Tm Γ a} {E : NβCxt Δ Γ a b n n'}{E[t] E[tβ*]} →
+         NβHole E[t] E t → NβHole E[tβ*] E tβ* → t ⟨ n ⟩⇒β* tβ* → E[t] ⟨ n' ⟩⇒β* E[tβ*]
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -81,7 +81,7 @@ nβ⇒β βsnd = βsnd
 nβ⇒β (cong E1 E2 t⇒) = cong (help E1) (help E2) (nβ⇒β t⇒)
  where
     help' : ∀ {n a Γ} {n₁ Δ a₁}
-           (E : NβECxt Γ Δ a₁ a n₁ n) → βECxt Γ Δ a₁ a
+           (E : NβCxt Γ Δ a₁ a n₁ n) → βECxt Γ Δ a₁ a
     help' (appl u) = appl u
     help' (appr t) = appr t
     help' (pairl u) = pairl u
@@ -94,8 +94,8 @@ nβ⇒β (cong E1 E2 t⇒) = cong (help E1) (help E2) (nβ⇒β t⇒)
     help' next = next
 
     help : ∀ {n a Γ} {t : Tm Γ a} {n₁ Δ a₁} {t₁ : Tm Δ a₁}
-           {E : NβECxt Γ Δ a₁ a n₁ n}
-           (E1 : NβEhole t E t₁) →
+           {E : NβCxt Γ Δ a₁ a n₁ n}
+           (E1 : NβHole t E t₁) →
            βEhole t (help' E) t₁
     help (appl u) = appl u
     help (appr t) = appr t
@@ -151,21 +151,21 @@ _[_]⇒β* : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ t₂ : Tm Γ a} → t�
 \AgdaHide{
 \begin{code}
 mutual
-  EC→NβEC : ∀ {Γ} {n a b} (E : ECxt Γ a b) → NβECxt Γ Γ a b n n
+  EC→NβEC : ∀ {Γ} {n a b} (E : ECxt Γ a b) → NβCxt Γ Γ a b n n
   EC→NβEC (appl u) = appl u
   EC→NβEC fst = fst
   EC→NβEC snd = snd
   EC→NβEC (u ∗l) = u ∗l
   EC→NβEC (∗r t) = ∗r (next t)
 
-  mkHole2 : ∀ {Γ} {n a b} (E : ECxt Γ a b) {t : Tm Γ a} → NβEhole (E [ t ]) (EC→NβEC {n = n} E) t
+  mkHole2 : ∀ {Γ} {n a b} (E : ECxt Γ a b) {t : Tm Γ a} → NβHole (E [ t ]) (EC→NβEC {n = n} E) t
   mkHole2 (appl u) = appl u
   mkHole2 fst = fst
   mkHole2 snd = snd
   mkHole2 (u ∗l) = u ∗l
   mkHole2 (∗r t) = ∗r (next t)
 
-mkHole3 : ∀ {Γ} {n a b c} (E : ECxt Γ a b) {Es : ECxt* Γ _ _} {t : Tm Γ c} → NβEhole ((Es ∷r E) [ t ]*) (EC→NβEC {n = n} E) (Es [ t ]*)
+mkHole3 : ∀ {Γ} {n a b c} (E : ECxt Γ a b) {Es : ECxt* Γ _ _} {t : Tm Γ c} → NβHole ((Es ∷r E) [ t ]*) (EC→NβEC {n = n} E) (Es [ t ]*)
 mkHole3 E {Es} {t} rewrite ≡.sym (lemma {t = t} Es {E = E}) = mkHole2 E {Es [ t ]*}
 
 ≡subst⇒β : ∀ {n a Γ} {t t1 t' t'1 : Tm Γ a} → t ≡ t1 → t' ≡ t'1 → t ⟨ n ⟩⇒β t' → t1 ⟨ n ⟩⇒β t'1
