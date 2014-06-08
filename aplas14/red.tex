@@ -2,12 +2,30 @@
 \label{sec:red}
 
 In this section, we describe the implementation of parametrized
-reduction $\red_n$ in Agda.
+reduction $\red_n$ in Agda.  As a prerequisite, we need to define
+substitution, which in term depends on renaming 
+\citep{bentonHurKennedyMcBride:jar12}.
+
+A \emph{renaming} from context $\Gam$ to context $\Del$, written $\Del
+\aleq \Gam$, is a mapping from variables of $\Gam$ to those of $\Del$
+of the same type $\va$.
 
 \input{Rename}
+
+The function $\arename$ lifts such a mapping to terms.  We also give
+an inductive relational specification $\IndRen$ of $\arename$ which
+will be useful to show that strong normalization (sn) is closed under
+renaming and even the undoing of renaming (if a renamed term is sn, so
+is the original term). 
+
 \input{IndRen}
 
+Building on renaming, we define parallel well-typed substitution.
+From this, we get the special case of substituting de Bruijn index 0. 
+
 \input{Subst0}
+
+
 
 \input{NReduction}
 
