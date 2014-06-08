@@ -12,7 +12,7 @@ open import TypeEquality
 }
 
 
-We can adapt the Y combinator from the untyped lambda calculus to
+We can adapt the $Y$ combinator from the untyped lambda calculus to
 define a guarded fixed point combinator.  The type \AgdaFunction{Fix}
 \va{} allows safe self application, since the input will only
 be available "later". This fits with the type we want for the
