@@ -80,7 +80,7 @@ _≅C_ = ≅L _≅_
 However, unlike for $\propeq$ we do not get a generic substitution
 principle for $\bisim$, but have to prove it for any function and
 predicate on $\Ty$.  In particular, we have to show that we can cast a
-term in $\Tm\;\Gam\;\va$ to $\Tm\;\Gam\;\vb$ if $\va \bisim \vb$, which
+term in $\Tm\;\Gam\;\va$ to $\Tm\;\Gam\;\vb$ if $\va\;\bisim\;\vb$, which
 would require us to build type equality at least into
 $\Var\;\Gam\;\va$.  In essence, this would amount to work with setoids
 across all our development, which would add complexity without

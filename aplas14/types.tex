@@ -38,7 +38,7 @@ induced by $\mu X A = \subst {\mu X A} X A$.
   }{\Gamma \der x : A} 
 \qquad
 \ru{\Gamma, x \of A \der t : B
-  }{\Gamma \der \lambda x t : A \to B}
+  }{\Gamma \der \lambda x . \; t : A \to B}
 \qquad
 \ru{\Gamma \der t : A \to B \qquad
     \Gamma \der u : A
@@ -74,7 +74,7 @@ that witness \emph{applicative functoriality} of the later modality
 \citep{atkeyMcBride:icfp13}. 
 \[
 \begin{array}{lrl@{\qquad}l}
-  r,s,t,u & ::= & x \mid \lambda x t \mid t\,u \mid (t_1,t_2) \mid
+  r,s,t,u & ::= & x \mid \lambda x . ; t \mid t\,u \mid (t_1,t_2) \mid
   \fst t \mid \snd t \mid \pure t \mid \apply t u
 \end{array}
 \]
@@ -83,7 +83,7 @@ dynamic semantics induced
 by the following \emph{contractions}:
 \[
 \begin{array}{l@{~~}l@{~~}l}
-  (\lambda x t)\,u          & \contr & \subst u x t \\
+  (\lambda x . \; t)\,u          & \contr & \subst u x t \\
   \fst(t_1,t_2)             & \contr & t_1 \\
   \snd(t_1,t_2)             & \contr & t_2 \\
   \applyp{\pure t}{\pure u} & \contr & \pure(t\,u) \\
@@ -92,7 +92,7 @@ by the following \emph{contractions}:
 If we conceive our small-step reduction relation $\red$ as 
 the compatible closure of $\contr$, we obtain a non-normalizing
 calculus, since terms like $\Omega = \omega \; (\pure\omega)$ with
-$\omega = (\lambda x.\, \apply x (\pure x))$ are
+$\omega = (\lambda x.\; \apply x (\pure x))$ are
 typeable.\footnote{$\der \Omega : A$ with $A = \mu X (\later X)$.  To type
   $\omega$, we use $x : \mu Y (\later (Y \to A))$.} 
 Unrestricted reduction of $\Omega$ is non-terminating:
@@ -108,7 +108,7 @@ $n \in \NN$, see Figure~\ref{fig:red}
   }{t \red_n t'}
 \qquad
 \ru{t \red_n t'
-  }{\lambda x t \red_n \lambda x t'}
+  }{\lambda x. \; t \red_n \lambda x. \; t'}
 \qquad
 \ru{t \red_n t' 
   }{t\,u \red_n t'\,u}
