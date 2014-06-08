@@ -33,8 +33,16 @@ reduce in subterms.
 \input{NReduction}
 
 The congruence rule says that we can reduce a term, suggestively
-called $\vEt$, to a term $\vEtprime$, if $\vEt$ decomposes into a
-context $\vE$ filled by $\vt$
+called $\vEt$, to a term $\vEtprime$, if (1) $\vEt$ decomposes into
+$\vE[\vt]$, a context $\vE$ filled by $\vt$, and (2) $\vEtprime$ into
+$\vE[\vtprime]$, and (3) $\vt$ reduces to $\vtprime$.  As witnessed by
+relation $\NbetaHole$, context
+$\vE : \NbetaCxt\;\Gam\;\Del\;\va\;\vb\;\vn\;\vnprime$ produces a term
+$\vEt : \Tm\;\Gam\;\vb$ of depth $\vnprime$ if filled with a term $\vt
+: \Tm\;\Del\;\va$ of depth $\vn$.  The depth is unchanced except for
+case $\anext$, which increases the depth by 1.  
+Thus,  $\vt \nred n \vtprime$ can contract every subterm that is under
+at most $\vn$ many $\anext$s.
 
 
 \input{NContexts}

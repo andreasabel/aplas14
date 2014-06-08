@@ -15,10 +15,10 @@ open import Substitution
 \begin{code}
 data NβCxt : (Γ Δ : Cxt) (a b : Ty) (n n' : ℕ) → Set where
   abs    :  ∀  {Γ n a b}                         → NβCxt (a ∷ Γ) Γ b (a →̂  b) n n
-  appl   :  ∀  {Γ n a b} (u : Tm Γ a)            → NβCxt Γ Γ (a →̂ b) b n n
-  appr   :  ∀  {Γ n a b} (t : Tm Γ (a →̂ b))     → NβCxt Γ Γ a b n n
-  pairl  :  ∀  {Γ n a b} (u : Tm Γ b)            → NβCxt Γ Γ a (a ×̂ b) n n
-  pairr  :  ∀  {Γ n a b} (t : Tm Γ a)            → NβCxt Γ Γ b (a ×̂ b) n n
+  appl   :  ∀  {Γ n a b} (u  : Tm Γ a)           → NβCxt Γ Γ (a →̂ b) b n n
+  appr   :  ∀  {Γ n a b} (t  : Tm Γ (a →̂ b))    → NβCxt Γ Γ a b n n
+  pairl  :  ∀  {Γ n a b} (u  : Tm Γ b)           → NβCxt Γ Γ a (a ×̂ b) n n
+  pairr  :  ∀  {Γ n a b} (t  : Tm Γ a)           → NβCxt Γ Γ b (a ×̂ b) n n
   fst    :  ∀  {Γ n a b}                         → NβCxt Γ Γ (a ×̂ b) a n n
   snd    :  ∀  {Γ n a b}                         → NβCxt Γ Γ (a ×̂ b) b n n
   next   :  ∀  {Γ n a∞}                          → NβCxt Γ Γ (force a∞) (▸̂ a∞) n (suc n)
@@ -26,12 +26,11 @@ data NβCxt : (Γ Δ : Cxt) (a b : Ty) (n n' : ℕ) → Set where
   ∗r_    :  ∀  {Γ n a∞ b∞}
                (t : Tm Γ (▸̂ (a∞ ⇒ b∞)))         → NβCxt Γ Γ (▸̂ a∞) (▸̂ b∞) n n
 \end{code}
-\end{small}
-
 \begin{code}
 data NβHole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
               Tm Γ b → NβCxt Δ Γ a b n n' → Tm Δ a → Set
 \end{code}
+\end{small}
 \AgdaHide{
 \begin{code}
  where
