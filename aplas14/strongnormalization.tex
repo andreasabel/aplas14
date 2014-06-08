@@ -3,7 +3,7 @@
 
 \input{sn}
 
-\citet{raamsdonk:perpetualReductions} pioneered an ``inductive''
+\Citet{raamsdonk:perpetualReductions} pioneered an ``inductive''
 definition of strongly normalizing terms $\SN$, namely the least set
 closed under introductions, formation of neutral (=stuck) terms, and
 weak head expansion.  We adapt their technique from lambda-calculus to
@@ -20,7 +20,43 @@ context \Gam{} fixed.
  
 \input{TermShape}
 
+The family of predicates $\SN\;\vn$ 
+is defined inductively by the following rules---we allow ourselves
+set-notation at this semi-formal level:
+\begin{gather*}
+  \ru{t \in \SN\;\vn
+    }{\lambda x t \in \SN\;\vn}
+\qquad
+  \ru{t_1,t_2 \in \SN\;\vn
+    }{(t_1,t_2) \in \SN\;\vn}
+\qquad
+  \ru{}{\pure t \in \SN\;0}
+\qquad
+  \ru{t \in \SN\;\vn
+    }{\pure t \in \SN\;(1 + \vn)}
+\\[2ex]
+  \ru{t \in \SNe\;\vn
+    }{t \in \SN\;\vn}
+\qquad
+  \ru{t' \in \SN\;\vn \qquad t \whr_{\SN\;\vn} t'
+    }{t \in \SN\;\vn}
+\end{gather*}
+The last two rules close $\SN$ under neutrals and level-$\vn$ 
+\emph{strong head expansion}, which is an instance of $\vP$-whe with
+$\vP = \SN\;\vn$.  We represent the inductive $\SN$ in Agda as a sized
+type \citep{hughesParetoSabry:popl96,abelPientka:icfp13} for the
+purpose of termination checking certain inductions on $\SN$ later.
+The assignment of sizes follows the principle that recursive
+invokations of $\SN$ within a constructor of $\SN\;\{\vi\}$ 
+must carry a strictly smaller size $\vj : \SizeLt\;\vi$.  
+The mutually defined relations $\SNe\;\vn\;\vt$ (instance of $\PNe$) and
+strong head reduction (shr)
+$\vt \nwhr n \vtprime$ just thread the size argument through.  Note
+that there is a version $\vi\;\asize\;\vt \nwhr n \vtprime$ of shr
+that makes the size argument visible, to be supplied in case $\texp$.
+
 \input{SN}
+
 \input{AntiRename}
 
 

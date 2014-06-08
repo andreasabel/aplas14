@@ -18,15 +18,15 @@ open import SN
 %%% Does it make sense to talk about IndRen if we don't show the proofs?
 %%% It's mostly a technical trick to get Agda's pattern matching to do "inversion" for us.
 \begin{code}
-unRenameSNe  :  ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a}{t'} → IndRen ρ t t' →
-                SNe n t' → SNe n t
-
 unRenameSN   :  ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t'} → IndRen ρ t t' →
                 SN n t' → SN n t
 \end{code}
 
 \AgdaHide{
 \begin{code}
+unRenameSNe  :  ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a}{t'} → IndRen ρ t t' →
+                SNe n t' → SNe n t
+
 unRename⇒0 : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t' : Tm Δ a}{tρ} → IndRen ρ t tρ
             → tρ ⟨ n ⟩⇒ t' → Σ _ \ s → IndRen ρ s t'
 unRename⇒1 : ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t' : Tm Δ a}{tρ} → (is : IndRen ρ t tρ)
@@ -73,15 +73,20 @@ unRename⇒1 ((next is) ∗ is₁)      (cong (∗r t₂) (∗r .t₂) tρ→t')
 \end{code}
 }
 
+A consequence of \AgdaFunction{unRenameSN} is that $t \in \SN\;\vn$
+iff $t\;x \in \SN\;\vn$ for some variable $x$.  This property is
+essential for the construction of the function space on sn sets
+(see next section).
+
 \begin{code}
-absVarSNe  :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
-               app t (var zero) ∈ SNe n → t ∈ SNe n
 absVarSN   :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
                app t (var zero) ∈ SN n → t ∈ SN n
 \end{code}
 
 \AgdaHide{
 \begin{code}
+absVarSNe  :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
+               app t (var zero) ∈ SNe n → t ∈ SNe n
 absVarSNe (elim 𝒏 (appl 𝒖)) = 𝒏
 
 absVarSN (ne 𝒖)                                                   = ne (absVarSNe 𝒖)
