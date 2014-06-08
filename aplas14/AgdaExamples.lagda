@@ -35,9 +35,11 @@ fix = abs (app L (next L))
 \end{code}
 
 The definition above correponds to the following with named variables.
-\begin{verbatim}
-fix = λ f. (λ x. f (selfApp x)) (next (λ x. f (selfApp x)))
-\end{verbatim}
+
+\[
+fix = \lambda f.\; (\lambda x. \; f \; (selfApp \; x)) (\tnext \; (\lambda x. \; f \; (selfApp \; x)))
+\]
+
 
 Another standard example is the type of streams, which we can also
 define through corecursion.
@@ -67,6 +69,12 @@ A simple example is mapping a function over a stream.
 \begin{code}
 mapS : ∀{Γ a b} → Tm Γ ((a →̂ b) →̂ (Stream a →̂ Stream b))
 \end{code}
+
+Which is also better read with named variables.
+\[
+mapS = \lambda f. \; fix \; (\lambda mapS.\; \lambda s.\; f \; s \, , (\apply{mapS}{tail \; s}))
+\]
+
 \AgdaHide{
 \begin{code}
 mapS = abs (app fix (abs (abs
@@ -76,7 +84,8 @@ mapS = abs (app fix (abs (abs
    in pair (app f (head s)) (▸app (≅delay ≅refl) map (tail s))))))
 \end{code}
 }
-\begin{verbatim}
-mapS = λ f. fix λ mapS s. pair (f s) (▸app (≅delay ≅refl) mapS (tail s))
-\end{verbatim}
+
+%%%\begin{verbatim}
+%%%mapS = λ f. fix λ mapS s. pair (f s) (▸app (≅delay ≅refl) mapS (tail s))
+%%%\end{verbatim}
 
