@@ -80,7 +80,7 @@ record IsSAT (n : ℕ) {a} (𝑨 : TmSet a) : Set where
     satSNe     : SNe n ⊆ 𝑨
     satSN      : 𝑨 ⊆ SN n
     satExp     : Closed n 𝑨
-    satRename  :  ∀ {Γ Δ} → (ρ : Δ ≤ Γ) → 
+    satRename  :  ∀ {Γ Δ} → (ρ : Δ ≤ Γ) →
                   ∀ {t} → 𝑨 t → 𝑨 (rename ρ t)
 
 record SAT (a : Ty) (n : ℕ) : Set₁ where
@@ -187,7 +187,7 @@ the original goal \af{SN} \ab{n} \ab{t}.  Renaming \ab{t} with
          𝓑.satSNe m≤n (sneApp (mapSNe m≤n (renameSNe ρ 𝒏)) (𝓐.satSN m≤n 𝒖))
 
     CExp : ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
-    CExp t⇒ 𝒕 m m≤n ρ 𝒖 = 
+    CExp t⇒ 𝒕 m m≤n ρ 𝒖 =
        𝓑.satExp m≤n ((cong (appl _) (appl _) (map⇒ m≤n (rename⇒ ρ t⇒)))) (𝒕 m m≤n ρ 𝒖)
 \end{code}
 }
@@ -200,8 +200,8 @@ renamings.
 ⟦abs⟧  :  ∀ {n a b} {𝓐 : SAT≤ a n} {𝓑 : SAT≤ b n} {Γ} {t : Tm (a ∷ Γ) b} →
           (∀ {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
               u ∈⟨ m≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ m≤n ⟩ 𝓑 ) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
-(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) m m≤n ρ 𝒖 =  
-  SAT≤.satExp 𝓑 m≤n (β (SAT≤.satSN 𝓐 m≤n 𝒖)) (⇃ 𝒕 m≤n ρ (↿ 𝒖)) 
+(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) m m≤n ρ 𝒖 =
+  SAT≤.satExp 𝓑 m≤n (β (SAT≤.satSN 𝓐 m≤n 𝒖)) (⇃ 𝒕 m≤n ρ (↿ 𝒖))
 
 ⟦app⟧  :  ∀ {n a b}{𝓐 : SAT≤ a n}{𝓑 : SAT≤ b n}{Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
           t ∈ (𝓐 ⟦→⟧ 𝓑) → u ∈⟨ ≤ℕ.refl ⟩ 𝓐 → app t u ∈⟨ ≤ℕ.refl ⟩ 𝓑
@@ -211,7 +211,7 @@ renamings.
 The \af{TmSet} for product types is directly saturated, inclusion into
 \af{SN} uses \af{fromFstSN} to derive \af{SN} \ab{n} \ab{t} from the
 membership into \af{SN} of \aic{fst} \ab{t}, which follows from the
-inclusion of \ab \ab{𝓐} into \af{SN}.
+inclusion of \ab{𝓐} into \af{SN}.
 \begin{code}
 _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 𝓐 ⟦×⟧ 𝓑 = record
@@ -249,7 +249,7 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 \begin{code}
 ⟦pair⟧  :   ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
             → t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
-⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} (↿ 𝒕) (↿ 𝒖)  =  satExp 𝓐 (βfst (satSN 𝓑 𝒖)) 𝒕 
+⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} (↿ 𝒕) (↿ 𝒖)  =  satExp 𝓐 (βfst (satSN 𝓑 𝒖)) 𝒕
                                       ,  satExp 𝓑 (βsnd (satSN 𝓐 𝒕)) 𝒖
 
 ⟦fst⟧   :   ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂ b)}
@@ -294,7 +294,7 @@ module _ {a∞ : ∞Ty} where
     CSN 𝓐 (ne 𝒏)        = ne 𝒏
     CSN 𝓐 (exp t⇒ 𝒕)    = exp t⇒ (CSN 𝓐 𝒕)
 
-    CRen :  ∀ {n} (𝓐 : SATpred a n) → ∀ {Γ Δ} (ρ : Γ ≤ Δ) → 
+    CRen :  ∀ {n} (𝓐 : SATpred a n) → ∀ {Γ Δ} (ρ : Γ ≤ Δ) →
             ∀ {t} → 𝑪 {n} 𝓐 t → 𝑪 {n} 𝓐 (subst ρ t)
     CRen 𝓐 ρ next0         = next0
     CRen 𝓐 ρ (next 𝒕)      = next (satRename 𝓐 ρ 𝒕)
