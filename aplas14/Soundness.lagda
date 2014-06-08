@@ -204,11 +204,13 @@ member of our saturated sets and so strongly normalizing, is now a
 simple matter of interpreting each operation in the language to its
 equivalent in the semantics that we have defined so far.
 
-The interpretation of $\anext$ depends on the depth, at
-$0$ we are done, otherwise we recurse on the subterm with a smaller
-depth, \AgdaFunction{Map}ing the environment to it.  Being able to
-perform this operation is the reason we have ensured antitonicity so
-far.
+The interpretation of $\anext$ depends on the depth, at $\tzero$ we
+are done, at \tsuc{} \AgdaBound{n} we recurse on the subterm at depth
+\AgdaBound{n}, using antitonicity to \AgdaFunction{Map} the current
+environment to depth \AgdaBound{n} as well.
+In fact without $\anext$ we would not have needed antitonocity at all since
+there would have been no way to embed a term from a smaller depth into
+a larger one. %% cite Neel?
 
 \begin{code}
 sound :  ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} →
