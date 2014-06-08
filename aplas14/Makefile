@@ -31,7 +31,7 @@ generatedfiles=InfiniteTypes.tex Terms.tex \
   ECxtList.tex SNtosnR.tex SNtosn2.tex
 
 # All dependencies
-files=byhand.bib macros.tex intro.tex types.tex syntax.tex strongnormalization.tex soundnessproof.tex SNcorrectness.tex examples.tex concl.tex $(generatedfiles) $(stylefile)
+files=byhand.bib macros.tex intro.tex types.tex syntax.tex red.tex strongnormalization.tex soundnessproof.tex SNcorrectness.tex examples.tex concl.tex $(generatedfiles) $(stylefile)
 
 .PRECIOUS : %.tex latex/%.tex aplas14.pdf
 

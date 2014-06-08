@@ -82,5 +82,3 @@ data _⟨_⟩⇒β_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
         → (t⇒β : t ⟨ n ⟩⇒β t')
         → Et ⟨ n' ⟩⇒β Et'
 \end{code}
-
-\input{Subst0}

@@ -8,11 +8,11 @@ open import Substitution
 \end{code}
 }
 \begin{code}
-data IndRen  {Γ Δ} (σ : RenSub `Var Γ Δ) :
-             ∀ {τ} → Tm Γ τ → Tm Δ τ → Set where
+data IndRen  {Γ Δ} (σ : Δ ≤ Γ) : ∀ {a} → Tm Γ a → Tm Δ a → Set
 \end{code}
 \AgdaHide{
 \begin{code}
+ where
   var  : ∀{a y}          (x : Var Γ a) → (σ x) ≡ y         → IndRen σ (var x) (var y)
   abs  : ∀{a b}{t : Tm (a ∷ Γ) b}{t'} → IndRen (lifts σ) t t' → IndRen σ (abs t) (abs t')
   app  : ∀{a b}{t : Tm Γ (a →̂ b)}{u : Tm Γ a}{t' u'} → IndRen σ t t' → IndRen σ u u' → IndRen σ (app t u) (app t' u')

@@ -12,10 +12,10 @@ import Substitution as S
 }
 
 \begin{code}
-_≤_  : (Γ Δ : Cxt) → Set
-_≤_ Γ Δ = ∀ {a} → Var Δ a → Var Γ a
+_≤_  : (Δ Γ : Cxt) → Set
+_≤_ Δ Γ = ∀ {a} → Var Γ a → Var Δ a
 
-rename : ∀ {Γ Δ : Cxt} {a : Ty} (η : Γ ≤ Δ) (x : Tm Δ a) → Tm Γ a
+rename : ∀ {Δ Γ : Cxt} {a : Ty} (η : Δ ≤ Γ) (x : Tm Γ a) → Tm Δ a
 \end{code}
 \AgdaHide{
 \begin{code}

@@ -17,7 +17,7 @@ open import ECxtList public
 \begin{code}
 mutual
 
-  SNhole :  ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} → 
+  SNhole :  ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} →
             Tm Γ b → ECxt Γ a b → Tm Γ a → Set
   SNhole {i} n = PCxt (SN {i} n)
 
@@ -216,7 +216,6 @@ renameSN    :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
 rename⇒      :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t t' : Tm Δ a} →
                t ⟨ n ⟩⇒ t' → rename ρ t ⟨ n ⟩⇒ rename ρ t'
 \end{code}
-\input{Rename}
 
 \begin{code}
 varSN       :  ∀ {Γ a n x} → var x ∈ SN {Γ = Γ} n {a}
