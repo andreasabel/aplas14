@@ -124,7 +124,7 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
 
 
 \begin{code}
-⟦abs⟧  :  ∀{n a b}{𝓐 : SAT≤ a n}{𝓑 : SAT≤ b n}{Γ}{t : Tm (a ∷ Γ) b} →
+⟦abs⟧  :  ∀ {n a b} {𝓐 : SAT≤ a n} {𝓑 : SAT≤ b n} {Γ} {t : Tm (a ∷ Γ) b} →
           (∀ {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
               u ∈⟨ m≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ m≤n ⟩ 𝓑 ) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
 (⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) m m≤n ρ 𝒖 =
@@ -154,8 +154,8 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
     𝑪 = 𝑨 [×] 𝑩
 
     CSNe : SNe _ ⊆ 𝑪
-    CSNe 𝒏  = SAT.satSNe 𝓐 (elim 𝒏 fst)
-            , SAT.satSNe 𝓑 (elim 𝒏 snd)
+    CSNe 𝒏  =  satSNe 𝓐 (elim 𝒏 fst)
+            ,  satSNe 𝓑 (elim 𝒏 snd)
 
     CSN : 𝑪 ⊆ SN _
     CSN (𝒕 , 𝒖) = bothProjSN (satSN 𝓐 𝒕) (satSN 𝓑 𝒖)
@@ -204,7 +204,8 @@ module _ {a∞ : ∞Ty} where
     CSN 𝓐 (ne 𝒏)        = ne 𝒏
     CSN 𝓐 (exp t⇒ 𝒕)    = exp t⇒ (CSN 𝓐 𝒕)
 
-    CRen : ∀ {n} (𝓐 : SATpred a n) → ∀ {Γ Δ} (ρ : Γ ≤ Δ) → ∀ {t} → 𝑪 {n} 𝓐 t → 𝑪 {n} 𝓐 (subst ρ t)
+    CRen :  ∀ {n} (𝓐 : SATpred a n) → ∀ {Γ Δ} (ρ : Γ ≤ Δ) → 
+            ∀ {t} → 𝑪 {n} 𝓐 t → 𝑪 {n} 𝓐 (subst ρ t)
     CRen 𝓐 ρ next0         = next0
     CRen 𝓐 ρ (next 𝒕)      = next (satRename 𝓐 ρ 𝒕)
     CRen 𝓐 ρ (ne 𝒏)        = ne (renameSNe ρ 𝒏)

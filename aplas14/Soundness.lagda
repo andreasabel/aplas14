@@ -114,7 +114,7 @@ We lift the interpretation of types to the interpretation of typing
 contexts pointwise, as predicates on substitutions, which take the
 role of environments. These predicates inherit antitonicity and
 closure under renaming. We will need \AgdaFunction{Ext} to extend the
-environment for the interpretation of lambda abstraction.
+environment for the interpretation of lambda abstractions.
 \begin{code}
 ⟦_⟧C : ∀ Γ {n} → ∀ {Δ} (σ : Subst Γ Δ) → Set
 ⟦ Γ ⟧C {n} σ = ∀ {a} (x : Var Γ a) → σ x ∈ ⟦ a ⟧ n
@@ -201,17 +201,9 @@ Ext 𝒕 θ  (suc x)  = θ x
 
 
 The soundness proof, showing that every term of \lambdalater{} is a
-member of our saturated sets and so strongly normalizing, is now a
+member of our saturated sets and so a member of \AgdaDatatype{SN}, is now a
 simple matter of interpreting each operation in the language to its
 equivalent in the semantics that we have defined so far.
-
-The interpretation of $\anext$ depends on the depth, at $\tzero$ we
-are done, at \tsuc{} \AgdaBound{n} we recurse on the subterm at depth
-\AgdaBound{n}, using antitonicity to \AgdaFunction{Map} the current
-environment to depth \AgdaBound{n} as well.
-In fact without $\anext$ we would not have needed antitonocity at all since
-there would have been no way to embed a term from a smaller depth into
-a larger one. %% cite Neel?
 
 \begin{code}
 sound :  ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} →
@@ -227,3 +219,11 @@ sound (t ∗ u)     θ  = ⟦∗⟧ (sound t θ) (sound u θ)
 sound {zero}  (next t)  θ  = ↿ next0
 sound {suc n} (next t)  θ  = ↿ (next (⇃ sound t (Map n≤sn θ)))
 \end{code}
+
+The interpretation of $\anext$ depends on the depth, at $\tzero$ we
+are done, at \tsuc{} \AgdaBound{n} we recurse on the subterm at depth
+\AgdaBound{n}, using antitonicity to \AgdaFunction{Map} the current
+environment to depth \AgdaBound{n} as well.
+In fact without $\anext$ we would not have needed antitonocity at all since
+there would have been no way to embed a term from a smaller depth into
+a larger one. %% cite Neel?
