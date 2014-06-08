@@ -51,20 +51,20 @@ _[→]_ : ∀{a b} → TmSet a → TmSet b → TmSet (a →̂ b)
 
 The \AgdaFunction{TmSet} for the later modality is indexed by the
 depth. The first two constructors are for terms in the canonical form
-\anext \AgdaBound{t}, at depth \tzero we impose no restriction on
+\anext{} \AgdaBound{t}, at depth \tzero{} we impose no restriction on
 \AgdaBound{t}, otherwise we use the given set \AgdaBound{𝑨}.
 The other two constructors are needed to satisfy the properties we
 require of our saturated sets.
 \begin{code}
 data [▸] {a∞} (𝑨 : TmSet (force a∞)) {Γ} : (n : ℕ) → Tm Γ (▸̂ a∞) → Set where
   next0  :  ∀ {t : Tm Γ (force a∞)}
-            → [▸] 𝑨 zero     (next t)
+            → [▸] 𝑨  zero     (next t)
   next   :  ∀ {n}{t : Tm Γ (force a∞)}   (𝒕 : 𝑨 t)
-            → [▸] 𝑨 (suc n)  (next t)
+            → [▸] 𝑨  (suc n)  (next t)
   ne     :  ∀ {n}{t : Tm Γ (▸̂ a∞)}      (𝒏 : SNe n t)
-            → [▸] 𝑨 n        t
+            → [▸] 𝑨  n        t
   exp    :  ∀ {n}{t t'  : Tm Γ (▸̂ a∞)}  (t⇒ : t ⟨ n ⟩⇒ t') (𝒕 : [▸] 𝑨 n t')
-            → [▸] 𝑨 n        t
+            → [▸] 𝑨  n        t
 \end{code}
 
 
@@ -140,7 +140,8 @@ generalization to smaller depths, so that we can maintain antitonicity.
 \begin{code}
 _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →̂ b) n
 𝓐 ⟦→⟧ 𝓑 = record
-  { satSet  = λ t → ∀ m (m≤n : m ≤ℕ _) → (satSet (𝓐 m≤n) [→] satSet (𝓑 m≤n)) t
+  { satSet  = 𝑪
+  -- ...
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -153,6 +154,9 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
                     (𝒕 m m≤n (ρ' •s ρ) 𝒖)
     }
   }
+\end{code}
+}
+\begin{code}
   where
     module 𝓐 = SAT≤ 𝓐
     module 𝓑 = SAT≤ 𝓑
@@ -162,13 +166,25 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
     𝑪 : TmSet (_ →̂ _)
     𝑪 t = ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
 
+    CSN : 𝑪 ⊆ SN _
+    CSN 𝒕 =  unRenameSN (prop→Ind suc ≡.refl) (absVarSN
+             (𝓑.satSN ≤ℕ.refl (𝒕 _ ≤ℕ.refl suc (𝓐.satSNe ≤ℕ.refl (var zero)))))
+\end{code}
+
+The proof of inclusion into \af{SN} first derives that \aic{app}
+(\af{rename} \aic{suc} \ab{t}) (\aic{var} \aic{zero}) is in \af{SN}
+through the inclusion of neutral terms into \ab{𝓐} and the inclusion
+of \ab{𝓑} into \af{SN}, then proceeds to strip away first (\aic{var}
+\aic{zero}) and then (\af{rename} \aic{suc}), so that we are left with
+the original goal \af{SN} \ab{n} \ab{t}.  Renaming \ab{t} with
+\aic{suc} is necessary to be able to introduce the fresh variable
+\aic{zero} of type \ab{a}.
+
+\AgdaHide{
+\begin{code}
     CSNe : SNe _ ⊆ 𝑪
     CSNe 𝒏 m m≤n ρ 𝒖 =
          𝓑.satSNe m≤n (sneApp (mapSNe m≤n (renameSNe ρ 𝒏)) (𝓐.satSN m≤n 𝒖))
-
-    CSN : 𝑪 ⊆ SN _
-    CSN 𝒕 =  unRenameSN (prop→Ind suc ≡.refl) (absVarSN
-             (𝓑.satSN ≤ℕ.refl (𝒕 _ ≤ℕ.refl suc (𝓐.satSNe ≤ℕ.refl (var v₀)))))
 
     CExp : ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
     CExp t⇒ 𝒕 m m≤n ρ 𝒖 = 
@@ -176,14 +192,9 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
 \end{code}
 }
 
-The types of semantic abstraction and application get noisy because of
-the upper bounds and the renamings.
-
-%-- , but their implementation is as
-%-- expected.  Modulo the renaming, we use expansion under
-%-- \AgdaInductiveConstructor{β} reduction to show that if \AgdaBound{t}
-%-- substituted with \AgdaBound{u} is in \AgdaBound{𝓑} then \AgdaInductiveConstructor{abs} \AgdaBound{t} applied to
-%-- \AgdaBound{u} is also in \AgdaBound{𝓑}.
+The types of semantic abstraction and application are somewhat
+obfuscated because they need to mention the upper bounds and the
+renamings.
 
 \begin{code}
 ⟦abs⟧  :  ∀ {n a b} {𝓐 : SAT≤ a n} {𝓑 : SAT≤ b n} {Γ} {t : Tm (a ∷ Γ) b} →
@@ -197,11 +208,15 @@ the upper bounds and the renamings.
 ⟦app⟧ {𝓑 = 𝓑} {u = u} (↿ 𝒕) (↿ 𝒖) = ≡.subst (λ t → app t u ∈⟨ ≤ℕ.refl ⟩ 𝓑) renId (↿ 𝒕 _ ≤ℕ.refl id 𝒖)
 \end{code}
 
-The \AgdaFunction{TmSet} for product types is directly saturated.
+The \af{TmSet} for product types is directly saturated, inclusion into
+\af{SN} uses \af{bothProjSN} to derive \af{SN} \ab{n} \ab{t} from the
+membership into \af{SN} of the two projections, which follows from the
+inclusion into \af{SN} of \ab{𝓐} and \ab{𝓑}.
 \begin{code}
 _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 𝓐 ⟦×⟧ 𝓑 = record
   { satSet   = satSet 𝓐 [×] satSet 𝓑
+  -- ...
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -261,13 +276,15 @@ SATpredSet : {n : ℕ}{a : Ty} → SATpred a n → TmSet a
 SATpredSet {zero}   𝓐   = λ _ → ⊤
 SATpredSet {suc n}  𝓐   = satSet 𝓐
 \end{code}
+
+Since the cases for \af{[▸]\_} are essentially a subset of those for
+\af{SN}, the proof of inclusion into \af{SN} goes by induction and the
+inclusion of \ab{𝓐} into \af{SN}.
 \begin{code}
 module _ {a∞ : ∞Ty} where
   private
     a = force a∞
-\end{code}
-\AgdaHide{
-\begin{code}
+
     𝑪 : ∀ {n} (𝓐 : SATpred a n) → TmSet (▸̂ a∞)
     𝑪 {n} 𝓐 = [▸] (SATpredSet 𝓐) n
 
@@ -283,15 +300,10 @@ module _ {a∞ : ∞Ty} where
     CRen 𝓐 ρ (next 𝒕)      = next (satRename 𝓐 ρ 𝒕)
     CRen 𝓐 ρ (ne 𝒏)        = ne (renameSNe ρ 𝒏)
     CRen 𝓐 ρ (exp t⇒ 𝒕)    = exp (rename⇒ ρ t⇒) (CRen 𝓐 ρ 𝒕)
-\end{code}
-}
-\begin{code}
+
   ⟦▸⟧_ : ∀{n} (𝓐 : SATpred a n) → SAT (▸̂ a∞) n
   ⟦▸⟧_ {n} 𝓐 = record
     { satSet = [▸] (SATpredSet 𝓐) n
-\end{code}
-\AgdaHide{
-\begin{code}
     ; satProp = record
       { satSNe = ne
       ; satSN  = CSN 𝓐
@@ -300,4 +312,3 @@ module _ {a∞ : ∞Ty} where
       }
     }
 \end{code}
-}
