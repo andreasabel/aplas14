@@ -96,7 +96,7 @@ data PNe   {Γ} (P : ∀{c} → Tm Γ c → Set) {b} : Tm Γ b → Set where
 \end{code}
 
 \emph{Weak head reduction} (whr) is a reduction of the form $\vect E[t] \red \vect
-E[t']$ where $t \contr t'$.  It is well-known that weak head expansion
+E[t']$ where $t \contr t'$.  It is well-known that weak head expansion (whe)
 does not preserve sn, e.g., $(\lambda x.\,y) \Omega$ is not sn even
 though it contracts to $y$.  In this case $\Omega$ is a \emph{vanishing
 term} lost by reduction.  If we require that all vanishing terms in a

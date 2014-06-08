@@ -16,19 +16,7 @@ open import ECxtList public
 
 \begin{code}
 mutual
-
-  SNHole :  ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} →
-            Tm Γ b → ECxt Γ a b → Tm Γ a → Set
-  SNHole {i} n = PCxt (SN {i} n)
-
-  SNe : ∀ {i : Size} (n : ℕ) {Γ} {b} → Tm Γ b → Set
-  SNe {i} n = PNe (SN {i} n)
-
-  data SN {i : Size}{Γ} : ℕ → ∀ {a} → Tm Γ a → Set where
-
-    ne     :  ∀ {j : Size< i} {a n t}
-              → (𝒏 : SNe {j} n t)
-              → SN n {a} t
+  data SN {i : Size}{Γ} : (n : ℕ) → ∀ {a} → Tm Γ a → Set where
 
     abs    :  ∀ {j : Size< i} {a b n}{t : Tm (a ∷ Γ) b}
               → (𝒕 : SN {j} n t)
@@ -43,16 +31,23 @@ mutual
 
     next   :  ∀ {j : Size< i} {a∞ n} {t : Tm Γ (force a∞)}
               → (𝒕 : SN {j} n t)
-              → SN (suc n) {▸̂ a∞} (next t)
+              → SN (1 + n) {▸̂ a∞} (next t)
+
+    ne     :  ∀ {j : Size< i} {a n t}
+              → (𝒏 : SNe {j} n t)
+              → SN n {a} t
 
     exp    :  ∀ {j₁ j₂ : Size< i} {a n t t′}
               → (t⇒ : j₁ size t ⟨ n ⟩⇒ t′) (𝒕′ : SN {j₂} n t′)
               → SN n {a} t
 
-  _size_⟨_⟩⇒_ : ∀ (i : Size) {Γ}{a} → Tm Γ a → ℕ → Tm Γ a → Set
+  SNe          : ∀ {i : Size} {Γ a} (n : ℕ) → Tm Γ a → Set
+  SNe {i} n = PNe (SN {i} n)
+
+  _size_⟨_⟩⇒_  : ∀ (i : Size) {Γ a} → Tm Γ a → ℕ → Tm Γ a → Set
   i size t ⟨ n ⟩⇒ t′ = SN {i} n / t ⇒ t′
 
-  _⟨_⟩⇒_ : ∀ {i : Size} {Γ} {a} → Tm Γ a → ℕ → Tm Γ a → Set
+  _⟨_⟩⇒_       : ∀ {i : Size} {Γ a} → Tm Γ a → ℕ → Tm Γ a → Set
   _⟨_⟩⇒_ {i} t n t' = SN {i} n / t ⇒ t'
 \end{code}
 
@@ -94,14 +89,20 @@ sneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
 \end{code}
 }
 
+The $\SN$-relations are antitone in the level
+
 \begin{code}
-mapSNe  : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SNe n t -> SNe m t
-map⇒    : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → t ⟨ m ⟩⇒ t'
-mapSN   : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SN n t -> SN m t
+mapSN   : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t     : Tm Γ a} → SN n t       → SN m t
+mapSNe  : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t     : Tm Γ a} → SNe n t      → SNe m t
+map⇒    : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t t'  : Tm Γ a} → t ⟨ n ⟩⇒ t'  → t ⟨ m ⟩⇒ t'
 \end{code}
 
 \AgdaHide{
 \begin{code}
+SNHole :  ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} →
+          Tm Γ b → ECxt Γ a b → Tm Γ a → Set
+SNHole {i} n = PCxt (SN {i} n)
+
 mapSNh : ∀ {m n} → m ≤ℕ n → ∀ {Γ a b}{E : ECxt Γ a b}{Et t} → SNHole n Et E t -> SNHole m Et E t
 
 mapSNe m≤n (var x) = var x
@@ -217,6 +218,7 @@ rename⇒      :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t t' : Tm Δ a} →
                t ⟨ n ⟩⇒ t' → rename ρ t ⟨ n ⟩⇒ rename ρ t'
 \end{code}
 
+\AgdaHide{
 \begin{code}
 varSN       :  ∀ {Γ a n x} → var x ∈ SN {Γ = Γ} n {a}
 appVarSN    :  ∀ {Γ a b n}{t : Tm Γ (a →̂ b)}{x} →
@@ -228,6 +230,7 @@ bothProjSN  :  ∀ {n a b Γ}{t : Tm Γ (a ×̂ b)} →
 fromFstSN   :  ∀{i n a b Γ}{t : Tm Γ (a ×̂ b)} → SN {i} n (fst t) → SN {i} n t
 fromSndSN   :  ∀{i n a b Γ}{t : Tm Γ (a ×̂ b)} → SN {i} n (snd t) → SN {i} n t
 \end{code}
+}
 
 \AgdaHide{
 \begin{code}

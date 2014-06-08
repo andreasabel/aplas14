@@ -21,7 +21,7 @@ data NβCxt : (Γ Δ : Cxt) (a b : Ty) (n n' : ℕ) → Set where
   pairr  :  ∀  {Γ n a b} (t  : Tm Γ a)           → NβCxt Γ Γ b (a ×̂ b) n n
   fst    :  ∀  {Γ n a b}                         → NβCxt Γ Γ (a ×̂ b) a n n
   snd    :  ∀  {Γ n a b}                         → NβCxt Γ Γ (a ×̂ b) b n n
-  next   :  ∀  {Γ n a∞}                          → NβCxt Γ Γ (force a∞) (▸̂ a∞) n (suc n)
+  next   :  ∀  {Γ n a∞}                          → NβCxt Γ Γ (force a∞) (▸̂ a∞) n (1 + n)
   ∗l_    :  ∀  {Γ n a∞ b∞} (u : Tm Γ (▸̂ a∞))    → NβCxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) n n
   ∗r_    :  ∀  {Γ n a∞ b∞}
                (t : Tm Γ (▸̂ (a∞ ⇒ b∞)))         → NβCxt Γ Γ (▸̂ a∞) (▸̂ b∞) n n

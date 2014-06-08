@@ -74,14 +74,14 @@ unRename⇒1 ((next is) ∗ is₁)      (cong (∗r t₂) (∗r .t₂) tρ→t')
 }
 
 \begin{code}
-absVarSNe  :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
-               app t (var zero) ∈ SNe n → t ∈ SNe n
 absVarSN   :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
                app t (var zero) ∈ SN n → t ∈ SN n
 \end{code}
 
 \AgdaHide{
 \begin{code}
+absVarSNe  :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
+               app t (var zero) ∈ SNe n → t ∈ SNe n
 absVarSNe (elim 𝒏 (appl 𝒖)) = 𝒏
 
 absVarSN (ne 𝒖)                                                   = ne (absVarSNe 𝒖)
