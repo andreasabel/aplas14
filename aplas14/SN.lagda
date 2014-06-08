@@ -89,7 +89,8 @@ sneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
 \end{code}
 }
 
-The $\SN$-relations are antitone in the level
+The $\SN$-relations are antitone in the level $\vn$.  This is one
+dimension of the Kripke worlds in our model (see next section).
 
 \begin{code}
 mapSN   : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t     : Tm Γ a} → SN n t       → SN m t
@@ -209,15 +210,24 @@ renSN ρ = (ρ , λ x → var (ρ x))
 \end{code}
 }
 
+The other dimension of the Kripke worlds is the typing context; our
+notions are also closed under renaming (and even undoing of
+renaming).  Besides \AgdaFunction{renameSN}, we have analogous lemmata
+\AgdaFunction{renameSNe} and \AgdaFunction{rename⇒}.
+
+\begin{code}
+renameSN    :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
+               SN n t → SN n (rename ρ t)
+\end{code}
+
+\AgdaHide{
 \begin{code}
 renameSNe   :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
                SNe n t → SNe n (rename ρ t)
-renameSN    :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
-               SN n t → SN n (rename ρ t)
 rename⇒      :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t t' : Tm Δ a} →
                t ⟨ n ⟩⇒ t' → rename ρ t ⟨ n ⟩⇒ rename ρ t'
 \end{code}
-
+}
 \AgdaHide{
 \begin{code}
 varSN       :  ∀ {Γ a n x} → var x ∈ SN {Γ = Γ} n {a}
