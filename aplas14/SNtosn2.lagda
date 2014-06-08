@@ -164,10 +164,10 @@ reductions that target the context.
 \end{code}
 \AgdaHide{
 \begin{code}
-  βsn Es x t t[u] u = acc (λ t⇒ → help {Es = Es} x t t[u] u (mkEhole* Es) t⇒) where
+  βsn Es x t t[u] u = acc (λ t⇒ → help {Es = Es} x t t[u] u (mkEHole* Es) t⇒) where
     help : ∀ {i n a b c Γ} {u : Tm Γ a} {t : Tm (a ∷ Γ) b} {t' : Tm Γ c} {x}  {z}{Es : ECxt* Γ b c} → sn n (Es [ x ]*) → sn n t →
          SN {i} n (Es [ subst (u ∷s var) t ]*) →
-         sn n u → Ehole* z Es (app (abs t) u) → z ⟨ n ⟩⇒β t' → sn n t'
+         sn n u → EHole* z Es (app (abs t) u) → z ⟨ n ⟩⇒β t' → sn n t'
     help {Es = Es} x t t[u]∈sn u∈sn eq t⇒ with split Es eq β t⇒
     help x t₂ t[u]∈sn u∈sn eq t⇒ | inj₁ (._ , a₁ , β) rewrite hole*→≡ a₁ = fromSN t[u]∈sn
     help {Es = Es} x (acc t₃) t[u]∈sn u∈sn eq t⇒ | inj₁ (._ , a₁ , cong (appl u₁) (appl .u₁) (cong abs abs b₁)) rewrite hole*→≡ a₁

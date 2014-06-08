@@ -12,11 +12,11 @@ open import Substitution
 }
 
 \begin{code}
-data ECxt (Γ : Cxt) : (a b : Ty) → Set where
+data ECxt (Γ : Cxt) : (a b : Ty) → Set
 \end{code}
-
 \AgdaHide{
 \begin{code}
+ where
   appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
   fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a
   snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
@@ -24,18 +24,17 @@ data ECxt (Γ : Cxt) : (a b : Ty) → Set where
   ∗r_   : ∀ {a∞}{b∞} (t : Tm Γ (force a∞ →̂ force b∞)) → ECxt Γ (▸̂ a∞) (▸̂ b∞)
 \end{code}
 }
-
 \begin{code}
-data Ehole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
+data EHole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
 \end{code}
-
 \AgdaHide{
 \begin{code}
-  appl  : ∀ {a b t} (u : Tm Γ a)  → Ehole (app t u) (appl u) (t ∶ (a →̂ b))
-  fst   : ∀ {a b t} → Ehole {a = a ×̂ b} (fst t) fst t
-  snd   : ∀ {a b t} → Ehole {a = a ×̂ b} (snd t) snd t
-  ∗l_   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞)) → Ehole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (∗l u) t
-  ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (force a∞ →̂ force b∞)) → Ehole (((next t) ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
+ where
+  appl  : ∀ {a b t} (u : Tm Γ a)  → EHole (app t u) (appl u) (t ∶ (a →̂ b))
+  fst   : ∀ {a b t} → EHole {a = a ×̂ b} (fst t) fst t
+  snd   : ∀ {a b t} → EHole {a = a ×̂ b} (snd t) snd t
+  ∗l_   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞)) → EHole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (∗l u) t
+  ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (force a∞ →̂ force b∞)) → EHole (((next t) ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
 \end{code}
 }
 
@@ -48,15 +47,15 @@ substEC σ snd      = snd
 substEC σ (∗l u)   = ∗l (subst σ u)
 substEC σ (∗r t₁)  = ∗r subst σ t₁
 
-substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E}{Et : Tm Γ b}{t : Tm Γ a} → (Eh : Ehole Et E t)
-            → Ehole (subst σ Et) (substEC σ E) (subst σ t)
+substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E}{Et : Tm Γ b}{t : Tm Γ a} → (Eh : EHole Et E t)
+            → EHole (subst σ Et) (substEC σ E) (subst σ t)
 substEh σ (appl u) = appl (subst σ u)
 substEh σ fst      = fst
 substEh σ snd      = snd
 substEh σ (∗l u)   = ∗l (subst σ u)
 substEh σ (∗r t₁)  = ∗r subst σ t₁
 
-mkEHole : ∀ {Γ} {a b} (E : ECxt Γ a b) {t} → Σ _ \ E[t] → Ehole E[t] E t
+mkEHole : ∀ {Γ} {a b} (E : ECxt Γ a b) {t} → Σ _ \ E[t] → EHole E[t] E t
 mkEHole (appl u)  = _ , appl u
 mkEHole fst       = _ , fst
 mkEHole snd       = _ , snd
@@ -77,28 +76,19 @@ mkEHole (∗r t)    = _ , ∗r t
 data PCxt  {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) :
            {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
 
-  appl  :  ∀ {a b t u}
-           → (𝒖 : P u)
-           → PCxt P (app t u) (appl u) (t ∶ (a →̂ b))
+  appl  :  ∀ {a b t u}    (𝒖 : P u)  → PCxt P (app t u)  (appl u)  (t ∶ (a →̂ b))
+  fst   :  ∀ {a b t}                 → PCxt P (fst t)    fst       (t ∶ (a ×̂ b))
+  snd   :  ∀ {a b t}                 → PCxt P (snd t)    snd       (t ∶ (a ×̂ b))
 
-  fst   : ∀ {a b t}                 → PCxt P (fst t) fst (t ∶ (a ×̂ b))
+  ∗l_   :  ∀ {a∞ b∞ t u}  (𝒖 : P u)  → PCxt P (t ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (∗l u) t
 
-  snd   : ∀ {a b t}                 → PCxt P (snd t) snd (t ∶ (a ×̂ b))
-
-  ∗l_   : ∀ {a∞ b∞ t u} (𝒖 : P u) → PCxt P (t ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (∗l u) t
-
-  ∗r_   :  ∀ {a∞}{b∞}{u t}
-           (𝒕 : P (next {a∞ = a∞ ⇒ b∞} t)) →
-           PCxt P ((next t) ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (∗r t) u
-
-
+  ∗r_   :  ∀ {a∞ b∞ t u}  (𝒕 : P (next {a∞ = a∞ ⇒ b∞} t))
+                                     → PCxt P ((next t) ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (∗r t) u
 
 data PNe {Γ} (P : ∀{c} → Tm Γ c → Set) {b} : Tm Γ b → Set where
-
-  var   : ∀ x                                 → PNe P (var x)
-
-  elim  : ∀ {a} {t : Tm Γ a} {E Et}
-        → (𝒏 : PNe P t) (𝑬𝒕 : PCxt P Et E t)  → PNe P Et
+  var   :  ∀ x                                 → PNe P (var x)
+  elim  :  ∀ {a} {t : Tm Γ a} {E Et}
+        →  (𝒏 : PNe P t) (𝑬𝒕 : PCxt P Et E t)  → PNe P Et
 
 
 data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
@@ -120,8 +110,8 @@ data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
            → P / snd (pair t u) ⇒ u
 
   cong  :  ∀ {a b t t' Et Et'}{E : ECxt Γ a b}
-           → (𝑬𝒕 : Ehole Et E t)
-           → (𝑬𝒕' : Ehole Et' E t')
+           → (𝑬𝒕 : EHole Et E t)
+           → (𝑬𝒕' : EHole Et' E t')
            → (t⇒ : P / t ⇒ t')
            → P / Et ⇒ Et'
 \end{code}

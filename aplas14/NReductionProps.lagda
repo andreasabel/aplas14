@@ -96,7 +96,7 @@ nβ⇒β (cong C1 C2 t⇒) = cong (help C1) (help C2) (nβ⇒β t⇒)
     help : ∀ {n a Γ} {t : Tm Γ a} {n₁ Δ a₁} {t₁ : Tm Δ a₁}
            {C : NβCxt Δ Γ a₁ a n₁ n}
            (C1 : NβHole t C t₁) →
-           βEhole t (help' C) t₁
+           βEHole t (help' C) t₁
     help (appl u) = appl u
     help (appr t) = appr t
     help (pairl u) = pairl u
@@ -190,9 +190,9 @@ data _Redex {Γ} : ∀ {a} → Tm Γ a → Set where
 \end{code}
 \begin{code}
 split : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ : Tm Γ a}{t₂ Et₁ : Tm Γ b} →
-         Ehole* Et₁ E t₁ → t₁ Redex →
-         Et₁ ⟨ n ⟩⇒β t₂ → (Σ _ \ t₃ → Ehole* t₂ E t₃ × t₁ ⟨ n ⟩⇒β t₃)
-         ⊎ (Σ _ \ E₁ → Ehole* t₂ E₁ t₁ × (∀ t → E [ t ]* ⟨ n ⟩⇒β E₁ [ t ]*))
+         EHole* Et₁ E t₁ → t₁ Redex →
+         Et₁ ⟨ n ⟩⇒β t₂ → (Σ _ \ t₃ → EHole* t₂ E t₃ × t₁ ⟨ n ⟩⇒β t₃)
+         ⊎ (Σ _ \ E₁ → EHole* t₂ E₁ t₁ × (∀ t → E [ t ]* ⟨ n ⟩⇒β E₁ [ t ]*))
 \end{code}
 \AgdaHide{
 \begin{code}

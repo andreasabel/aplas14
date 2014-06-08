@@ -24,20 +24,20 @@ data βECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → Set where
   abs   : ∀ {a b}                                     → βECxt Γ (a ∷ Γ) b (a →̂  b)
   next    : ∀ {a∞}                                      → βECxt Γ Γ (force a∞) (▸̂  a∞)
 
-data βEhole {Γ : Cxt} : {Δ : Cxt} {b a : Ty} → Tm Γ b → βECxt Γ Δ a b → Tm Δ a → Set where
-  appl  : ∀ {a b t} (u : Tm Γ a)                          → βEhole (app t u) (appl u) (t ∶ (a →̂ b))
-  appr  : ∀ {a b u} (t : Tm Γ (a →̂  b))                   → βEhole (app t u) (appr t) u
-  pairl : ∀ {a b}{t} (u : Tm Γ b)                         → βEhole (pair t u) (pairl u) (t ∶ a)
-  pairr : ∀ {a b}{u} (t : Tm Γ a)                         → βEhole (pair t u) (pairr t) (u ∶ b)
-  fst   : ∀ {a b t}                                       → βEhole {a = a ×̂ b} (fst t) fst t
-  snd   : ∀ {a b t}                                       → βEhole {a = a ×̂ b} (snd t) snd t
-  ∗l_   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂  a∞))                   → βEhole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (∗l u) t
-  ∗r_   : ∀ {a∞}{b∞}{u} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → βEhole ((t ∗ (u ∶ ▸̂  a∞)) ∶ ▸̂ b∞) (∗r t) u
-  abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → βEhole (abs t) abs t
-  next    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → βEhole (next {a∞ = a∞} t) next t
+data βEHole {Γ : Cxt} : {Δ : Cxt} {b a : Ty} → Tm Γ b → βECxt Γ Δ a b → Tm Δ a → Set where
+  appl  : ∀ {a b t} (u : Tm Γ a)                          → βEHole (app t u) (appl u) (t ∶ (a →̂ b))
+  appr  : ∀ {a b u} (t : Tm Γ (a →̂  b))                   → βEHole (app t u) (appr t) u
+  pairl : ∀ {a b}{t} (u : Tm Γ b)                         → βEHole (pair t u) (pairl u) (t ∶ a)
+  pairr : ∀ {a b}{u} (t : Tm Γ a)                         → βEHole (pair t u) (pairr t) (u ∶ b)
+  fst   : ∀ {a b t}                                       → βEHole {a = a ×̂ b} (fst t) fst t
+  snd   : ∀ {a b t}                                       → βEHole {a = a ×̂ b} (snd t) snd t
+  ∗l_   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂  a∞))                   → βEHole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (∗l u) t
+  ∗r_   : ∀ {a∞}{b∞}{u} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → βEHole ((t ∗ (u ∶ ▸̂  a∞)) ∶ ▸̂ b∞) (∗r t) u
+  abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → βEHole (abs t) abs t
+  next    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → βEHole (next {a∞ = a∞} t) next t
 
 
-mkHole : ∀ {Γ Δ} {a b} (E : βECxt Γ Δ a b) {t} → Σ _ \ E[t] → βEhole E[t] E t
+mkHole : ∀ {Γ Δ} {a b} (E : βECxt Γ Δ a b) {t} → Σ _ \ E[t] → βEHole E[t] E t
 mkHole (appl u)  = _ , appl u
 mkHole (appr t)  = _ , appr t
 mkHole (pairl u) = _ , pairl u
@@ -64,8 +64,8 @@ data _⇒β_ {Γ} : ∀ {a} → Tm Γ a → Tm Γ a → Set where
           → snd (pair t u) ⇒β u
 
   cong  : ∀ {Δ a b t t' Et Et'}{E : βECxt Γ Δ a b}
-          → (𝑬𝒕 : βEhole Et E t)
-          → (𝑬𝒕' : βEhole Et' E t')
+          → (𝑬𝒕 : βEHole Et E t)
+          → (𝑬𝒕' : βEHole Et' E t')
           → (t⇒β : t ⇒β t')
           → Et ⇒β Et'
 
@@ -97,7 +97,7 @@ _++β_ : ∀ {Γ} {a} {t₀ t₁ t₂ : Tm Γ a} → t₀ ⇒β* t₁ → t₁ �
 [] ++β ys = ys
 (x ∷ xs) ++β ys = x ∷ (xs ++β ys)
 
-cong* : ∀ {a Γ Δ} {b} {t tβ* : Tm Γ a} {E : βECxt Δ Γ a b}{E[t] E[tβ*]} → βEhole E[t] E t → βEhole E[tβ*] E tβ* → t ⇒β* tβ* → E[t] ⇒β* E[tβ*]
+cong* : ∀ {a Γ Δ} {b} {t tβ* : Tm Γ a} {E : βECxt Δ Γ a b}{E[t] E[tβ*]} → βEHole E[t] E t → βEHole E[tβ*] E tβ* → t ⇒β* tβ* → E[t] ⇒β* E[tβ*]
 cong* (appl u)   (appl .u)   []       = []
 cong* (appr t₁)  (appr .t₁)  []       = []
 cong* (pairl u)  (pairl .u)  []       = []
@@ -118,7 +118,7 @@ mutual
   EC→βEC (∗l u) = ∗l u
   EC→βEC (∗r t) = ∗r (next t)
 
-  mkHole4 : ∀ {Γ} {a b} (E : ECxt Γ a b) {t : Tm Γ a} → βEhole (E [ t ]) (EC→βEC E) t
+  mkHole4 : ∀ {Γ} {a b} (E : ECxt Γ a b) {t : Tm Γ a} → βEHole (E [ t ]) (EC→βEC E) t
   mkHole4 (appl u) = appl u
   mkHole4 fst = fst
   mkHole4 snd = snd
@@ -194,21 +194,21 @@ mutual
     where
          -- helper : ∀ {i}{j : Size< i}{n a Γ} {t tβ th : Tm Γ a} {Δ a₁} {t₁ ta : Tm Δ a₁}
          --   {E : βECxt Γ Δ a₁ a} {a₂} {t₂ tb : Tm Γ a₂} {E₁ : ECxt Γ a₂ a} →
-         -- βEhole t E t₁ →
-         -- βEhole tβ E ta →
+         -- βEHole t E t₁ →
+         -- βEHole tβ E ta →
          -- t₁ ⇒β ta →
-         -- Ehole t E₁ t₂ →
-         -- Ehole th E₁ tb →
+         -- EHole t E₁ t₂ →
+         -- EHole th E₁ tb →
          -- j size t₂ ⟨ n ⟩⇒ tb →
          -- tβ ≡ th ⊎
          -- Σ (Tm Γ a) (λ tm → Σ (i size tβ ⟨ n ⟩⇒ tm) (λ x → th ⇒β* tm))
       helper : ∀ {i}{n a Γ} {t tβ th : Tm Γ a} {Δ a₁} {t₁ ta : Tm Δ a₁}
            {E : βECxt Γ Δ a₁ a} {a₂} {t₂ tb : Tm Γ a₂} {E₁ : ECxt Γ a₂ a} →
-         βEhole t E t₁ →
-         βEhole tβ E ta →
+         βEHole t E t₁ →
+         βEHole tβ E ta →
          t₁ ⇒β ta →
-         Ehole t E₁ t₂ →
-         Ehole th E₁ tb →
+         EHole t E₁ t₂ →
+         EHole th E₁ tb →
          i size t₂ ⟨ n ⟩⇒ tb →
          tβ ≡ th ⊎
          Σ (Tm Γ a) (λ tm → Σ (i size tβ ⟨ n ⟩⇒ tm) (λ x → th ⇒β* tm))

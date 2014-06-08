@@ -32,7 +32,7 @@ open import SNtosn
 \end{code}
 \AgdaHide{
 \begin{code}
-β▸sn E z t u r = acc (λ x → help E z t u r (mkEhole* E) x) where
+β▸sn E z t u r = acc (λ x → help E z t u r (mkEHole* E) x) where
   help : ∀ {Γ b a∞ b∞} {z : Tm Γ (▸̂ b∞)} {q}
        {t : Tm Γ (force (a∞ ⇒ b∞))} {u : Tm Γ (force a∞)} {n} {t' : Tm Γ b}
        (E : ECxt* Γ (▸̂ b∞) b) →
@@ -40,7 +40,7 @@ open import SNtosn
      sn n t →
      sn n u →
      sn (suc n) (E [ next (app t u) ]*) →
-     Ehole* q E ((next t) ∗ (next {a∞ = a∞} u))  →  q ⟨ suc n ⟩⇒β t' → sn (suc n) t'
+     EHole* q E ((next t) ∗ (next {a∞ = a∞} u))  →  q ⟨ suc n ⟩⇒β t' → sn (suc n) t'
   help E z t u r eq t⇒ with split E eq β▸ t⇒
   help E₁ z₂ t₂ u₂ r₁ eq t⇒ | inj₁ (._ , a₁ , β▸) rewrite hole*→≡ a₁ = r₁
   help E₁ z₂ (acc t₃) u₂ r₁ eq t⇒ | inj₁ (._ , a₁ , cong (∗l ._) (∗l ._) (cong next next t⇒')) rewrite hole*→≡ a₁
@@ -58,14 +58,14 @@ open import SNtosn
 \end{code}
 \AgdaHide{
 \begin{code}
-βfstsn E z t u r = acc (λ x → help E z t u r (mkEhole* E) x) where
+βfstsn E z t u r = acc (λ x → help E z t u r (mkEHole* E) x) where
   help : ∀ {Γ b a c} {z t : Tm Γ b} {u : Tm Γ a} {n} {t' : Tm Γ c}{q}
          (E : ECxt* Γ b c) →
        sn n (E [ z ]*) →
        sn n t →
        sn n u →
        sn n (E [ t ]*) →
-       Ehole* q E (fst (pair t u)) →
+       EHole* q E (fst (pair t u)) →
          q ⟨ n ⟩⇒β t' → sn n t'
   help E z t u r eq t⇒ with split E eq βfst t⇒
   help E₁ z₂ t₂ u₂ r eq t⇒ | inj₁ (t₁ , a₁ , βfst) rewrite hole*→≡ a₁ = r
@@ -84,14 +84,14 @@ open import SNtosn
 \end{code}
 \AgdaHide{
 \begin{code}
-βsndsn E z t u r = acc (λ x → help E z t u r (mkEhole* E) x) where
+βsndsn E z t u r = acc (λ x → help E z t u r (mkEHole* E) x) where
   help : ∀ {Γ b a c} {z t : Tm Γ b} {u : Tm Γ a} {n} {t' : Tm Γ c}{q}
          (E : ECxt* Γ b c) →
        sn n (E [ z ]*) →
        sn n t →
        sn n u →
        sn n (E [ t ]*) →
-       Ehole* q E (snd (pair u t)) →
+       EHole* q E (snd (pair u t)) →
          q ⟨ n ⟩⇒β t' → sn n t'
   help E z t u r eq t⇒ with split E eq βsnd t⇒
   help E₁ z₂ t₂ u₂ r eq t⇒ | inj₁ (t₁ , a₁ , βsnd) rewrite hole*→≡ a₁ = r

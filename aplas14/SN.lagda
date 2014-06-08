@@ -17,9 +17,9 @@ open import ECxtList public
 \begin{code}
 mutual
 
-  SNhole :  ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} →
+  SNHole :  ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} →
             Tm Γ b → ECxt Γ a b → Tm Γ a → Set
-  SNhole {i} n = PCxt (SN {i} n)
+  SNHole {i} n = PCxt (SN {i} n)
 
   SNe : ∀ {i : Size} (n : ℕ) {Γ} {b} → Tm Γ b → Set
   SNe {i} n = PNe (SN {i} n)
@@ -102,7 +102,7 @@ mapSN   : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t : Tm Γ a} → SN n t -> SN 
 
 \AgdaHide{
 \begin{code}
-mapSNh : ∀ {m n} → m ≤ℕ n → ∀ {Γ a b}{E : ECxt Γ a b}{Et t} → SNhole n Et E t -> SNhole m Et E t
+mapSNh : ∀ {m n} → m ≤ℕ n → ∀ {Γ a b}{E : ECxt Γ a b}{Et t} → SNHole n Et E t -> SNHole m Et E t
 
 mapSNe m≤n (var x) = var x
 mapSNe m≤n (elim t∈Ne E∈SNh) = elim (mapSNe m≤n t∈Ne) (mapSNh m≤n E∈SNh)
@@ -161,8 +161,8 @@ isSNe    (sgs-varSNe x) (suc y) = var y
 -- The SN-notions are closed under SNe substitution.
 
 mutual
-  substSNh : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : ECxt Γ a b}{Et t} → (SNh : SNhole n Et E t)
-                                → SNhole n (subst (theSubst σ) Et) (substEC (theSubst σ) E) (subst (theSubst σ) t)
+  substSNh : ∀ {i vt Γ Δ a b n} → (σ : RenSubSNe {i} vt n Γ Δ) → ∀ {E : ECxt Γ a b}{Et t} → (SNh : SNHole n Et E t)
+                                → SNHole n (subst (theSubst σ) Et) (substEC (theSubst σ) E) (subst (theSubst σ) t)
   substSNh σ (appl u) = appl (substSN σ u)
   substSNh σ fst      = fst
   substSNh σ snd      = snd
