@@ -65,24 +65,24 @@ det⇒ : ∀ {n a Γ} {t t₁ t₂ : Tm Γ a}
 det⇒ (β _) (β _)                                              = ≡.refl
 det⇒ (β _) (cong (appl u) (appl .u) (cong () _ _))
 det⇒ β▸ β▸ = ≡.refl
-det⇒ β▸ (cong (._ ∗l) (._ ∗l) (cong () _ _))
+det⇒ β▸ (cong (∗l ._) (∗l ._) (cong () _ _))
 det⇒ β▸ (cong (∗r t) (∗r .t) (cong () _ _ ))
 det⇒ (βfst _) (βfst _)                                        = ≡.refl
 det⇒ (βfst _) (cong fst fst (cong () _ _))
 det⇒ (βsnd _) (βsnd _)                                        = ≡.refl
 det⇒ (βsnd 𝒕) (cong snd snd (cong () _ _))
 det⇒ (cong (appl u) (appl .u) (cong () _ _)) (β _)
-det⇒ (cong (._ ∗l) (._ ∗l) (cong () _ _)) β▸
+det⇒ (cong (∗l ._) (∗l ._) (cong () _ _)) β▸
 det⇒ (cong (∗r t₁) (∗r .t₁) (cong () _ _)) β▸
 det⇒ (cong fst fst (cong () _ _ )) (βfst _)
 det⇒ (cong snd snd (cong () _ _ )) (βsnd _)
 det⇒ (cong (appl u) (appl .u) x) (cong (appl .u) (appl .u) y) = ≡.cong (λ t → app t u) (det⇒ x y)
 det⇒ (cong fst fst x) (cong fst fst y)                        = ≡.cong fst             (det⇒ x y)
 det⇒ (cong snd snd x) (cong snd snd y)                        = ≡.cong snd             (det⇒ x y)
-det⇒ (cong (u ∗l) (.u ∗l) x) (cong (.u ∗l) (.u ∗l) y)         = ≡.cong (λ t → t ∗ u)   (det⇒ x y)
+det⇒ (cong (∗l u) (∗l .u) x) (cong (∗l .u) (∗l .u) y)         = ≡.cong (λ t → t ∗ u)   (det⇒ x y)
 det⇒ (cong (∗r t) (∗r .t) x) (cong (∗r .t) (∗r .t) y)         = ≡.cong (_∗_ (next t))     (det⇒ x y)
-det⇒ (cong (u ∗l) (.u ∗l) (cong () _ _)) (cong (∗r t) (∗r .t) _)
-det⇒ (cong (∗r t) (∗r .t) _) (cong (u ∗l) (.u ∗l) (cong () _ _))
+det⇒ (cong (∗l u) (∗l .u) (cong () _ _)) (cong (∗r t) (∗r .t) _)
+det⇒ (cong (∗r t) (∗r .t) _) (cong (∗l u) (∗l .u) (cong () _ _))
 \end{code}
 }
 %%% -- Strongly neutrals are closed under application.
@@ -125,8 +125,8 @@ map⇒ m≤n (cong Et Et' t→t') = cong Et Et' (map⇒ m≤n t→t')
 mapSNh m≤n (appl u∈SN) = appl (mapSN m≤n u∈SN)
 mapSNh m≤n fst = fst
 mapSNh m≤n snd = snd
-mapSNh m≤n (u∈SN ∗l) = mapSN m≤n u∈SN ∗l
-mapSNh m≤n (∗r t∈SN) = ∗r mapSN m≤n t∈SN
+mapSNh m≤n (∗l u∈SN) = ∗l (mapSN m≤n u∈SN)
+mapSNh m≤n (∗r t∈SN) = ∗r (mapSN m≤n t∈SN)
 \end{code}
 }
 
@@ -166,8 +166,8 @@ mutual
   substSNh σ (appl u) = appl (substSN σ u)
   substSNh σ fst      = fst
   substSNh σ snd      = snd
-  substSNh σ (u ∗l)   = substSN σ u ∗l
-  substSNh σ (∗r t)   = ∗r substSN σ t
+  substSNh σ (∗l u)   = ∗l (substSN σ u)
+  substSNh σ (∗r t)   = ∗r (substSN σ t)
 
   subst⇒ : ∀ {i vt Γ Δ a n} (σ : RenSubSNe {i} vt n Γ Δ) {t t' : Tm Γ a} → t ⟨ n ⟩⇒ t' → subst (theSubst σ) t ⟨ n ⟩⇒ subst (theSubst σ) t'
   subst⇒ {n = n} (σ , σ∈Ne) (β {t = t} {u = u} x) = ≡.subst (λ t' → app (abs (subst (lifts σ) t)) (subst σ u) ⟨ n ⟩⇒ t')

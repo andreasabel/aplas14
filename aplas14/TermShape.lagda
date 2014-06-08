@@ -20,7 +20,7 @@ data ECxt (Γ : Cxt) : (a b : Ty) → Set where
   appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
   fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a
   snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
-  _∗l   : ∀ {a∞ b∞} (u : Tm Γ (▸̂ a∞)) → ECxt Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞)
+  ∗l_   : ∀ {a∞ b∞} (u : Tm Γ (▸̂ a∞)) → ECxt Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞)
   ∗r_   : ∀ {a∞}{b∞} (t : Tm Γ (force a∞ →̂ force b∞)) → ECxt Γ (▸̂ a∞) (▸̂ b∞)
 \end{code}
 }
@@ -34,7 +34,7 @@ data Ehole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → S
   appl  : ∀ {a b t} (u : Tm Γ a)  → Ehole (app t u) (appl u) (t ∶ (a →̂ b))
   fst   : ∀ {a b t} → Ehole {a = a ×̂ b} (fst t) fst t
   snd   : ∀ {a b t} → Ehole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞)) → Ehole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (u ∗l) t
+  ∗l_   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞)) → Ehole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (∗l u) t
   ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (force a∞ →̂ force b∞)) → Ehole (((next t) ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
 \end{code}
 }
@@ -45,7 +45,7 @@ substEC : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ECxt Γ a b �
 substEC σ (appl u) = appl (subst σ u)
 substEC σ fst      = fst
 substEC σ snd      = snd
-substEC σ (u ∗l)   = subst σ u ∗l
+substEC σ (∗l u)   = ∗l (subst σ u)
 substEC σ (∗r t₁)  = ∗r subst σ t₁
 
 substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E}{Et : Tm Γ b}{t : Tm Γ a} → (Eh : Ehole Et E t)
@@ -53,14 +53,14 @@ substEh : ∀ {i vt Γ Δ a b} → (σ : RenSub {i} vt Γ Δ) → ∀ {E}{Et : T
 substEh σ (appl u) = appl (subst σ u)
 substEh σ fst      = fst
 substEh σ snd      = snd
-substEh σ (u ∗l)   = subst σ u ∗l
+substEh σ (∗l u)   = ∗l (subst σ u)
 substEh σ (∗r t₁)  = ∗r subst σ t₁
 
 mkEHole : ∀ {Γ} {a b} (E : ECxt Γ a b) {t} → Σ _ \ E[t] → Ehole E[t] E t
 mkEHole (appl u)  = _ , appl u
 mkEHole fst       = _ , fst
 mkEHole snd       = _ , snd
-mkEHole (u ∗l)    = _ , u ∗l
+mkEHole (∗l u)    = _ , ∗l u
 mkEHole (∗r t)    = _ , ∗r t
 \end{code}
 }
@@ -85,10 +85,10 @@ data PCxt  {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) :
 
   snd   : ∀ {a b t}                 → PCxt P (snd t) snd (t ∶ (a ×̂ b))
 
-  _∗l   : ∀ {a∞ b∞ t u} (𝒖 : P u) → PCxt P (t ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (u ∗l) t
+  ∗l_   : ∀ {a∞ b∞ t u} (𝒖 : P u) → PCxt P (t ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (∗l u) t
 
   ∗r_   :  ∀ {a∞}{b∞}{u t}
-           (𝒕 : P (next {a∞ = a∞ ⇒ b∞} t)) → 
+           (𝒕 : P (next {a∞ = a∞ ⇒ b∞} t)) →
            PCxt P ((next t) ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (∗r t) u
 
 
@@ -138,24 +138,24 @@ detP⇒  :  ∀ {a Γ} {P : ∀ {c} → Tm Γ c → Set} {t t₁ t₂ : Tm Γ a}
 detP⇒ (β _) (β _)                                              = ≡.refl
 detP⇒ (β _) (cong (appl u) (appl .u) (cong () _ _))
 detP⇒ β▸ β▸ = ≡.refl
-detP⇒ β▸ (cong (._ ∗l) (._ ∗l) (cong () _ _))
+detP⇒ β▸ (cong (∗l ._) (∗l ._) (cong () _ _))
 detP⇒ β▸ (cong (∗r t) (∗r .t) (cong () _ _ ))
 detP⇒ (βfst _) (βfst _)                                        = ≡.refl
 detP⇒ (βfst _) (cong fst fst (cong () _ _))
 detP⇒ (βsnd _) (βsnd _)                                        = ≡.refl
 detP⇒ (βsnd 𝒕) (cong snd snd (cong () _ _))
 detP⇒ (cong (appl u) (appl .u) (cong () _ _)) (β _)
-detP⇒ (cong (._ ∗l) (._ ∗l) (cong () _ _)) β▸
+detP⇒ (cong (∗l ._) (∗l ._) (cong () _ _)) β▸
 detP⇒ (cong (∗r t₁) (∗r .t₁) (cong () _ _)) β▸
 detP⇒ (cong fst fst (cong () _ _ )) (βfst _)
 detP⇒ (cong snd snd (cong () _ _ )) (βsnd _)
 detP⇒ (cong (appl u) (appl .u) x) (cong (appl .u) (appl .u) y) = ≡.cong (λ t → app t u) (detP⇒ x y)
 detP⇒ (cong fst fst x) (cong fst fst y)                        = ≡.cong fst             (detP⇒ x y)
 detP⇒ (cong snd snd x) (cong snd snd y)                        = ≡.cong snd             (detP⇒ x y)
-detP⇒ (cong (u ∗l) (.u ∗l) x) (cong (.u ∗l) (.u ∗l) y)         = ≡.cong (λ t → t ∗ u)   (detP⇒ x y)
+detP⇒ (cong (∗l u) (∗l .u) x) (cong (∗l .u) (∗l .u) y)         = ≡.cong (λ t → t ∗ u)   (detP⇒ x y)
 detP⇒ (cong (∗r t) (∗r .t) x) (cong (∗r .t) (∗r .t) y)         = ≡.cong (_∗_ (next t))     (detP⇒ x y)
-detP⇒ (cong (u ∗l) (.u ∗l) (cong () _ _)) (cong (∗r t) (∗r .t) _)
-detP⇒ (cong (∗r t) (∗r .t) _) (cong (u ∗l) (.u ∗l) (cong () _ _))
+detP⇒ (cong (∗l u) (∗l .u) (cong () _ _)) (cong (∗r t) (∗r .t) _)
+detP⇒ (cong (∗r t) (∗r .t) _) (cong (∗l u) (∗l .u) (cong () _ _))
 \end{code}
 }
 
@@ -184,7 +184,7 @@ mapP⇒    : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm
 mapPCxt P⊆Q (appl u∈P) = appl (P⊆Q u∈P)
 mapPCxt P⊆Q fst = fst
 mapPCxt P⊆Q snd = snd
-mapPCxt P⊆Q (u∈P ∗l) = P⊆Q u∈P ∗l
+mapPCxt P⊆Q (∗l u∈P) = ∗l P⊆Q u∈P
 mapPCxt P⊆Q (∗r t∈P) = ∗r P⊆Q t∈P
 
 mapPNe P⊆Q (var x) = var x

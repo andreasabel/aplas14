@@ -32,13 +32,20 @@ reduce in subterms.
 
 \input{NReduction}
 
-The congruence rule says that we can reduce a term, suggestively
-called $\vEt$, to a term $\vEtprime$, if (1) $\vEt$ decomposes into
-$\vE[\vt]$, a context $\vE$ filled by $\vt$, and (2) $\vEtprime$ into
-$\vE[\vtprime]$, and (3) $\vt$ reduces to $\vtprime$.  As witnessed by
+The congruence rule makes use of shallow one hole contexts $\vC$, which in
+mathematical notation would be given by the grammar
+\[
+  \vC ::= \lambda x \_  \mid \_\,u \mid t\,\_
+  \mid (t,\_) \mid (\_,u) \mid \fst\_ \mid \snd\_ 
+  \mid \tnext\,\_ \mid \_∗u \mid t∗\_ 
+.\]
+$\tcong$ says that we can reduce a term, suggestively
+called $\vCt$, to a term $\vCtprime$, if (1) $\vCt$ decomposes into
+$\vC[\vt]$, a context $\vC$ filled by $\vt$, and (2) $\vCtprime$ into
+$\vC[\vtprime]$, and (3) $\vt$ reduces to $\vtprime$.  As witnessed by
 relation $\NbetaHole$, context
-$\vE : \NbetaCxt\;\Gam\;\Del\;\va\;\vb\;\vn\;\vnprime$ produces a term
-$\vEt : \Tm\;\Gam\;\vb$ of depth $\vnprime$ if filled with a term $\vt
+$\vC : \NbetaCxt\;\Gam\;\Del\;\va\;\vb\;\vn\;\vnprime$ produces a term
+$\vCt : \Tm\;\Gam\;\vb$ of depth $\vnprime$ if filled with a term $\vt
 : \Tm\;\Del\;\va$ of depth $\vn$.  The depth is unchanced except for
 case $\anext$, which increases the depth by 1.  
 Thus,  $\vt \nred n \vtprime$ can contract every subterm that is under

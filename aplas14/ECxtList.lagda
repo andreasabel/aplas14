@@ -22,7 +22,7 @@ data ECxt* (Γ : Cxt) : Ty → Ty → Set where
 
 _[_]*   : ∀ {Γ} {a b} (E : ECxt* Γ a b) (t : Tm Γ a) → Tm Γ b
 
-_[_]⇒*  :  ∀ {Γ} {P : ∀{c} → Tm Γ c → Set} {a b} (E : ECxt* Γ a b) {t₁ t₂ : Tm Γ a} → 
+_[_]⇒*  :  ∀ {Γ} {P : ∀{c} → Tm Γ c → Set} {a b} (E : ECxt* Γ a b) {t₁ t₂ : Tm Γ a} →
            P / t₁ ⇒ t₂ → P / E [ t₁ ]* ⇒ E [ t₂ ]*
 \end{code}
 
@@ -56,7 +56,7 @@ hole→≡ : ∀ {Γ a b}{Et t}{E : ECxt Γ a b} → (Es : Ehole Et E t) → Et 
 hole→≡ (appl u) = ≡.refl
 hole→≡ fst = ≡.refl
 hole→≡ snd = ≡.refl
-hole→≡ (u ∗l) = ≡.refl
+hole→≡ (∗l u) = ≡.refl
 hole→≡ (∗r t₁) = ≡.refl
 
 lemma : ∀ {Γ b} {a} {t : Tm Γ a} (Es : ECxt* Γ a b)

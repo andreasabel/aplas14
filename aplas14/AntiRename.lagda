@@ -35,7 +35,7 @@ unRenameSNe (var x x₁)     (var y)           = var x
 unRenameSNe (app is is₁)   (elim 𝒏 (appl 𝒖)) = elim (unRenameSNe is 𝒏) (appl (unRenameSN is₁ 𝒖))
 unRenameSNe (fst is)       (elim 𝒏 fst)      = elim (unRenameSNe is 𝒏) fst
 unRenameSNe (snd is)       (elim 𝒏 snd)      = elim (unRenameSNe is 𝒏) snd
-unRenameSNe (is ∗ is₁)     (elim 𝒏 (𝒖 ∗l))   = elim (unRenameSNe is 𝒏) (unRenameSN is₁ 𝒖 ∗l)
+unRenameSNe (is ∗ is₁)     (elim 𝒏 (∗l 𝒖))   = elim (unRenameSNe is 𝒏) (∗l (unRenameSN is₁ 𝒖))
 unRenameSNe ((next is) ∗ is₁) (elim 𝒏 (∗r 𝒕))   = elim (unRenameSNe is₁ 𝒏) (∗r unRenameSN (next is) 𝒕)
 
 -- variable case:
@@ -58,7 +58,7 @@ unRename⇒0 (snd (pair is is₁)) (βsnd 𝒕) = _ , is₁
 unRename⇒0 (app is is₁)        (cong (appl u) (appl .u) tρ→t') = let s , iss = unRename⇒0 is tρ→t' in app s _ , app iss is₁
 unRename⇒0 (fst is)            (cong fst fst tρ→t') = let s , iss = unRename⇒0 is tρ→t' in fst s , fst iss
 unRename⇒0 (snd is)            (cong snd snd tρ→t') = let s , iss = unRename⇒0 is tρ→t' in snd s , snd iss
-unRename⇒0 (is ∗ is₁)          (cong (u ∗l) (.u ∗l) tρ→t')   = let s , iss = unRename⇒0 is tρ→t' in s ∗ _ , iss ∗ is₁
+unRename⇒0 (is ∗ is₁)          (cong (∗l u) (∗l .u) tρ→t')   = let s , iss = unRename⇒0 is tρ→t' in s ∗ _ , iss ∗ is₁
 unRename⇒0 (is ∗ is₁)          (cong (∗r t₂) (∗r .t₂) tρ→t') = let s , iss = unRename⇒0 is₁ tρ→t' in _ ∗ s , is ∗ iss
 
 unRename⇒1 (app (abs is) is₁) (β 𝒖) = β (unRenameSN is₁ 𝒖)
@@ -68,7 +68,7 @@ unRename⇒1 (snd (pair is is₁)) (βsnd 𝒕) = βsnd (unRenameSN is 𝒕)
 unRename⇒1 (app is is₁)        (cong (appl u) (appl .u) tρ→t') = cong (appl _) (appl _) (unRename⇒1 is tρ→t')
 unRename⇒1 (fst is)            (cong fst fst tρ→t') = cong fst fst (unRename⇒1 is tρ→t')
 unRename⇒1 (snd is)            (cong snd snd tρ→t') = cong snd snd (unRename⇒1 is tρ→t')
-unRename⇒1 (is ∗ is₁)          (cong (u ∗l) (.u ∗l) tρ→t')   = cong (_ ∗l) (_ ∗l) (unRename⇒1 is tρ→t')
+unRename⇒1 (is ∗ is₁)          (cong (∗l u) (∗l .u) tρ→t')   = cong (∗l _) (∗l _) (unRename⇒1 is tρ→t')
 unRename⇒1 ((next is) ∗ is₁)      (cong (∗r t₂) (∗r .t₂) tρ→t') = cong (∗r _) (∗r _) (unRename⇒1 is₁ tρ→t')
 \end{code}
 }

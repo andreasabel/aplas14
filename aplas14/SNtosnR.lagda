@@ -43,9 +43,9 @@ open import SNtosn
      Ehole* q E ((next t) ∗ (next {a∞ = a∞} u))  →  q ⟨ suc n ⟩⇒β t' → sn (suc n) t'
   help E z t u r eq t⇒ with split E eq β▸ t⇒
   help E₁ z₂ t₂ u₂ r₁ eq t⇒ | inj₁ (._ , a₁ , β▸) rewrite hole*→≡ a₁ = r₁
-  help E₁ z₂ (acc t₃) u₂ r₁ eq t⇒ | inj₁ (._ , a₁ , cong (._ ∗l) (._ ∗l) (cong next next t⇒')) rewrite hole*→≡ a₁ 
+  help E₁ z₂ (acc t₃) u₂ r₁ eq t⇒ | inj₁ (._ , a₁ , cong (∗l ._) (∗l ._) (cong next next t⇒')) rewrite hole*→≡ a₁
     = β▸sn E₁ z₂ (t₃ t⇒') u₂ (sn⇒β r₁ (cong*2 E₁ (cong next next (cong (appl _) (appl _) t⇒'))))
-  help E₁ z₂ t₃ (acc u₂) r₁ eq t⇒ | inj₁ (._ , a₁ , cong (∗r ._) (∗r ._) (cong next next t⇒')) rewrite hole*→≡ a₁ 
+  help E₁ z₂ t₃ (acc u₂) r₁ eq t⇒ | inj₁ (._ , a₁ , cong (∗r ._) (∗r ._) (cong next next t⇒')) rewrite hole*→≡ a₁
     = β▸sn E₁ z₂ t₃ (u₂ t⇒') (sn⇒β r₁ (cong*2 E₁ (cong next next (cong (appr _) (appr _) t⇒'))))
   help E₁ (acc z₂) t₂ u₂ r₁ eq t⇒ | inj₂ (Es' , a , g) rewrite hole*→≡ a = β▸sn Es' (z₂ (g _)) t₂ u₂ (sn⇒β r₁ (g _))
 \end{code}
@@ -69,9 +69,9 @@ open import SNtosn
          q ⟨ n ⟩⇒β t' → sn n t'
   help E z t u r eq t⇒ with split E eq βfst t⇒
   help E₁ z₂ t₂ u₂ r eq t⇒ | inj₁ (t₁ , a₁ , βfst) rewrite hole*→≡ a₁ = r
-  help E₁ z₂ (acc t₃) u₂ r₁ eq t⇒ | inj₁ (._ , a₂ , cong fst fst (cong (pairl u₁) (pairl .u₁) t⇒')) 
+  help E₁ z₂ (acc t₃) u₂ r₁ eq t⇒ | inj₁ (._ , a₂ , cong fst fst (cong (pairl u₁) (pairl .u₁) t⇒'))
     rewrite hole*→≡ a₂ = βfstsn E₁ z₂ (t₃ t⇒') u₂ (sn⇒β r₁ (cong*2 E₁ t⇒'))
-  help E₁ z₂ t₃ (acc u₂) r₁ eq t⇒ | inj₁ (._ , a₂ , cong fst fst (cong (pairr t₁) (pairr .t₁) t⇒')) 
+  help E₁ z₂ t₃ (acc u₂) r₁ eq t⇒ | inj₁ (._ , a₂ , cong fst fst (cong (pairr t₁) (pairr .t₁) t⇒'))
     rewrite hole*→≡ a₂ = βfstsn E₁ z₂ t₃ (u₂ t⇒') r₁
   help E₁ (acc z₂) t₂ u₂ r eq t⇒ | inj₂ (Es' , a , g) rewrite hole*→≡ a = βfstsn Es' (z₂ (g _)) t₂ u₂ (sn⇒β r (g _))
 \end{code}
@@ -95,9 +95,9 @@ open import SNtosn
          q ⟨ n ⟩⇒β t' → sn n t'
   help E z t u r eq t⇒ with split E eq βsnd t⇒
   help E₁ z₂ t₂ u₂ r eq t⇒ | inj₁ (t₁ , a₁ , βsnd) rewrite hole*→≡ a₁ = r
-  help E₁ z₂ (acc t₃) u₂ r₁ eq t⇒ | inj₁ (._ , a₂ , cong snd snd (cong (pairr u₁) (pairr .u₁) t⇒')) 
+  help E₁ z₂ (acc t₃) u₂ r₁ eq t⇒ | inj₁ (._ , a₂ , cong snd snd (cong (pairr u₁) (pairr .u₁) t⇒'))
     rewrite hole*→≡ a₂ = βsndsn E₁ z₂ (t₃ t⇒') u₂ (sn⇒β r₁ (cong*2 E₁ t⇒'))
-  help E₁ z₂ t₃ (acc u₂) r₁ eq t⇒ | inj₁ (._ , a₂ , cong snd snd (cong (pairl t₁) (pairl .t₁) t⇒')) 
+  help E₁ z₂ t₃ (acc u₂) r₁ eq t⇒ | inj₁ (._ , a₂ , cong snd snd (cong (pairl t₁) (pairl .t₁) t⇒'))
     rewrite hole*→≡ a₂ = βsndsn E₁ z₂ t₃ (u₂ t⇒') r₁
   help E₁ (acc z₂) t₂ u₂ r eq t⇒ | inj₂ (Es' , a , g) rewrite hole*→≡ a = βsndsn Es' (z₂ (g _)) t₂ u₂ (sn⇒β r (g _))
 \end{code}

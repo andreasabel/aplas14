@@ -108,7 +108,7 @@ appsn' 𝒕       (acc u) 𝒏           (cong (appr t) (appr .t) t⇒) = acc (a
 
 ∗sn' t       u       (inj₁ (elim e ())) β▸
 ∗sn' t       u       (inj₂ (elim e ())) β▸
-∗sn' (acc t) 𝒖       e                  (cong (u ∗l) (.u ∗l) t⇒) = acc (∗sn' (t t⇒) 𝒖      (Data.Sum.map (mapNβSNe t⇒) id e))
+∗sn' (acc t) 𝒖       e                  (cong (∗l u) (∗l .u) t⇒) = acc (∗sn' (t t⇒) 𝒖      (Data.Sum.map (mapNβSNe t⇒) id e))
 ∗sn' 𝒕       (acc u) e                  (cong (∗r t) (∗r .t) t⇒) = acc (∗sn' 𝒕      (u t⇒) (Data.Sum.map id (mapNβSNe t⇒) e))
 
 elimsn' 𝒕 fst      (elim 𝒏 ()) βfst
@@ -116,7 +116,7 @@ elimsn' 𝒕 fst      𝒏           (cong fst fst Et⇒Et') = fstsn (sn⇒β �
 elimsn' 𝒕 snd      (elim 𝒏 ()) βsnd
 elimsn' 𝒕 snd      𝒏           (cong snd snd Et⇒Et') = sndsn (sn⇒β 𝒕 Et⇒Et')
 elimsn' 𝒕 (appl 𝒖) 𝒏           t⇒                    = appsn' 𝒕 𝒖 𝒏 t⇒
-elimsn' 𝒕 (𝒖 ∗l)   𝒏           t⇒                    = ∗sn' 𝒕 𝒖 (inj₁ 𝒏) t⇒
+elimsn' 𝒕 (∗l 𝒖)   𝒏           t⇒                    = ∗sn' 𝒕 𝒖 (inj₁ 𝒏) t⇒
 elimsn' 𝒕 (∗r 𝒕₁)  𝒏           t⇒                    = ∗sn' 𝒕₁ 𝒕 (inj₂ 𝒏) t⇒
 \end{code}
 }

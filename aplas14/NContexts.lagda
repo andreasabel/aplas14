@@ -22,7 +22,7 @@ data NβCxt : (Γ Δ : Cxt) (a b : Ty) (n n' : ℕ) → Set where
   fst    :  ∀  {Γ n a b}                         → NβCxt Γ Γ (a ×̂ b) a n n
   snd    :  ∀  {Γ n a b}                         → NβCxt Γ Γ (a ×̂ b) b n n
   next   :  ∀  {Γ n a∞}                          → NβCxt Γ Γ (force a∞) (▸̂ a∞) n (suc n)
-  _∗l    :  ∀  {Γ n a∞ b∞} (u : Tm Γ (▸̂ a∞))    → NβCxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) n n
+  ∗l_    :  ∀  {Γ n a∞ b∞} (u : Tm Γ (▸̂ a∞))    → NβCxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) n n
   ∗r_    :  ∀  {Γ n a∞ b∞}
                (t : Tm Γ (▸̂ (a∞ ⇒ b∞)))         → NβCxt Γ Γ (▸̂ a∞) (▸̂ b∞) n n
 \end{code}
@@ -40,7 +40,7 @@ data NβHole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
   pairr : ∀ {a b}{u} (t : Tm Γ a)                         → NβHole (pair t u) (pairr t) (u ∶ b)
   fst   : ∀ {a b t}                                       → NβHole {a = a ×̂ b} (fst t) fst t
   snd   : ∀ {a b t}                                       → NβHole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞))                     → NβHole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (u ∗l) t
+  ∗l_   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞))                     → NβHole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (∗l u) t
   ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → NβHole ((t ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
   abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → NβHole (abs t) abs t
   next  : ∀ {a∞} {t : Tm Γ (force a∞)}                    → NβHole (next {a∞ = a∞} t) next t
@@ -56,7 +56,7 @@ mkHole (pairl u) = _ , pairl u
 mkHole (pairr t) = _ , pairr t
 mkHole fst       = _ , fst
 mkHole snd       = _ , snd
-mkHole (u ∗l)    = _ , u ∗l
+mkHole (∗l u)    = _ , ∗l u
 mkHole (∗r t)    = _ , ∗r t
 mkHole abs       = _ , abs
 mkHole next        = _ , next

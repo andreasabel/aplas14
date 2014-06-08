@@ -19,7 +19,7 @@ data βECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → Set where
   pairr : ∀ {a b} (t : Tm Γ a)                        → βECxt Γ Γ b (a ×̂ b)
   fst   : ∀ {a b}                                     → βECxt Γ Γ (a ×̂ b) a
   snd   : ∀ {a b}                                     → βECxt Γ Γ (a ×̂ b) b
-  _∗l   : ∀ {a∞ b∞} (u : Tm Γ (▸̂  a∞))                   → βECxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞) 
+  ∗l_   : ∀ {a∞ b∞} (u : Tm Γ (▸̂  a∞))                   → βECxt Γ Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞)
   ∗r_   : ∀ {a∞}{b∞} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → βECxt Γ Γ (▸̂  a∞) (▸̂ b∞)
   abs   : ∀ {a b}                                     → βECxt Γ (a ∷ Γ) b (a →̂  b)
   next    : ∀ {a∞}                                      → βECxt Γ Γ (force a∞) (▸̂  a∞)
@@ -31,7 +31,7 @@ data βEhole {Γ : Cxt} : {Δ : Cxt} {b a : Ty} → Tm Γ b → βECxt Γ Δ a b
   pairr : ∀ {a b}{u} (t : Tm Γ a)                         → βEhole (pair t u) (pairr t) (u ∶ b)
   fst   : ∀ {a b t}                                       → βEhole {a = a ×̂ b} (fst t) fst t
   snd   : ∀ {a b t}                                       → βEhole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂  a∞))                   → βEhole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (u ∗l) t
+  ∗l_   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂  a∞))                   → βEhole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (∗l u) t
   ∗r_   : ∀ {a∞}{b∞}{u} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → βEhole ((t ∗ (u ∶ ▸̂  a∞)) ∶ ▸̂ b∞) (∗r t) u
   abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → βEhole (abs t) abs t
   next    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → βEhole (next {a∞ = a∞} t) next t
@@ -44,7 +44,7 @@ mkHole (pairl u) = _ , pairl u
 mkHole (pairr t) = _ , pairr t
 mkHole fst       = _ , fst
 mkHole snd       = _ , snd
-mkHole (u ∗l)    = _ , u ∗l
+mkHole (∗l u)    = _ , ∗l u
 mkHole (∗r t)    = _ , ∗r t
 mkHole abs       = _ , abs
 mkHole next        = _ , next
@@ -82,7 +82,7 @@ subst⇒β σ (cong (appl u) (appl .u) t⇒)   = cong (appl _) (appl _) (subst�
 subst⇒β σ (cong (appr t₁) (appr .t₁) t⇒) = cong (appr _) (appr _) (subst⇒β σ t⇒)
 subst⇒β σ (cong fst fst t⇒)              = cong fst fst (subst⇒β σ t⇒)
 subst⇒β σ (cong snd snd t⇒)              = cong snd snd (subst⇒β σ t⇒)
-subst⇒β σ (cong (u ∗l) (.u ∗l) t⇒)       = cong (_ ∗l) (_ ∗l) (subst⇒β σ t⇒)
+subst⇒β σ (cong (∗l u) (∗l .u) t⇒)       = cong (∗l _) (∗l _) (subst⇒β σ t⇒)
 subst⇒β σ (cong (∗r t₁) (∗r .t₁) t⇒)     = cong (∗r _) (∗r _) (subst⇒β σ t⇒)
 subst⇒β σ (cong abs abs t⇒)              = cong abs abs (subst⇒β (lifts σ) t⇒)
 subst⇒β σ (cong next next t⇒)                = cong next next (subst⇒β σ t⇒)
@@ -104,7 +104,7 @@ cong* (pairl u)  (pairl .u)  []       = []
 cong* (pairr t₁) (pairr .t₁) []       = []
 cong* fst        fst         []       = []
 cong* snd        snd         []       = []
-cong* (u ∗l)     (.u ∗l)     []       = []
+cong* (∗l u)     (∗l .u)     []       = []
 cong* (∗r t₁)    (∗r .t₁)    []       = []
 cong* abs        abs         []       = []
 cong* next         next          []       = []
@@ -115,14 +115,14 @@ mutual
   EC→βEC (appl u) = appl u
   EC→βEC fst = fst
   EC→βEC snd = snd
-  EC→βEC (u ∗l) = u ∗l
+  EC→βEC (∗l u) = ∗l u
   EC→βEC (∗r t) = ∗r (next t)
 
   mkHole4 : ∀ {Γ} {a b} (E : ECxt Γ a b) {t : Tm Γ a} → βEhole (E [ t ]) (EC→βEC E) t
   mkHole4 (appl u) = appl u
   mkHole4 fst = fst
   mkHole4 snd = snd
-  mkHole4 (u ∗l) = u ∗l
+  mkHole4 (∗l u) = ∗l u
   mkHole4 (∗r t) = ∗r (next t)
 
 cong*3 : ∀ {Γ a b t t'}(E : ECxt* Γ a b)
@@ -159,8 +159,8 @@ mutual
   subst⇒β* σ₁ (fst t) = cong* fst fst (subst⇒β* σ₁ t)
   subst⇒β* σ₁ (snd t) = cong* snd snd (subst⇒β* σ₁ t)
   subst⇒β* σ₁ (next t) = cong* next next (subst⇒β* σ₁ t)
-  subst⇒β* σ₁ (t ∗ t₁) =  cong* (_ ∗l) (_ ∗l) (subst⇒β* σ₁ t) ++β
-                           cong* (∗r _) (∗r _) (subst⇒β* σ₁ t₁) 
+  subst⇒β* σ₁ (t ∗ t₁) =  cong* (∗l _) (∗l _) (subst⇒β* σ₁ t) ++β
+                           cong* (∗r _) (∗r _) (subst⇒β* σ₁ t₁)
 
   lifts⇒β* : ∀ {m vt a Γ} {Δ} {σ ρ : RenSub {m} vt Γ Δ} → (∀ {b} (x : Var Γ b) → vt2tm _ (σ x) ⇒β* vt2tm _ (ρ x))
              →  (∀ {b} (x : Var (a ∷ Γ) b) → vt2tm _ (lifts {a = a} σ x) ⇒β* vt2tm _ (lifts {a = a} ρ x))
@@ -176,7 +176,7 @@ mutual
   beta-shr (cong (appr ._) (appr ._) tβ⇒) (β {t = t} 𝒖)
     = inj₂ (_ , β (mapβSN tβ⇒ 𝒖) , subst⇒β* {vt = `Tm} (λ { {._} (zero) → tβ⇒ ∷ [] ; (suc x) → [] }) t)
   beta-shr β▸ β▸                                                     = inj₁ ≡.refl
-  beta-shr (cong (._ ∗l) (._ ∗l) (cong next next tβ⇒)) β▸                = inj₂ (_ , β▸ , cong next next (cong (appl _) (appl _) tβ⇒) ∷ [])
+  beta-shr (cong (∗l ._) (∗l ._) (cong next next tβ⇒)) β▸                = inj₂ (_ , β▸ , cong next next (cong (appl _) (appl _) tβ⇒) ∷ [])
   beta-shr (cong (∗r ._) (∗r ._) (cong next next tβ⇒)) β▸                = inj₂ (_ , β▸ , cong next next (cong (appr _) (appr _) tβ⇒) ∷ [])
   beta-shr βfst (βfst 𝒖)                                             = inj₁ ≡.refl
   beta-shr (cong fst fst (cong (pairl u) (pairl .u) tβ⇒)) (βfst 𝒖)   = inj₂ (_ , ((βfst 𝒖) , (tβ⇒ ∷ [])))
@@ -185,7 +185,7 @@ mutual
   beta-shr (cong snd snd (cong (pairr th) (pairr .th) tβ⇒)) (βsnd 𝒖) = inj₂ (_ , ((βsnd 𝒖) , (tβ⇒ ∷ [])))
   beta-shr βsnd (βsnd 𝒖)                                             = inj₁ ≡.refl
   beta-shr β (cong (appl u) (appl .u) (cong () 𝑬𝒕' th⇒))
-  beta-shr β▸ (cong (._ ∗l) (._ ∗l) (cong () 𝑬𝒕' th⇒))
+  beta-shr β▸ (cong (∗l ._) (∗l ._) (cong () 𝑬𝒕' th⇒))
   beta-shr β▸ (cong (∗r t) (∗r .t) (cong () 𝑬𝒕' th⇒))
   beta-shr βfst (cong fst fst (cong () 𝑬𝒕' th⇒))
   beta-shr βsnd (cong snd snd (cong () 𝑬𝒕' th⇒))
@@ -223,19 +223,19 @@ mutual
       helper snd snd t⇒₁ snd snd th⇒₁ with beta-shr t⇒₁ th⇒₁
       helper snd snd t⇒₁ snd snd th⇒₁ | inj₁ x = inj₁ (≡.cong snd x)
       helper snd snd t⇒₁ snd snd th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong snd snd h⇒tm) , cong* snd snd tm⇒β))
-      helper (u ∗l) (.u ∗l) t⇒₁ (.u ∗l) (.u ∗l) th⇒₁ with beta-shr t⇒₁ th⇒₁
-      helper (u ∗l) (.u ∗l) t⇒₁ (.u ∗l) (.u ∗l) th⇒₁ | inj₁ ≡.refl = inj₁ ≡.refl
-      helper (u ∗l) (.u ∗l) t⇒₁ (.u ∗l) (.u ∗l) th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong (_ ∗l) (_ ∗l) h⇒tm) , (cong* (_ ∗l) (_ ∗l) tm⇒β)))
-      helper (∗r t₂) (∗r .t₂) t⇒₁ (t₁ ∗l) (.t₁ ∗l) th⇒₁ = inj₂ (_ , ((cong (_ ∗l) (_ ∗l) th⇒₁) , (cong (∗r _) (∗r _) t⇒₁ ∷ [])))
-      helper (t₂ ∗l) (.t₂ ∗l) (cong next next t⇒₁) (∗r t) (∗r .t) th⇒₁
-            = inj₂ (_ , ((cong (∗r _) (∗r _) th⇒₁) , (cong (_ ∗l) (_ ∗l) (cong next next t⇒₁) ∷ [])))
+      helper (∗l u) (∗l .u) t⇒₁ (∗l .u) (∗l .u) th⇒₁ with beta-shr t⇒₁ th⇒₁
+      helper (∗l u) (∗l .u) t⇒₁ (∗l .u) (∗l .u) th⇒₁ | inj₁ ≡.refl = inj₁ ≡.refl
+      helper (∗l u) (∗l .u) t⇒₁ (∗l .u) (∗l .u) th⇒₁ | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong (∗l _) (∗l _) h⇒tm) , (cong* (∗l _) (∗l _) tm⇒β)))
+      helper (∗r t₂) (∗r .t₂) t⇒₁ (∗l t₁) (∗l .t₁) th⇒₁ = inj₂ (_ , ((cong (∗l _) (∗l _) th⇒₁) , (cong (∗r _) (∗r _) t⇒₁ ∷ [])))
+      helper (∗l t₂) (∗l .t₂) (cong next next t⇒₁) (∗r t) (∗r .t) th⇒₁
+            = inj₂ (_ , ((cong (∗r _) (∗r _) th⇒₁) , (cong (∗l _) (∗l _) (cong next next t⇒₁) ∷ [])))
       helper (∗r .(next t)) (∗r .(next t)) t⇒₁ (∗r t) (∗r .t) th⇒₁ with beta-shr t⇒₁ th⇒₁
       ... | inj₁ ≡.refl = inj₁ ≡.refl
       ... | inj₂ (tm , h⇒tm , tm⇒β) = inj₂ (_ , ((cong (∗r _) (∗r _) h⇒tm) , cong* (∗r _) (∗r _) tm⇒β))
 
   mapβSNe : ∀ {i n a Γ} {t t' : Tm Γ a} → t ⇒β t' → SNe {i} n t → SNe {i} n t'
   mapβSNe β                                     (elim (elim 𝒏 ()) (appl 𝒖))
-  mapβSNe β▸                                    (elim (elim 𝒏 ()) (𝒖 ∗l))
+  mapβSNe β▸                                    (elim (elim 𝒏 ()) (∗l 𝒖))
   mapβSNe β▸                                    (elim (elim 𝒏 ()) (∗r 𝒕))
   mapβSNe βfst                                  (elim (elim 𝒏 ()) fst)
   mapβSNe βsnd                                  (elim (elim 𝒏 ()) snd)
@@ -243,22 +243,13 @@ mutual
   mapβSNe (cong (appr t₁) (appr .t₁) t⇒)        (elim 𝒏 (appl 𝒖))   = elim 𝒏 (appl (mapβSN t⇒ 𝒖))
   mapβSNe (cong fst fst t⇒)                     (elim  𝒏 fst)        = elim  (mapβSNe t⇒ 𝒏) fst
   mapβSNe (cong snd snd t⇒)                     (elim  𝒏 snd)        = elim  (mapβSNe t⇒ 𝒏) snd
-  mapβSNe (cong (u ∗l) (.u ∗l) t⇒)              (elim  𝒏 (𝒖 ∗l))     = elim  (mapβSNe t⇒ 𝒏) (𝒖 ∗l)
-  mapβSNe (cong (u ∗l) (.u ∗l) (cong next next t⇒)) (elim 𝒏 (∗r ne (elim _ ())))
-  mapβSNe (cong (u ∗l) (.u ∗l) (cong next next t⇒)) (elim  𝒏 (∗r next0))    = elim  𝒏 (∗r_ next0)
-  mapβSNe (cong (u ∗l) (.u ∗l) (cong next next t⇒)) (elim  𝒏 (∗r (next 𝒕))) = elim  𝒏 (∗r (next (mapβSN t⇒ 𝒕)))
-  mapβSNe (cong (u ∗l) (.u ∗l) (cong next next t⇒)) (elim 𝒏 (∗r exp (cong () 𝑬𝒕' t⇒₁) 𝒕))
-  mapβSNe (cong (∗r t₁) (∗r .t₁) t⇒)            (elim  𝒏 (_∗l 𝒖))     = elim  𝒏 (mapβSN t⇒ 𝒖 ∗l)
+  mapβSNe (cong (∗l u) (∗l .u) t⇒)              (elim  𝒏 (∗l 𝒖))     = elim  (mapβSNe t⇒ 𝒏) (∗l 𝒖)
+  mapβSNe (cong (∗l u) (∗l .u) (cong next next t⇒)) (elim 𝒏 (∗r ne (elim _ ())))
+  mapβSNe (cong (∗l u) (∗l .u) (cong next next t⇒)) (elim  𝒏 (∗r next0))    = elim  𝒏 (∗r_ next0)
+  mapβSNe (cong (∗l u) (∗l .u) (cong next next t⇒)) (elim  𝒏 (∗r (next 𝒕))) = elim  𝒏 (∗r (next (mapβSN t⇒ 𝒕)))
+  mapβSNe (cong (∗l u) (∗l .u) (cong next next t⇒)) (elim 𝒏 (∗r exp (cong () 𝑬𝒕' t⇒₁) 𝒕))
+  mapβSNe (cong (∗r t₁) (∗r .t₁) t⇒)            (elim  𝒏 (∗l 𝒖))     = elim  𝒏 (∗l (mapβSN t⇒ 𝒖))
   mapβSNe (cong (∗r ._) (∗r ._) t⇒)             (elim  𝒏 (∗r 𝒕))     = elim  (mapβSNe t⇒ 𝒏) (∗r 𝒕)
-  -- mapβSNe (cong fst fst t⇒)                     (elim {j₁ = j₁} {j₂ = j₂} 𝒏 fst)        = elim {j₁ = j₁} {j₂ = j₂} (mapβSNe t⇒ 𝒏) fst
-  -- mapβSNe (cong snd snd t⇒)                     (elim {j₁ = j₁} {j₂ = j₂} 𝒏 snd)        = elim {j₁ = j₁} {j₂ = j₂} (mapβSNe t⇒ 𝒏) snd
-  -- mapβSNe (cong (u ∗l) (.u ∗l) t⇒)              (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (𝒖 ∗l))     = elim {j₁ = j₁} {j₂ = j₂} (mapβSNe t⇒ 𝒏) (𝒖 ∗l)
-  -- mapβSNe (cong (u ∗l) (.u ∗l) (cong next next t⇒)) (elim 𝒏 (∗r ne (elim _ ())))
-  -- mapβSNe (cong (u ∗l) (.u ∗l) (cong next next t⇒)) (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r next0))    = elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r_ next0)
-  -- mapβSNe (cong (u ∗l) (.u ∗l) (cong next next t⇒)) (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r (next 𝒕))) = elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r (next mapβSN t⇒ 𝒕))
-  -- mapβSNe (cong (u ∗l) (.u ∗l) (cong next next t⇒)) (elim 𝒏 (∗r exp (cong () 𝑬𝒕' t⇒₁) 𝒕))
-  -- mapβSNe (cong (∗r t₁) (∗r .t₁) t⇒)            (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (_∗l 𝒖))     = elim {j₁ = j₁} {j₂ = j₂} 𝒏 (mapβSN t⇒ 𝒖 ∗l)
-  -- mapβSNe (cong (∗r ._) (∗r ._) t⇒)             (elim {j₁ = j₁} {j₂ = j₂} 𝒏 (∗r 𝒕))     = elim {j₁ = j₁} {j₂ = j₂} (mapβSNe t⇒ 𝒏) (∗r 𝒕)
   mapβSNe (cong abs abs t⇒)                     (elim 𝒏 ())
   mapβSNe (cong next next t⇒)                       (elim 𝒏 ())
   mapβSNe (cong (pairr _) (pairr ._) t⇒)        (elim 𝒏 ())
