@@ -11,11 +11,11 @@ open import Terms
 }
 
 
--- Which terms are accepted by this well-typed syntax is affected by
--- which types are considered equal.  Unfortunately Agda's own notion of
--- equality is too intensional, we can however define bisimulation
--- explicitly as a coinductive type, and prove it is in fact an
--- equivalence relation.
+%-- Which terms are accepted by this well-typed syntax is affected by
+%-- which types are considered equal.  Unfortunately Agda's own notion of
+%-- equality is too intensional, we can however define bisimulation
+%-- explicitly as a coinductive type, and prove it is in fact an
+%-- equivalence relation.
 
 \begin{code}
 mutual
