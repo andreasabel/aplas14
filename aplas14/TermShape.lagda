@@ -33,6 +33,7 @@ data EHole {Γ : Cxt} -- : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a �
   ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (force a∞ →̂ force b∞)) → EHole (((next t) ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
 \end{code}
 }
+
 $\Ehole\;\vEt\;\vE\;\vt$ witnesses the splitting of a term $\vEt$ into
 evaluation context $\vE$ and hole content $\vt$.
 %
@@ -74,31 +75,33 @@ mkEHole (∗r t)    = _ , ∗r t
 A generalization of $\Ehole$ is $\PCxt\;\vP$ which additionally
 requires that all terms contained in the evaluation context (that is
 one or zero terms) satisfy predicate $\vP$.  This allows us the
-formulation of $\vP$-neutrals as terms of the form $\vec E[x]$ for
-some $\vec E[\_] = E_1[\dots E_n[\_]]$
+formulation of $\vP$-neutrals as terms of the form $\vect E[x]$ for
+some $\vect E[\_] = E_1[\dots E_n[\_]]$
 and a variable $x$ where all immediate subterms satisfy $\vP$.
 
 \begin{code}
-data PCxt  {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) :
-           {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
-
+data PCxt  {Γ} (P : ∀{c} → Tm Γ c → Set) :
+           ∀ {a b} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set where
   appl  :  ∀ {a b t u}    (𝒖 : P u)  → PCxt P (app t u)  (appl u)  (t ∶ (a →̂ b))
   fst   :  ∀ {a b t}                 → PCxt P (fst t)    fst       (t ∶ (a ×̂ b))
   snd   :  ∀ {a b t}                 → PCxt P (snd t)    snd       (t ∶ (a ×̂ b))
-
   ∗l_   :  ∀ {a∞ b∞ t u}  (𝒖 : P u)  → PCxt P (t ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (∗l u) t
-
   ∗r_   :  ∀ {a∞ b∞ t u}  (𝒕 : P (next {a∞ = a∞ ⇒ b∞} t))
                                      → PCxt P ((next t) ∗ (u ∶ ▸̂ a∞) ∶ ▸̂ b∞) (∗r t) u
 
-data PNe {Γ} (P : ∀{c} → Tm Γ c → Set) {b} : Tm Γ b → Set where
-  var   :  ∀ x                                 → PNe P (var x)
-  elim  :  ∀ {a} {t : Tm Γ a} {E Et}
-        →  (𝒏 : PNe P t) (𝑬𝒕 : PCxt P Et E t)  → PNe P Et
+data PNe   {Γ} (P : ∀{c} → Tm Γ c → Set) {b} : Tm Γ b → Set where
+  var   :  ∀  x                                   → PNe P (var x)
+  elim  :  ∀  {a} {t : Tm Γ a} {E Et}
+           →  (𝒏 : PNe P t) (𝑬𝒕 : PCxt P Et E t)  → PNe P Et
 \end{code}
 
-Weak head reduction is a reduction of the form $\vec E[t] \red \vec
-E[t']$ where $t \contr t'$.
+\emph{Weak head reduction} (whr) is a reduction of the form $\vect E[t] \red \vect
+E[t']$ where $t \contr t'$.  It is well-known that weak head expansion
+does not preserve sn, e.g., $(\lambda x.\,y) \Omega$ is not sn even
+though it contracts to $y$.  In this case $\Omega$ is a \emph{vanishing
+term} lost by reduction.  If we require that all vanishing terms in a
+reduction are sn, weak head expansion preserves sn.  In the following
+we define $\vP$-whr where all vanishing terms must satisfy $\vP$.
 
 \begin{code}
 data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
@@ -108,9 +111,6 @@ data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
            → (𝒖 : P u)
            → P / (app (abs t) u) ⇒ subst0 u t
 
-  β▸    :  ∀ {a∞ b∞}{t : Tm Γ (force (a∞ ⇒ b∞))}{u : Tm Γ (force a∞)}
-           → P / (next t ∗ next {a∞ = a∞} u) ⇒ (next {a∞ = b∞} (app t u))
-
   βfst  :  ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
            → (𝒖 : P u)
            → P / fst (pair t u) ⇒ t
@@ -118,6 +118,9 @@ data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
   βsnd  :  ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
            → (𝒕 : P t)
            → P / snd (pair t u) ⇒ u
+
+  β▸    :  ∀ {a∞ b∞}{t : Tm Γ (force (a∞ ⇒ b∞))}{u : Tm Γ (force a∞)}
+           → P / (next t ∗ next {a∞ = a∞} u) ⇒ (next {a∞ = b∞} (app t u))
 
   cong  :  ∀ {a b t t' Et Et'}{E : ECxt Γ a b}
            → (𝑬𝒕 : EHole Et E t)
@@ -128,12 +131,11 @@ data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
 
 %%%-- Weak head reduction is deterministic.
 %%% Actually never used, still nice to mention?
+\AgdaHide{
 \begin{code}
 detP⇒  :  ∀ {a Γ} {P : ∀ {c} → Tm Γ c → Set} {t t₁ t₂ : Tm Γ a}
           → (t⇒₁ : P / t ⇒ t₁) (t⇒₂ : P / t ⇒ t₂) → t₁ ≡ t₂
 \end{code}
-
-\AgdaHide{
 \begin{code}
 detP⇒ (β _) (β _)                                              = ≡.refl
 detP⇒ (β _) (cong (appl u) (appl .u) (cong () _ _))
@@ -169,6 +171,7 @@ pneApp 𝒏 𝒖 = elim 𝒏 (appl 𝒖)
 \end{code}
 }
 
+\AgdaHide{
 %%% -- Functoriality of the notions wrt. P.
 \begin{code}
 mapPCxt  : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t)
@@ -178,6 +181,7 @@ mapPNe   : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm �
 mapP⇒    : ∀ {Γ} {P Q : ∀{c} → Tm Γ c → Set} (P⊆Q : ∀ {c}{t : Tm Γ c} → P t → Q t)
          {a} {t t' : Tm Γ a} → P / t ⇒ t' → Q / t ⇒ t'
 \end{code}
+}
 
 \AgdaHide{
 \begin{code}
