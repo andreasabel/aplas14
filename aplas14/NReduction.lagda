@@ -41,7 +41,7 @@ data NβEhole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
   _∗l   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞))                     → NβEhole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (u ∗l) t
   ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → NβEhole ((t ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
   abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → NβEhole (abs t) abs t
-  next    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → NβEhole (next {a∞ = a∞} t) next t
+  next  : ∀ {a∞} {t : Tm Γ (force a∞)}                    → NβEhole (next {a∞ = a∞} t) next t
 \end{code}
 }
 

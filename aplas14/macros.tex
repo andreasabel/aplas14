@@ -123,6 +123,7 @@
 \newcommand{\pure}[1]{\tnext\;#1}
 \newcommand{\apply}[2]{#1 \mathop{∗} #2}
 \newcommand{\applyp}[2]{\apply{(#1)}{(#2)}}
+\newcommand{\tfix}{\mathsf{fix}}
 
 % Agda 
 \newcommand{\Ty}{\AgdaDatatype{Ty}}
@@ -135,7 +136,10 @@
 \newcommand{\vcinf}{\AgdaBound{c∞}}
 \newcommand{\vx}{\AgdaBound{x}}
 \newcommand{\vy}{\AgdaBound{y}}
+\newcommand{\vn}{\AgdaBound{n}}
+\newcommand{\vm}{\AgdaBound{m}}
 \newcommand{\vt}{\AgdaBound{t}}
+\newcommand{\vtprime}{\AgdaBound{t'}}
 \newcommand{\vu}{\AgdaBound{u}}
 \newcommand{\tdelay}{\AgdaCoinductiveConstructor{delay}}
 \newcommand{\tforce}{\AgdaField{force}}
@@ -160,7 +164,8 @@
 \newcommand{\propeq}{\AgdaDatatype{≡}}
 \newcommand{\bisim}{\AgdaDatatype{≅}}
 \newcommand{\bisiminf}{\AgdaDatatype{∞≅}}
-
+\newcommand{\sn}{\AgdaDatatype{sn}}
+\newcommand{\nred}[1]{\ensuremath{\mathrel{\AgdaDatatype{⟨}\AgdaBound{#1}\AgdaDatatype{⟩⇒β}}}}
 
 %%% Local Variables: 
 %%% mode: latex
