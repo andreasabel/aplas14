@@ -209,9 +209,9 @@ renamings.
 \end{code}
 
 The \af{TmSet} for product types is directly saturated, inclusion into
-\af{SN} uses \af{bothProjSN} to derive \af{SN} \ab{n} \ab{t} from the
-membership into \af{SN} of the two projections, which follows from the
-inclusion into \af{SN} of \ab{𝓐} and \ab{𝓑}.
+\af{SN} uses \af{fromFstSN} to derive \af{SN} \ab{n} \ab{t} from the
+membership into \af{SN} of \aic{fst} \ab{t}, which follows from the
+inclusion of \ab \ab{𝓐} into \af{SN}.
 \begin{code}
 _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 𝓐 ⟦×⟧ 𝓑 = record
