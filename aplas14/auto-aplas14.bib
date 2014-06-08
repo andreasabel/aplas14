@@ -2,68 +2,94 @@
 %%%% DO NOT EDIT! ALL CHANGES WILL BE LOST!
 
 @STRING{acm	= "ACM Press" }
-@STRING{calco09	= "Algebra and Coalgebra in Computer Science, Third
-		  International Conference, CALCO 2009, Udine, Italy,
-		  September 7-10, 2009. Proceedings" }
-@STRING{csl99	= "Computer Science Logic, 13th International Workshop, CSL
-		  '99, 8th Annual Conference of the EACSL, Madrid, Spain,
-		  September 20-25, 1999, Proceedings" }
-@STRING{fac	= "Formal Aspects of Computing" }
-@STRING{icfp13	= "Proceedings of the Eighteenth ACM SIGPLAN International
-		  Conference on Functional Programming, ICFP'13, Boston, MA,
-		  USA, September 25-27, 2013" }
-@STRING{ieee	= "IEEE Computer Society Press" }
-@STRING{infcomp	= "Information and Computation" }
-@STRING{jar	= "Journal of Automated Reasoning" }
-@STRING{lics00	= "15th Annual IEEE Symposium on Logic in Computer Science
-		  (LICS 2000), 26-29 June 2000, Santa Barbara, California,
-		  USA, Proceedings" }
-@STRING{lics11	= "Proceedings of the 26th Annual IEEE Symposium on Logic in
-		  Computer Science, LICS 2011, June 21-24, 2011, Toronto,
-		  Ontario, Canada" }
-@STRING{lics13	= "28th Annual ACM/IEEE Symposium on Logic in Computer
-		  Science, LICS 2013, New Orleans, LA, USA, June 25-28, 2013" }
-@STRING{lncs	= "Lecture Notes in Computer Science" }
-@STRING{popl13	= "The 40th Annual ACM SIGPLAN-SIGACT Symposium on Principles
-		  of Programming Languages, POPL'13, Rome, Italy, January 23
-		  - 25, 2013" }
-@STRING{popl96	= "Conference Record of POPL'96: The 23rd ACM SIGPLAN-SIGACT
-		  Symposium on Principles of Programming Languages, Papers
-		  Presented at the Symposium, St. Petersburg Beach, Florida,
-		  USA, January 21-24, 1996" }
-@STRING{springer= "Springer-Verlag" }
-@STRING{wgp10	= "Proceedings of the ACM SIGPLAN Workshop on Generic
-		  Programming, WGP 2010, Baltimore, MD, USA, September 27-29,
-		  2010" }
+@STRING{aml	= "Archive of Mathematical Logic" }
+@STRING{calco09	= "3rd Int. Conf. on Algebra and Coalgebra in Computer
+		  Science, CALCO 2009" }
+@STRING{csl99	= "Computer Science Logic, 13th Int. Wksh., CSL '99, 8th
+		  Annual Conf. of the EACSL" }
+@STRING{elsevier= "Elsevier" }
+@STRING{entcs	= "Electr. Notes in Theor. Comp. Sci." }
+@STRING{fac	= "Formal Asp. Comput." }
+@STRING{icfp13	= "Proc. of the 18th ACM SIGPLAN Int. Conf. on Functional
+		  Programming, ICFP'13" }
+@STRING{ieee	= "IEEE Computer Soc. Press" }
+@STRING{infcomp	= "Inf. Comput." }
+@STRING{jar	= "J. of Autom. Reasoning" }
+@STRING{lics00	= "Proc. of the 15th IEEE Symp. on Logic in Computer Science
+		  (LICS 2000)" }
+@STRING{lics11	= "26th IEEE Symp. on Logic in Computer Science (LICS'11)" }
+@STRING{lics13	= "28th IEEE Symp. on Logic in Computer Science (LICS'13)" }
+@STRING{lncs	= "Lect. Notes in Comput. Sci." }
+@STRING{plpv07	= "Proc. of the Wksh. Programming Languages meets Program
+		  Verification, PLPV 2007" }
+@STRING{popl13	= "Proc. of the 40th ACM Symp. on Principles of Programming
+		  Languages, POPL 2013" }
+@STRING{springer= "Springer" }
 
-@Misc{		  abelVezzosi:guardedNormalization,
+@Manual{	  agda24,
+  title		= {Agda Wiki},
   optkey	= {},
-  author	= {Andreas Abel and Andrea Vezzosi},
-  title		= { A Formalized Proof of Strong Normalization for Guarded
-		  Recursive Types
-		  
-		  },
-  howpublished	= {Literate Agda code},
-  year		= 2014,
+  optauthor	= {},
+  organization	= {Chalmers and Gothenburg University},
+  optaddress	= {},
+  edition	= {2.4},
+  optmonth	= jun,
+  year		= {2014},
   optnote	= {},
-  url		= {http://www.cse.chalmers.se/~abela/guarded-normalization/Everything.html}
-		  ,
+  url		= {http://wiki.portal.chalmers.se/agda},
   optpostscript	= {},
   optpdf	= {},
   optdvi	= {},
   optabstract	= {}
 }
 
-@InProceedings{	  abelPientka:icfp13,
-  author	= {Andreas Abel and Brigitte Pientka},
-  title		= {Wellfounded Recursion with Copatterns: A Unified Approach
-		  to Termination and Productivity},
+@Unpublished{	  abelVezzosi:guardedNormalization,
+  optkey	= {},
+  author	= {Andreas Abel and Andrea Vezzosi},
+  title		= { A Formalized Proof of Strong Normalization for Guarded
+		  Recursive Types (Long Version) },
+  note		= {Literate Agda code under
+		  \url{http://www.cse.chalmers.se/~abela/guarded-normalization/Everything.html}}
+		  ,
+  year		= 2014,
+  optnote	= {},
+  url		= {http://www.cse.chalmers.se/~abela/aplas14long.pdf},
+  optpostscript	= {},
+  optpdf	= {},
+  optdvi	= {},
+  optabstract	= {}
+}
+
+@InProceedings{	  atkeyMcBride:icfp13,
+  author	= {Robert Atkey and Conor McBride},
+  title		= {Productive coprogramming with guarded recursion},
   booktitle	= icfp13,
+  publisher	= acm,
   year		= 2013,
-  pages		= {185-196},
-  ee		= {http://doi.acm.org/10.1145/2500365.2500591},
-  crossref	= {DBLP:conf/icfp/2013},
+  pages		= {197-208},
+  ee		= {http://doi.acm.org/10.1145/2500365.2500597},
   bibsource	= {DBLP, http://dblp.uni-trier.de}
+}
+
+@TechReport{	  hott,
+  author	= {The Univalent Foundations Program},
+  institution	= {Institute for Advanced Study},
+  title		= {Homotopy type theory: Univalent foundations of
+		  mathematics},
+  year		= {2013},
+  url		= {http://homotopytypetheory.org/book/}
+}
+
+@InProceedings{	  abel:entcs04,
+  author	= {Andreas Abel},
+  title		= {Normalization for the Simply-Typed Lambda-Calculus in
+		  {Twelf}},
+  booktitle	= {Logical Frameworks and Metalanguages (LFM 04)},
+  year		= 2008,
+  series	= entcs,
+  volume	= {199C},
+  pages		= {3--16},
+  publisher	= elsevier
 }
 
 @InProceedings{	  abelPientkaThibodeauSetzer:popl13,
@@ -86,10 +112,21 @@
   booktitle	= csl99,
   pages		= {453--468},
   year		= 1999,
-  editor	= {J{\"o}rg Flum and Mario Rodr{\'\i}guez-Artalejo},
   volume	= 1683,
   series	= lncs,
   publisher	= springer
+}
+
+@InProceedings{	  altenkirchMcBrideSwierstra:plpv07,
+  author	= {Thorsten Altenkirch and Conor McBride and Wouter
+		  Swierstra},
+  title		= {Observational equality, now!},
+  booktitle	= plpv07,
+  publisher	= acm,
+  year		= {2007},
+  pages		= {57--68},
+  ee		= {http://doi.acm.org/10.1145/1292597.1292608},
+  bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
 @InProceedings{	  atkeyMcBride:icfp13,
@@ -150,6 +187,18 @@
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
+@Article{	  matthes:shortproofs,
+  author	= {Felix Joachimski and Ralph Matthes},
+  title		= {Short Proofs of Normalization},
+  journal	= aml,
+  year		= 2003,
+  volume	= 42,
+  number	= 1,
+  pages		= {59--87},
+  url		= {http://www.tcs.informatik.uni-muenchen.de/\~{}matthes/works.html}
+		  
+}
+
 @InProceedings{	  mcBride:calco09,
   author	= {Conor McBride},
   title		= {Let's See How Things Unfold: Reconciling the Infinite with
@@ -166,7 +215,7 @@
   author	= {Conor McBride},
   title		= {Type-Preserving Renaming and Substitution},
   year		= 2006,
-  note		= {Functional Pearl. Draft}
+  url		= {http://strictlypositive.org/ren-sub.pdf}
 }
 
 @InProceedings{	  mcBride:wgp10,
@@ -192,16 +241,6 @@
   bibsource	= {DBLP, http://dblp.uni-trier.de}
 }
 
-@InProceedings{	  hughesParetoSabry:popl96,
-  author	= "John Hughes and Lars Pareto and Amr Sabry",
-  title		= "Proving the Correctness of Reactive Systems Using Sized
-		  Types",
-  booktitle	= popl96,
-  pages		= "410--423",
-  year		= "1996",
-  ee		= {http://doi.acm.org/10.1145/237721.240882}
-}
-
 @Article{	  raamsdonk:perpetualReductions,
   author	= {Femke van Raamsdonk and Paula Severi and Morten Heine
 		  S\o{}rensen and Hongwei Xi},
@@ -210,8 +249,7 @@
   year		= 1999,
   volume	= 149,
   number	= 2,
-  pages		= {173--225},
-  url		= {http://www.cs.vu.nl/\~{}femke/papers.html}
+  pages		= {173--225}
 }
 
 @InProceedings{	  xiChenChen:popl03,
@@ -240,7 +278,6 @@
 }
 
 @Proceedings{	  DBLP:conf/calco/2009,
-  editor	= {Alexander Kurz and Marina Lenisa and Andrzej Tarlecki},
   title		= calco09,
   booktitle	= calco09,
   publisher	= springer,
@@ -252,7 +289,6 @@
 }
 
 @Proceedings{	  DBLP:conf/icfp/2013,
-  editor	= {Greg Morrisett and Tarmo Uustalu},
   title		= icfp13,
   booktitle	= icfp13,
   publisher	= acm,
@@ -288,7 +324,6 @@
 }
 
 @Proceedings{	  DBLP:conf/popl/2013,
-  editor	= {Roberto Giacobazzi and Radhia Cousot},
   title		= popl13,
   booktitle	= popl13,
   publisher	= acm,
@@ -298,7 +333,6 @@
 }
 
 @Proceedings{	  DBLP:conf/icfp/2010wgp,
-  editor	= {Bruno C. d. S. Oliveira and Marcin Zalewski},
   booktitle	= wgp10,
   publisher	= acm,
   year		= 2010,

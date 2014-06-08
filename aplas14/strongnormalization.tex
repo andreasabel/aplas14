@@ -38,12 +38,17 @@ set-notation at this semi-formal level:
   \ru{t \in \SNe\;\vn
     }{t \in \SN\;\vn}
 \qquad
-  \ru{t' \in \SN\;\vn \qquad t \whr_{\SN\;\vn} t'
+  \ru{t' \in \SN\;\vn \qquad t \nwhr n t' % t \whr_{\SN\;\vn} t'
     }{t \in \SN\;\vn}
 \end{gather*}
-The last two rules close $\SN$ under neutrals and level-$\vn$ 
-\emph{strong head expansion}, which is an instance of $\vP$-whe with
-$\vP = \SN\;\vn$.  We represent the inductive $\SN$ in Agda as a sized
+The last two rules close $\SN$ under neutrals $\SNe$, which is an
+instance of $\PNe$ with $\vP = \SN\;\vn$,
+and level-$\vn$ 
+\emph{strong head expansion} $t \nwhr n t'$, 
+which is an instance of $\vP$-whe with
+also $\vP = \SN\;\vn$.  
+\LONGVERSION{
+We represent the inductive $\SN$ in Agda as a sized
 type \citep{hughesParetoSabry:popl96,abelPientka:icfp13} for the
 purpose of termination checking certain inductions on $\SN$ later.
 The assignment of sizes follows the principle that recursive
@@ -54,7 +59,7 @@ strong head reduction (shr)
 $\vt \nwhr n \vtprime$ just thread the size argument through.  Note
 that there is a version $\vi\;\asize\;\vt \nwhr n \vtprime$ of shr
 that makes the size argument visible, to be supplied in case $\texp$.
-
+}
 \input{SN}
 
 \input{AntiRename}

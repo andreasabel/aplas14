@@ -57,14 +57,11 @@ The other two constructors are needed to satisfy the properties we
 require of our saturated sets.
 \begin{code}
 data [▸] {a∞} (𝑨 : TmSet (force a∞)) {Γ} : (n : ℕ) → Tm Γ (▸̂ a∞) → Set where
-  next0  :  ∀ {t : Tm Γ (force a∞)}
-            → [▸] 𝑨  zero     (next t)
-  next   :  ∀ {n}{t : Tm Γ (force a∞)}   (𝒕 : 𝑨 t)
-            → [▸] 𝑨  (suc n)  (next t)
-  ne     :  ∀ {n}{t : Tm Γ (▸̂ a∞)}      (𝒏 : SNe n t)
-            → [▸] 𝑨  n        t
-  exp    :  ∀ {n}{t t'  : Tm Γ (▸̂ a∞)}  (t⇒ : t ⟨ n ⟩⇒ t') (𝒕 : [▸] 𝑨 n t')
-            → [▸] 𝑨  n        t
+  next0  :  ∀  {t : Tm Γ (force a∞)}                        → [▸] 𝑨  zero     (next t)
+  next   :  ∀  {n}{t : Tm Γ (force a∞)}   (𝒕 : 𝑨 t)         → [▸] 𝑨  (suc n)  (next t)
+  ne     :  ∀  {n}{t : Tm Γ (▸̂ a∞)}      (𝒏 : SNe n t)     → [▸] 𝑨  n        t
+  exp    :  ∀  {n}{t t'  : Tm Γ (▸̂ a∞)}
+               (t⇒ : t ⟨ n ⟩⇒ t')         (𝒕 : [▸] 𝑨 n t')  → [▸] 𝑨  n        t
 \end{code}
 
 
@@ -77,11 +74,10 @@ dealing with terms in a context.
 \begin{code}
 record IsSAT (n : ℕ) {a} (𝑨 : TmSet a) : Set where
   field
-    satSNe     : SNe n ⊆ 𝑨
-    satSN      : 𝑨 ⊆ SN n
-    satExp     : Closed n 𝑨
-    satRename  :  ∀ {Γ Δ} → (ρ : Δ ≤ Γ) →
-                  ∀ {t} → 𝑨 t → 𝑨 (rename ρ t)
+    satSNe     :  SNe n ⊆ 𝑨
+    satSN      :  𝑨 ⊆ SN n
+    satExp     :  Closed n 𝑨
+    satRename  :  ∀ {Γ Δ} → (ρ : Δ ≤ Γ) → ∀ {t} → 𝑨 t → 𝑨 (rename ρ t)
 
 record SAT (a : Ty) (n : ℕ) : Set₁ where
   field
@@ -140,7 +136,7 @@ generalization to smaller depths, so that we can maintain antitonicity.
 \begin{code}
 _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →̂ b) n
 𝓐 ⟦→⟧ 𝓑 = record
-  { satSet  = 𝑪
+  { satSet  = λ t → ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
   -- ...
 \end{code}
 \AgdaHide{
@@ -155,7 +151,6 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
     }
   }
 \end{code}
-}
 \begin{code}
   where
     module 𝓐 = SAT≤ 𝓐
@@ -170,7 +165,7 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
     CSN 𝒕 =  unRenameSN (prop→Ind suc ≡.refl) (absVarSN
              (𝓑.satSN ≤ℕ.refl (𝒕 _ ≤ℕ.refl suc (𝓐.satSNe ≤ℕ.refl (var zero)))))
 \end{code}
-
+}
 The proof of inclusion into \af{SN} first derives that \aic{app}
 (\af{rename} \aic{suc} \ab{t}) (\aic{var} \aic{zero}) is in \af{SN}
 through the inclusion of neutral terms into \ab{𝓐} and the inclusion
@@ -245,7 +240,15 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
                      ,  satExp 𝓑 (cong snd snd t⇒) 𝒖
 \end{code}
 }
-
+\SHORTVERSION{
+We easily define
+⟦pair⟧  : t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
+and
+⟦fst⟧   : t ∈ (𝓐 ⟦×⟧ 𝓑) → fst t ∈ 𝓐
+and
+⟦snd⟧   : t ∈ (𝓐 ⟦×⟧ 𝓑) → snd t ∈ 𝓑.
+}
+\LONGVERSION{
 \begin{code}
 ⟦pair⟧  :   ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
             → t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
@@ -260,7 +263,7 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
             → t ∈ (𝓐 ⟦×⟧ 𝓑) → snd t ∈ 𝓑
 ⟦snd⟧ 𝒕 =  ↿ (proj₂ (⇃ 𝒕))
 \end{code}
-
+}
 
 
 
@@ -281,34 +284,35 @@ Since the cases for \af{[▸]\_} are essentially a subset of those for
 \af{SN}, the proof of inclusion into \af{SN} goes by induction and the
 inclusion of \ab{𝓐} into \af{SN}.
 \begin{code}
-module _ {a∞ : ∞Ty} where
-  private
-    a = force a∞
-
-    𝑪 : ∀ {n} (𝓐 : SATpred a n) → TmSet (▸̂ a∞)
+⟦▸⟧_ : ∀{n a∞} (𝓐 : SATpred (force a∞) n) → SAT (▸̂ a∞) n
+⟦▸⟧_ {n} {a∞} 𝓐 = record
+  { satSet = [▸] (SATpredSet 𝓐) n
+  -- etc.
+\end{code}
+\LONGVERSION{
+\begin{code}
+  ; satProp = record
+    { satSNe = ne
+    ; satSN  = CSN 𝓐
+    ; satExp = exp
+    ; satRename = CRen 𝓐
+    }
+  }
+  where
+    𝑪 : ∀ {n} (𝓐 : SATpred (force a∞) n) → TmSet (▸̂ a∞)
     𝑪 {n} 𝓐 = [▸] (SATpredSet 𝓐) n
 
-    CSN : ∀ {n} (𝓐 : SATpred a n) → 𝑪 {n} 𝓐 ⊆ SN n
+    CSN : ∀ {n} (𝓐 : SATpred (force a∞) n) → 𝑪 {n} 𝓐 ⊆ SN n
     CSN 𝓐 next0         = next0
     CSN 𝓐 (next 𝒕)      = next (satSN 𝓐 𝒕)
     CSN 𝓐 (ne 𝒏)        = ne 𝒏
     CSN 𝓐 (exp t⇒ 𝒕)    = exp t⇒ (CSN 𝓐 𝒕)
 
-    CRen :  ∀ {n} (𝓐 : SATpred a n) → ∀ {Γ Δ} (ρ : Γ ≤ Δ) →
+    CRen :  ∀ {n} (𝓐 : SATpred (force a∞) n) → ∀ {Γ Δ} (ρ : Γ ≤ Δ) →
             ∀ {t} → 𝑪 {n} 𝓐 t → 𝑪 {n} 𝓐 (subst ρ t)
     CRen 𝓐 ρ next0         = next0
     CRen 𝓐 ρ (next 𝒕)      = next (satRename 𝓐 ρ 𝒕)
     CRen 𝓐 ρ (ne 𝒏)        = ne (renameSNe ρ 𝒏)
     CRen 𝓐 ρ (exp t⇒ 𝒕)    = exp (rename⇒ ρ t⇒) (CRen 𝓐 ρ 𝒕)
-
-  ⟦▸⟧_ : ∀{n} (𝓐 : SATpred a n) → SAT (▸̂ a∞) n
-  ⟦▸⟧_ {n} 𝓐 = record
-    { satSet = [▸] (SATpredSet 𝓐) n
-    ; satProp = record
-      { satSNe = ne
-      ; satSN  = CSN 𝓐
-      ; satExp = exp
-      ; satRename = CRen 𝓐
-      }
-    }
 \end{code}
+}
