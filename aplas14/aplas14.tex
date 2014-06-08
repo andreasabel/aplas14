@@ -39,6 +39,13 @@
 \renewcommand{\bibname}{\refname}
 % \usepackage{unicode-math}  % xelatex only, but not needed
 
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, 
+  linkcolor=RoyalBlue,
+  citecolor=RoyalBlue, %citecolor=ForestGreen,
+  urlcolor=RoyalBlue}
+
 % Agda stuff
 \usepackage{environ}
 \AGDALATEX{%
@@ -92,16 +99,17 @@
 %
 \mainmatter              % start of the contributions
 %
-\title{A Formalized Proof of Strong Normalization for Guarded Recursive Types}
+\title{A Formalized Proof of Strong Normalization for Guarded
+  Recursive Types\LONGVERSION{\\ (Long Version)}}
 %
 \titlerunning{Strong Normalization for Guarded Types}  % abbreviated title (for running head)
 %                                     also used for the TOC unless
 %                                     \toctitle is used
 %
 \author{
-Andreas Abel\inst{1}
+Andreas Abel
 \and
-Andrea Vezzosi\inst{1}
+Andrea Vezzosi
 %\thanks{Supported by 
 %Vetenskapsr\aa{}det framework grant to the ProgLog group (Thierry Coquand et al.) of
 %the Department of Computer Science and Engineering at Chalmers and
@@ -188,13 +196,15 @@ R\"annv\"agen 6, 41296 G\"oteborg, Sweden \\
 % TermSet (raw candidates)
 % Kripke-SAT (SNe <= A <= SN, closure under expansion, monotonicity)
 
+\LONGVERSION{
 \input{SNcorrectness}
 % converting from SN to sn.
+}
 
 \input{concl}
 
 
 \bibliographystyle{splncsnat}
-\bibliography{auto-aplas14,byhand}
+\bibliography{byhand,auto-aplas14}
 
 \end{document}

@@ -91,6 +91,9 @@ types antitonicity is embedded in their semantics and we only need to
 convert between different upper bounds.
 \begin{code}
 map⟦_⟧ : ∀ a {m n} → m ≤ℕ n → satSet (⟦ a ⟧ n) ⊆ satSet (⟦ a ⟧ m)
+\end{code}
+\LONGVERSION{
+\begin{code}
 map⟦ a →̂ b  ⟧  m≤n  𝑡           = λ l l≤m ρ 𝑢 → let l≤n = ≤ℕ.trans l≤m m≤n in
                                   coerce≤ b l≤n l≤m (𝑡 l l≤n ρ (coerce≤ a l≤m l≤n 𝑢))
 map⟦ a ×̂ b  ⟧  m≤n  (𝑡 , 𝑢)     = map⟦ a ⟧ m≤n 𝑡 , map⟦ b ⟧ m≤n 𝑢
@@ -100,8 +103,8 @@ map⟦ ▸̂ a∞   ⟧ {m = zero}   m≤n  next0     = next0
 map⟦ ▸̂ a∞   ⟧ {m = suc m}  ()   next0
 map⟦ ▸̂ a∞   ⟧ {m = zero}   m≤n  (next _)  = next0
 map⟦ ▸̂ a∞   ⟧ {m = suc m}  m≤n  (next 𝑡)  = next (map⟦ force a∞ ⟧ (pred≤ℕ m≤n) 𝑡)
-
 \end{code}
+} % END LONGVERSION
 \AgdaHide{
 \begin{code}
 map⟦_⟧∈ : ∀ (a : Ty) → ∀ {m n} → (m ≤ℕ n) → ∀ {Γ} {t : Tm Γ a} → t ∈ (⟦ a ⟧ n)

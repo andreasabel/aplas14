@@ -6,6 +6,7 @@ destdir=$(HOME)/public_html
 bibtool=bibtool -- 'preserve.key.case = ON' \
 	  -- 'check.double = ON' \
 	  -- 'check.double.delete = ON' \
+	  -- 'delete.field = { editor }' \
 	  -- 'delete.field = { abstract }' \
 	  -- 'delete.field = { dvi }' \
 	  -- 'delete.field = { postscript }' \
@@ -18,7 +19,7 @@ pdflatex=pdflatex
 # pdflatex=xelatex
 stdlib=$(HOME)/tmp/Agda2/std-lib/src
 
-bibliography=all.bib
+bibliography=medium.bib
 sedfile=postprocess.sed
 
 stylefile=latex/agda.sty

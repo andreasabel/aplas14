@@ -13,7 +13,7 @@ open import TermShape public
 open import ECxtList public
 \end{code}
 }
-
+\LONGVERSION{
 \begin{code}
 mutual
   data SN {i : Size}{Γ} : (n : ℕ) → ∀ {a} → Tm Γ a → Set where
@@ -50,7 +50,7 @@ mutual
   _⟨_⟩⇒_       : ∀ {i : Size} {Γ a} → Tm Γ a → ℕ → Tm Γ a → Set
   _⟨_⟩⇒_ {i} t n t' = SN {i} n / t ⇒ t'
 \end{code}
-
+}
 \AgdaHide{
 \begin{code}
 -- Strong head reduction is deterministic.
@@ -94,10 +94,13 @@ dimension of the Kripke worlds in our model (see next section).
 
 \begin{code}
 mapSN   : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t     : Tm Γ a} → SN n t       → SN m t
+\end{code}
+\LONGVERSION{
+\begin{code}
 mapSNe  : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t     : Tm Γ a} → SNe n t      → SNe m t
 map⇒    : ∀ {m n} → m ≤ℕ n → ∀ {Γ a}{t t'  : Tm Γ a} → t ⟨ n ⟩⇒ t'  → t ⟨ m ⟩⇒ t'
 \end{code}
-
+} % END LONGVERSION
 \AgdaHide{
 \begin{code}
 SNHole :  ∀ {i : Size} (n : ℕ) {Γ : Cxt} {a b : Ty} →

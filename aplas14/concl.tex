@@ -2,12 +2,33 @@
 \section{Conclusions}
 \label{sec:concl}
 
+In this paper, we presented a strongly-normalizing reduction relation
+for simply-typed lambda calculus with Nakano's modality for
+recursion.  Correctness has formally been proven in Agda using a
+saturated sets semantics based on an inductive notion of strong
+normalization.  Herein, we represented recursive types as infinite
+type expressions and terms as intrinsically well-typed ones.  
+
+Our treatment of infinite type expressions was greatly simplified by
+adding an extensionality axiom for the underlying coinductive type to
+Agda's type theory.  This would not have been necessary in a more
+extensional theory such as \emph{Observational Type Theory}
+\citep{altenkirchMcBrideSwierstra:plpv07}.  Possibly Homotopy Type
+Theory \cite{hott} 
+would also address this problem, but there, the status of
+coinductive types is yet unclear.
+
+For the future, we would like to investigate how to incorporate
+guarded recursive types into a dependently-typed language, and how
+they relate to other approaches to coinduction, for instance, sized
+types.
 
 \paradot{Acknowledgments}
 Thanks to Lars Birkedal, Ranald Clouston, and Rasmus M\o{}gelberg for
 fruitful discussions on guarded recursive types.
 The first author acknowledges support by Vetenskapsr\aa{}det framework
-grant 254820104 (Thierry Coquand).
+grant 254820104 (Thierry Coquand).  This paper has been prepared with
+Stevan Andjelkovic's Agda-to-LaTeX converter. 
 
 
 %%% Local Variables: 
