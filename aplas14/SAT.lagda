@@ -140,35 +140,47 @@ generalization to smaller depths, so that we can maintain antitonicity.
 _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →̂ b) n
 𝓐 ⟦→⟧ 𝓑 = record
   { satSet  = λ t → ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
+\end{code}%
+\SHORTVERSION{%
+\vspace{-4ex}
+\begin{code}
   -- etc.
 \end{code}
-\AgdaHide{
+}%
+\LONGVERSION{%
+\vspace{-4.5ex}
 \begin{code}
   ; satProp = record
-    { satSNe = CSNe
-    ; satSN  = CSN
-    ; satExp = CExp
-    ; satRename = λ ρ {t} 𝒕 m m≤n ρ' {u} 𝒖 →
-                    ≡.subst (λ t₁ → 𝑩 {m} m≤n (app t₁ u)) (subst-∙ ρ' ρ t)
-                    (𝒕 m m≤n (ρ' •s ρ) 𝒖)
+    {  satSNe     = CSNe
+    ;  satSN      = CSN
+    ;  satExp     = CExp
+    ;  satRename  = λ ρ {t} 𝒕 m m≤n ρ' {u} 𝒖 →
+                    ≡.subst (λ t₁ → 𝑩 {m} m≤n (app t₁ u)) (subst-∙ ρ' ρ t) (𝒕 m m≤n (ρ' •s ρ) 𝒖)
     }
   }
-\end{code}
-\begin{code}
   where
     module 𝓐 = SAT≤ 𝓐
     module 𝓑 = SAT≤ 𝓑
-    𝑨 = 𝓐.satSet
-    𝑩 = 𝓑.satSet
+    𝑨    =  𝓐.satSet
+    𝑩    =  𝓑.satSet
 
-    𝑪 : TmSet (_ →̂ _)
-    𝑪 t = ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
+    𝑪    :  TmSet (_ →̂ _)
+    𝑪 t  =  ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
 
-    CSN : 𝑪 ⊆ SN _
-    CSN 𝒕 =  unRenameSN (prop→Ind suc ≡.refl) (absVarSN
+    CSN    :  𝑪 ⊆ SN _
+    CSN 𝒕  =  unRenameSN (prop→Ind suc ≡.refl) (absVarSN
              (𝓑.satSN ≤ℕ.refl (𝒕 _ ≤ℕ.refl suc (𝓐.satSNe ≤ℕ.refl (var zero)))))
+
+    CSNe   :  SNe _ ⊆ 𝑪
+    CSNe 𝒏 m m≤n ρ 𝒖 =
+         𝓑.satSNe m≤n (sneApp (mapSNe m≤n (renameSNe ρ 𝒏)) (𝓐.satSN m≤n 𝒖))
+
+    CExp   :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
+    CExp t⇒ 𝒕 m m≤n ρ 𝒖 =
+       𝓑.satExp m≤n ((cong (appl _) (appl _) (map⇒ m≤n (rename⇒ ρ t⇒)))) (𝒕 m m≤n ρ 𝒖)
 \end{code}
 }
+
 The proof of inclusion into \af{SN} first derives that \aic{app}
 (\af{rename} \aic{suc} \ab{t}) (\aic{var} \aic{zero}) is in \af{SN}
 through the inclusion of neutral terms into \ab{𝓐} and the inclusion
@@ -178,32 +190,22 @@ the original goal \af{SN} \ab{n} \ab{t}.  Renaming \ab{t} with
 \aic{suc} is necessary to be able to introduce the fresh variable
 \aic{zero} of type \ab{a}.
 
-\AgdaHide{
-\begin{code}
-    CSNe : SNe _ ⊆ 𝑪
-    CSNe 𝒏 m m≤n ρ 𝒖 =
-         𝓑.satSNe m≤n (sneApp (mapSNe m≤n (renameSNe ρ 𝒏)) (𝓐.satSN m≤n 𝒖))
-
-    CExp : ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
-    CExp t⇒ 𝒕 m m≤n ρ 𝒖 =
-       𝓑.satExp m≤n ((cong (appl _) (appl _) (map⇒ m≤n (rename⇒ ρ t⇒)))) (𝒕 m m≤n ρ 𝒖)
-\end{code}
-}
-
 The types of semantic abstraction and application are somewhat
 obfuscated because they need to mention the upper bounds and the
 renamings.
 
 \begin{code}
-⟦abs⟧  :  ∀ {n a b} {𝓐 : SAT≤ a n} {𝓑 : SAT≤ b n} {Γ} {t : Tm (a ∷ Γ) b} →
-          (∀ {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
-              u ∈⟨ m≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ m≤n ⟩ 𝓑 ) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
+⟦abs⟧  :  ∀  {n a b} {𝓐 : SAT≤ a n} {𝓑 : SAT≤ b n} {Γ} {t : Tm (a ∷ Γ) b} →
+             (∀  {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
+                 u ∈⟨ m≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ m≤n ⟩ 𝓑) 
+          →  abs t ∈ (𝓐 ⟦→⟧ 𝓑)
 (⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) m m≤n ρ 𝒖 =
   SAT≤.satExp 𝓑 m≤n (β (SAT≤.satSN 𝓐 m≤n 𝒖)) (⇃ 𝒕 m≤n ρ (↿ 𝒖))
 
 ⟦app⟧  :  ∀ {n a b}{𝓐 : SAT≤ a n}{𝓑 : SAT≤ b n}{Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
           t ∈ (𝓐 ⟦→⟧ 𝓑) → u ∈⟨ ≤ℕ.refl ⟩ 𝓐 → app t u ∈⟨ ≤ℕ.refl ⟩ 𝓑
-⟦app⟧ {𝓑 = 𝓑} {u = u} (↿ 𝒕) (↿ 𝒖) = ≡.subst (λ t → app t u ∈⟨ ≤ℕ.refl ⟩ 𝓑) renId (↿ 𝒕 _ ≤ℕ.refl id 𝒖)
+⟦app⟧ {𝓑 = 𝓑} {u = u} (↿ 𝒕) (↿ 𝒖) =  ≡.subst (λ t → app t u ∈⟨ ≤ℕ.refl ⟩ 𝓑) renId 
+                                     (↿ 𝒕 _ ≤ℕ.refl id 𝒖)
 \end{code}
 
 The \af{TmSet} for product types is directly saturated, inclusion into
@@ -218,31 +220,37 @@ from \ab{𝓐} $\subseteq$ \af{SN}.
 _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 𝓐 ⟦×⟧ 𝓑 = record
   { satSet   = satSet 𝓐 [×] satSet 𝓑
+\end{code}%
+\SHORTVERSION{%
+\vspace{-4ex}
+\begin{code}
   -- etc.
 \end{code}
-\AgdaHide{
+}%
+\LONGVERSION{%
+\vspace{-4.5ex}
 \begin{code}
   ; satProp  = record
-    { satSNe = CSNe
-    ; satSN = CSN
-    ; satExp = CExp
-    ; satRename = λ ρ x → satRename 𝓐 ρ (proj₁ x) , satRename 𝓑 ρ (proj₂ x)
+    {  satSNe     = CSNe
+    ;  satSN      = CSN
+    ;  satExp     = CExp
+    ;  satRename  = λ ρ x → satRename 𝓐 ρ (proj₁ x) , satRename 𝓑 ρ (proj₂ x)
     }
   }
   where
-    𝑨 = satSet 𝓐
-    𝑩 = satSet 𝓑
-    𝑪 : TmSet _
-    𝑪 = 𝑨 [×] 𝑩
+    𝑨   =  satSet 𝓐
+    𝑩   =  satSet 𝓑
+    𝑪   :  TmSet _
+    𝑪   =  𝑨 [×] 𝑩
 
-    CSNe : SNe _ ⊆ 𝑪
-    CSNe 𝒏  =  satSNe 𝓐 (elim 𝒏 fst)
-            ,  satSNe 𝓑 (elim 𝒏 snd)
+    CSNe             :  SNe _ ⊆ 𝑪
+    CSNe 𝒏           =  satSNe 𝓐 (elim 𝒏 fst)
+                     ,  satSNe 𝓑 (elim 𝒏 snd)
 
-    CSN : 𝑪 ⊆ SN _
-    CSN (𝒕 , 𝒖) = bothProjSN (satSN 𝓐 𝒕) (satSN 𝓑 𝒖)
+    CSN              :  𝑪 ⊆ SN _
+    CSN (𝒕 , 𝒖)      =  bothProjSN (satSN 𝓐 𝒕) (satSN 𝓑 𝒖)
 
-    CExp : ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
+    CExp             :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
     CExp t⇒ (𝒕 , 𝒖)  =  satExp 𝓐 (cong fst fst t⇒) 𝒕
                      ,  satExp 𝓑 (cong snd snd t⇒) 𝒖
 \end{code}
@@ -258,18 +266,18 @@ for pairs are straightforward.
 
 \LONGVERSION{
 \begin{code}
-⟦pair⟧  :   ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
+⟦pair⟧   :  ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
             → t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
 ⇃ ⟦pair⟧ {𝓐 = 𝓐} {𝓑 = 𝓑} (↿ 𝒕) (↿ 𝒖)  =  satExp 𝓐 (βfst (satSN 𝓑 𝒖)) 𝒕
                                       ,  satExp 𝓑 (βsnd (satSN 𝓐 𝒕)) 𝒖
 
-⟦fst⟧   :   ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂ b)}
+⟦fst⟧    :  ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂ b)}
             → t ∈ (𝓐 ⟦×⟧ 𝓑) → fst t ∈ 𝓐
-⟦fst⟧ 𝒕 =  ↿ (proj₁ (⇃ 𝒕))
+⟦fst⟧ 𝒕  =  ↿ (proj₁ (⇃ 𝒕))
 
-⟦snd⟧   :   ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂ b)}
+⟦snd⟧    :  ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t : Tm Γ (a ×̂ b)}
             → t ∈ (𝓐 ⟦×⟧ 𝓑) → snd t ∈ 𝓑
-⟦snd⟧ 𝒕 =  ↿ (proj₂ (⇃ 𝒕))
+⟦snd⟧ 𝒕  =  ↿ (proj₂ (⇃ 𝒕))
 \end{code}
 }
 
@@ -295,15 +303,21 @@ inclusion of \ab{𝓐} into \af{SN}.
 ⟦▸⟧_ : ∀{n a∞} (𝓐 : SATpred (force a∞) n) → SAT (▸̂ a∞) n
 ⟦▸⟧_ {n} {a∞} 𝓐 = record
   { satSet = [▸] (SATpredSet 𝓐) n
+\end{code}%
+\SHORTVERSION{%
+\vspace{-4ex}
+\begin{code}
   -- etc.
 \end{code}
-\LONGVERSION{
+}%
+\LONGVERSION{%
+\vspace{-4.5ex}
 \begin{code}
   ; satProp = record
-    { satSNe = ne
-    ; satSN  = CSN 𝓐
-    ; satExp = exp
-    ; satRename = CRen 𝓐
+    {  satSNe     = ne
+    ;  satSN      = CSN 𝓐
+    ;  satExp     = exp
+    ;  satRename  = CRen 𝓐
     }
   }
   where
