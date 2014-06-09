@@ -1,6 +1,4 @@
 {-# OPTIONS --copatterns --sized-types #-}
--- {-# OPTIONS --allow-unsolved-metas #-}
--- {-# OPTIONS --show-implicit #-}
 
 module SN.AntiSubst where
 

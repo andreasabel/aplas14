@@ -1,7 +1,6 @@
 -- Saturated sets.
 
 {-# OPTIONS --copatterns --sized-types #-}
-{-# OPTIONS --allow-unsolved-metas #-}
 
 module SAT3 where
 
@@ -81,7 +80,7 @@ record _∈_ {a n Γ} (t : Tm Γ a) (𝓐 : SAT a n) : Set where
 open _∈_ public
 
 _∈⟨_⟩_ : ∀ {a n Γ} (t : Tm Γ a) {m} (m≤n : m ≤ℕ n) (𝓐 : SAT≤ a n) → Set
-t ∈⟨ m≤n ⟩ 𝓐 = t ∈ (𝓐 m≤n) 
+t ∈⟨ m≤n ⟩ 𝓐 = t ∈ (𝓐 m≤n)
 
 -- -- Workaround. Agda does not accept projection satSet directly,
 -- -- maybe since it is defined in another module.
@@ -93,7 +92,7 @@ t ∈⟨ m≤n ⟩ 𝓐 = t ∈ (𝓐 m≤n)
 _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →̂ b) n
 𝓐 ⟦→⟧ 𝓑 = record
   { satSet  = 𝑪
-  ; satProp = record 
+  ; satProp = record
     { satSNe = CSNe
     ; satSN  = CSN
     ; satExp = CExp
@@ -121,9 +120,9 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t[u] ∈ 𝓑 for all a ∈ 𝓐, then λt ∈ 𝓐 ⟦→⟧ 𝓑
 
 ⟦abs⟧ : ∀{n a b}{𝓐 : SAT≤ a n}{𝓑 : SAT≤ b n}{Γ}{t : Tm (a ∷ Γ) b} →
-    (∀ {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →   
+    (∀ {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
       u ∈⟨ m≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ m≤n ⟩ 𝓑 ) → abs t ∈ (𝓐 ⟦→⟧ 𝓑)
-(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) m m≤n ρ 𝒖 = 
+(⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) m m≤n ρ 𝒖 =
   SAT≤.satExp 𝓑 m≤n (β (SAT≤.satSN 𝓐 m≤n 𝒖)) (⇃ 𝒕 m≤n ρ (↿ 𝒖))
 
 -- Lemma: If 𝓐, 𝓑 ∈ SAT and t ∈ 𝓐 ⟦→⟧ 𝓑 and u ∈ 𝓐, then app t u ∈ 𝓑
@@ -189,7 +188,7 @@ SATpred a (suc n) = SAT a n
 
 SATpredSet : {n : ℕ}{a : Ty} → SATpred a n → TmSet a
 SATpredSet {zero}  𝓐 _ = ⊤
-SATpredSet {suc n} 𝓐 = satSet 𝓐 
+SATpredSet {suc n} 𝓐 = satSet 𝓐
 
 -- Semantic delay type
 

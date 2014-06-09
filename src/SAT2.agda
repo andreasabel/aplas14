@@ -1,7 +1,6 @@
 -- Saturated sets.
 
 {-# OPTIONS --copatterns --sized-types #-}
-{-# OPTIONS --allow-unsolved-metas #-}
 
 module SAT2 where
 
