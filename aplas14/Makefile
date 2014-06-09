@@ -34,15 +34,15 @@ generatedfiles=InfiniteTypes.tex Terms.tex \
 # All dependencies
 files=byhand.bib macros.tex intro.tex types.tex syntax.tex red.tex strongnormalization.tex soundnessproof.tex SNcorrectness.tex examples.tex concl.tex $(generatedfiles) $(stylefile)
 
-.PRECIOUS : %.tex latex/%.tex aplas14.pdf
+.PRECIOUS : %.tex latex/%.tex aplas14.pdf aplas14long.pdf
 
-default : aplas14.pdf
+default : aplas14.pdf aplas14long.pdf
 
 all : default ship
 
-ship : $(destdir)/aplas14.pdf  $(destdir)/aplas14.lagda 
+ship : $(destdir)/aplas14long.pdf #  $(destdir)/aplas14.lagda 
 
-$(destdir)/aplas14.pdf : aplas14.pdf
+$(destdir)/%.pdf : %.pdf
 	cp -p $< $@
 
 $(destdir)/aplas14.lagda : aplas14.lagda
@@ -67,6 +67,12 @@ latex/%.tex : %.lagda
 
 # initially, run latex once to create an .aux file
 # mark .aux file as fresh by creating a stamp _aux
+aplas14long_aux : aplas14long.tex $(files)
+	-$(pdflatex) aplas14long.tex;
+	touch $@;
+
+# # initially, run latex once to create an .aux file
+# # mark .aux file as fresh by creating a stamp _aux
 aplas14_aux : aplas14.tex $(files)
 	-$(pdflatex) aplas14.tex;
 	touch $@;
@@ -74,6 +80,9 @@ aplas14_aux : aplas14.tex $(files)
 # then, run bibtex
 aplas14.bbl : aplas14_aux auto-aplas14.bib 
 	-bibtex aplas14;
+
+aplas14long.bbl : aplas14long_aux auto-aplas14.bib 
+	-bibtex aplas14long;
 
 # finally, finish by running latex twice again
 # this will update .aux, but leave the stamp _aux intact
@@ -83,15 +92,19 @@ aplas14.pdf : aplas14.bbl
 	-$(pdflatex) aplas14.tex;
 	$(pdflatex) aplas14.tex;
 
+aplas14long.pdf : aplas14long.bbl
+	-$(pdflatex) aplas14long.tex;
+	$(pdflatex) aplas14long.tex;
+
 # auto-aplas14.bib is only defined if bibtool is present and all.bib exists
 
 ifneq ($(shell which bibtool),)
 ifneq ($(shell ls $(bibliography)),)
-auto-aplas14.bib : aplas14_aux $(bibliography)
+auto-aplas14.bib : aplas14long_aux $(bibliography)
 	echo "%%%% WARNING! AUTOMATICALLY CREATED BIBFILE" > $@;
 	echo "%%%% DO NOT EDIT! ALL CHANGES WILL BE LOST!" >> $@ ;
 	echo "" >> $@ ;
-	$(bibtool) -x aplas14.aux -i $(bibliography) >> $@;
+	$(bibtool) -x aplas14long.aux -i $(bibliography) >> $@;
 endif
 endif
 

@@ -247,15 +247,15 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
                      ,  satExp 𝓑 (cong snd snd t⇒) 𝒖
 \end{code}
 }
-\SHORTVERSION{
+
 Semantic introduction
-⟦pair⟧  : t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
+\af{⟦pair⟧}  : \ab{t₁} \af{∈} \ab{𝓐} → \ab{t₂} \af{∈} \ab{𝓑} → \tpair~\ab{t₁} \ab{t₂} \af{∈} (\ab{𝓐} \af{⟦×⟧} \ab{𝓑})
 and eliminations
-⟦fst⟧   : t ∈ (𝓐 ⟦×⟧ 𝓑) → fst t ∈ 𝓐
+\af{⟦fst⟧}   : \ab{t} \af{∈} (\ab{𝓐} \af{⟦×⟧} \ab{𝓑}) → \afst~\ab{t} \af{∈} \ab{𝓐}
 and
-⟦snd⟧   : t ∈ (𝓐 ⟦×⟧ 𝓑) → snd t ∈ 𝓑
+\af{⟦snd⟧}   : \ab{t} \af{∈} (\ab{𝓐} \af{⟦×⟧} \ab{𝓑}) → \asnd~\ab{t} \af{∈} \ab{𝓑}
 for pairs are straightforward.
-}
+
 \LONGVERSION{
 \begin{code}
 ⟦pair⟧  :   ∀ {n a b} {𝓐 : SAT a n} {𝓑 : SAT b n} {Γ} {t₁ : Tm Γ a} {t₂ : Tm Γ b}
