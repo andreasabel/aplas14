@@ -1,5 +1,4 @@
 {-# OPTIONS --copatterns --sized-types #-}
--- {-# OPTIONS --no-termination-check #-} -- too slow
 
 module Substitution where
 

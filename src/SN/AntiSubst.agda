@@ -1,7 +1,6 @@
 {-# OPTIONS --copatterns --sized-types #-}
-{-# OPTIONS --allow-unsolved-metas #-}
-{-# OPTIONS --show-implicit #-}
--- {-# OPTIONS --no-termination-check #-} -- too slow
+-- {-# OPTIONS --allow-unsolved-metas #-}
+-- {-# OPTIONS --show-implicit #-}
 
 module SN.AntiSubst where
 
@@ -95,7 +94,7 @@ mutual
       (s ∗ _) , (is ∗ is₁) , (cong (_ ∗l) (_ ∗l) t→s)) (λ x → elim x (unSubstSN is₁ (∗rSN 𝒕) ∗l)) (unSubst⇒0 is tρ→t' (unEholeSN (u ∗l) 𝒕))
   unSubst⇒0 ((▹ is₀) ∗ is₁)     (cong (∗r t₂) (∗r .t₂) tρ→t') 𝒕
     = Data.Sum.map ((λ x → let s = proj₁ x; is = proj₁ (proj₂ x); t→s = proj₂ (proj₂ x) in
-      _ ∗ s , (▹ is₀) ∗ is , cong (∗r _) (∗r _) t→s)) (λ x → elim x (∗r (delaySN (unSubstSN is₀) (unEholeSN (_ ∗l) 𝒕)))) 
+      _ ∗ s , (▹ is₀) ∗ is , cong (∗r _) (∗r _) t→s)) (λ x → elim x (∗r (delaySN (unSubstSN is₀) (unEholeSN (_ ∗l) 𝒕))))
               (unSubst⇒0 is₁ tρ→t' (unEholeSN (∗r t₂) 𝒕))
   unSubst⇒0 (var x x₁)          t⇒                            𝒕 = inj₂ ((var x))
   unSubst⇒0 (app (var x x₁) u₁) (β 𝒖)                         𝒕 = inj₂ ((elim (var x) (appl (unSubstSN u₁ 𝒖))))

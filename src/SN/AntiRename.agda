@@ -1,7 +1,4 @@
 {-# OPTIONS --copatterns --sized-types #-}
-{-# OPTIONS --allow-unsolved-metas #-}
--- {-# OPTIONS --show-implicit #-}
-{-# OPTIONS --no-termination-check #-} -- too slow
 
 module SN.AntiRename where
 
