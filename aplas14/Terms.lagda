@@ -29,7 +29,7 @@ solutions imposed by the rich typing.
 
 Our encoding of well-typed terms follows closely \citet{alti:monadic,mcBride:renSubst,bentonHurKennedyMcBride:jar12}.
 We represent typed variables $\vx : \Var\;\Gam\;\va$
-by de Brujin indices, \ie, positions in a typing context $\Gam : \Cxt$
+by de Brujin indices, \ie positions in a typing context $\Gam : \Cxt$
 which is just a list of types.
 % We represent variables by de Brujin indices, thus, a typing context \AgdaDatatype{Cxt} is just a list of types,
 % the elements of the type \AgdaDatatype{Var} \AgdaBound{Γ} \AgdaBound{a} of variables then represent a position in such a context.
