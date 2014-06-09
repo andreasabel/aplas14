@@ -30,9 +30,13 @@ generatedfiles=InfiniteTypes.tex Terms.tex \
   TermShape.tex SN.tex IndRen.tex AntiRename.tex SAT.tex \
   Soundness.tex SNtosn.tex AgdaExamples.tex TypeEquality.tex \
   ECxtList.tex SNtosnR.tex SNtosn2.tex
+# Agda files
+lagdafiles=$(patsubst %.tex,%.lagda,$(generatedfiles))
 
 # All dependencies
 files=byhand.bib macros.tex intro.tex types.tex syntax.tex red.tex strongnormalization.tex soundnessproof.tex SNcorrectness.tex examples.tex concl.tex $(generatedfiles) $(stylefile)
+
+allfiles=Makefile aplas14.tex aplas14.bbl auto-aplas14.bib $(files) $(lagdafiles) 
 
 .PRECIOUS : %.tex latex/%.tex aplas14.pdf aplas14long.pdf
 
@@ -40,17 +44,17 @@ default : aplas14.pdf aplas14long.pdf
 
 all : default ship
 
-ship : $(destdir)/aplas14long.pdf #  $(destdir)/aplas14.lagda 
+ship : $(destdir)/aplas14long.pdf $(destdir)/aplas14.pdf $(destdir)/aplas14.zip
 
 $(destdir)/%.pdf : %.pdf
 	cp -p $< $@
 
-$(destdir)/aplas14.lagda : aplas14.lagda
+$(destdir)/%.zip : %.zip
 	cp -p $< $@
 
 pack : aplas14.zip
 
-aplas14.zip : aplas14.tex aplas14.bbl latex/agda.sty textgreek.sty $(files) # auto-aplas14.bib byhand.bib eptcs.cls eptcs.bst
+aplas14.zip : $(allfiles) 
 	zip $@ $^
 
 # aplas14
