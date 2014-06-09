@@ -1,8 +1,21 @@
 \section{Soundness}
 \label{sec:soundess}
 
+A well-established technique 
+\citep{tait:functionalsFiniteTypeI} to prove strong normalization is to model
+each type $\va$ as a set $\A = \den{\va}$ of sn terms.  Each so-called
+semantic type $\A$
+should contain the variables in order to interpret open terms by
+themselves (using the identity valuation).
+To establish the conditions of semantic types compositionally, 
+the set $\A$ needs to be \emph{saturated},
+\ie, contain $\SNe$ (rather than just the variables) and be closed
+under strong head expansion (to entertain introductions).
+
 \input{SAT}
+
 \input{Soundness}
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "aplas14.tex"

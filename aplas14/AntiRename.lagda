@@ -74,7 +74,9 @@ unRename⇒1 ((next is) ∗ is₁)      (cong (∗r t₂) (∗r .t₂) tρ→t')
 }
 
 A consequence of \AgdaFunction{unRenameSN} is that $t \in \SN\;\vn$
-iff $t\;x \in \SN\;\vn$ for some variable $x$.  This property is
+iff $t\;x \in \SN\;\vn$ for some variable $x$.
+(Consider $t = \lambda y.\, t'$ and $t\;x \nwhr n \subst y x {t'}$.)
+This property is
 essential for the construction of the function space on sn sets
 (see next section).
 

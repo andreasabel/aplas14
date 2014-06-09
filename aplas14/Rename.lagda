@@ -15,10 +15,10 @@ import Substitution as S
 _≤_  : (Δ Γ : Cxt) → Set
 _≤_ Δ Γ = ∀ {a} → Var Γ a → Var Δ a
 
-rename : ∀ {Δ Γ : Cxt} {a : Ty} (η : Δ ≤ Γ) (x : Tm Γ a) → Tm Δ a
+rename : ∀ {Γ Δ : Cxt} {a : Ty} (η : Δ ≤ Γ) (x : Tm Γ a) → Tm Δ a
 \end{code}
 \AgdaHide{
 \begin{code}
-rename = S.rename
+rename {Γ} {Δ} = S.rename {Δ} {Γ}
 \end{code}
 }

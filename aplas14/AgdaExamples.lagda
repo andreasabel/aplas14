@@ -13,20 +13,27 @@ open import TypeEquality
 
 
 We can adapt the $Y$ combinator from the untyped lambda calculus to
-define a guarded fixed point combinator.  The type \AgdaFunction{Fix}
-\va{} allows safe self application, since the input will only
+define a guarded fixed point combinator
+\[
+  \tfix = \lambda f.\; (\lambda x. \; f \; (\apply x {\pure x}))\; (\tnext \; (\lambda x. \; f \; (\apply x {\pure x})))
+.\]
+We construct an auxiliary type \AgdaFunction{Fix}
+\va{} that allows safe self application, since the argument will only
 be available "later". This fits with the type we want for the
-\AgdaFunction{fix} combinator, the function of which we are taking the
-fixed point will only be able to use its input in the next time slot.
+\AgdaFunction{fix} combinator, 
+which makes the recursive instance $y$ in $\tfix\;(\lambda y.\, t)$ available only  at the next time slot.
+% the function of which we are taking the
+% fixed point will only be able to use its input at the next time slot.
 
 \begin{code}
+fix : ∀{Γ a} → Tm Γ ((▸ a →̂ a) →̂ a)
+
 Fix_ : Ty → ∞Ty
 force (Fix a) = ▸̂ Fix a →̂ a
 
 selfApp : ∀{Γ a} → Tm Γ (▸̂ Fix a) → Tm Γ (▸ a)
 selfApp x = ▸app (≅delay ≅refl) x (next x)
 
-fix : ∀{Γ a} → Tm Γ ((▸ a →̂ a) →̂ a)
 fix = abs (app L (next L))
   where
     f = var (suc zero)
@@ -34,11 +41,11 @@ fix = abs (app L (next L))
     L = abs (app f (selfApp x))
 \end{code}
 
-The definition above correponds to the following with named variables.
+% The definition above correponds to the following with named variables.
 
-\[
-fix = \lambda f.\; (\lambda x. \; f \; (selfApp \; x)) (\tnext \; (\lambda x. \; f \; (selfApp \; x)))
-\]
+% \[
+% fix = \lambda f.\; (\lambda x. \; f \; (selfApp \; x)) (\tnext \; (\lambda x. \; f \; (selfApp \; x)))
+% \]
 
 
 Another standard example is the type of streams, which we can also
@@ -70,9 +77,10 @@ A simple example is mapping a function over a stream.
 mapS : ∀{Γ a b} → Tm Γ ((a →̂ b) →̂ (Stream a →̂ Stream b))
 \end{code}
 
+\noindent
 Which is also better read with named variables.
 \[
-mapS = \lambda f. \; fix \; (\lambda mapS.\; \lambda s.\; f \; s \, , (\apply{mapS}{tail \; s}))
+\tmapS = \lambda f. \; \afix \; (\lambda \vmapS.\; \lambda s.\; (f \; s, \, \apply{\vmapS}{(\ttail \; s)}))
 \]
 
 \AgdaHide{

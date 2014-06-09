@@ -13,7 +13,7 @@ open import Substitution
 
 \begin{small}
 \begin{code}
-data NβCxt : (Γ Δ : Cxt) (a b : Ty) (n n' : ℕ) → Set where
+data NβCxt : (Δ Γ : Cxt) (a b : Ty) (n n' : ℕ) → Set where
   abs    :  ∀  {Γ n a b}                         → NβCxt (a ∷ Γ) Γ b (a →̂  b) n n
   appl   :  ∀  {Γ n a b} (u  : Tm Γ a)           → NβCxt Γ Γ (a →̂ b) b n n
   appr   :  ∀  {Γ n a b} (t  : Tm Γ (a →̂ b))    → NβCxt Γ Γ a b n n
@@ -28,7 +28,7 @@ data NβCxt : (Γ Δ : Cxt) (a b : Ty) (n n' : ℕ) → Set where
 \end{code}
 \begin{code}
 data NβHole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
-              Tm Γ b → NβCxt Δ Γ a b n n' → Tm Δ a → Set
+             Tm Γ b → NβCxt Δ Γ a b n n' → Tm Δ a → Set
 \end{code}
 \end{small}
 \AgdaHide{

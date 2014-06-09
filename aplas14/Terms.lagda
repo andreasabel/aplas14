@@ -28,7 +28,7 @@ proof construction, which is due to the strong constraints on possible
 solutions imposed by the rich typing.
 
 Our encoding of well-typed terms follows closely \citet{alti:monadic,mcBride:renSubst,bentonHurKennedyMcBride:jar12}.
-We represent variables $\vx : \Var\;\Gam\;\va$
+We represent typed variables $\vx : \Var\;\Gam\;\va$
 by de Brujin indices, \ie, positions in a typing context $\Gam : \Cxt$
 which is just a list of types.
 % We represent variables by de Brujin indices, thus, a typing context \AgdaDatatype{Cxt} is just a list of types,
@@ -49,8 +49,9 @@ v₀ = zero
 
 Arguments enclosed in braces, such as $\Gam$, $\va$, and $\vb$ in the
 types of the constructors $\tzero$ and $\tsuc$, are hidden and can in
-the most cases be inferred by Agda.  If needed, they can be passed in
-braces, either as positional arguments or as named arguments.  If ∀
+most cases be inferred by Agda.  If needed, they can be passed in
+braces, either as positional arguments (\eg, \{\Del\}) or as named
+arguments (\eg, \{\AgdaArgument{Γ} = \Del\}).  If ∀
 prefixes bindings in a function type, the types of the bound variables
 may be omitted.  Thus, ∀\{\Gam\;\va\} → A is short for \{\Gam :
 \Cxt\}\{\va : \Ty\} → A.
@@ -71,23 +72,24 @@ argument.
 
 \begin{code}
 data Tm (Γ : Cxt) : (a : Ty) → Set where
-  var   : ∀{a}      (x : Var Γ a)                            → Tm Γ a
-  abs   : ∀{a b}    (t : Tm (a ∷ Γ) b)                       → Tm Γ (a →̂ b)
-  app   : ∀{a b}    (t : Tm Γ (a →̂ b))  (u : Tm Γ a)        → Tm Γ b
-  pair  : ∀{a b}    (t : Tm Γ a)         (u : Tm Γ b)        → Tm Γ (a ×̂ b)
-  fst   : ∀{a b}    (t : Tm Γ (a ×̂ b))                      → Tm Γ a
-  snd   : ∀{a b}    (t : Tm Γ (a ×̂ b))                      → Tm Γ b
-  next  : ∀{a∞}     (t : Tm Γ (force a∞))                    → Tm Γ (▸̂ a∞)
-  _∗_   : ∀{a∞ b∞}  (t : Tm Γ (▸̂(a∞ ⇒ b∞)))
-                                         (u : Tm Γ (▸̂ a∞))  → Tm Γ (▸̂ b∞)
+  var   : ∀{a}      (x : Var Γ a)                                → Tm Γ a
+  abs   : ∀{a b}    (t : Tm (a ∷ Γ) b)                           → Tm Γ (a →̂ b)
+  app   : ∀{a b}    (t : Tm Γ (a →̂ b))      (u : Tm Γ a)        → Tm Γ b
+  pair  : ∀{a b}    (t : Tm Γ a)             (u : Tm Γ b)        → Tm Γ (a ×̂ b)
+  fst   : ∀{a b}    (t : Tm Γ (a ×̂ b))                          → Tm Γ a
+  snd   : ∀{a b}    (t : Tm Γ (a ×̂ b))                          → Tm Γ b
+  next  : ∀{a∞}     (t : Tm Γ (force a∞))                        → Tm Γ (▸̂ a∞)
+  _∗_   : ∀{a∞ b∞}  (t : Tm Γ (▸̂(a∞ ⇒ b∞))) (u : Tm Γ (▸̂ a∞))  → Tm Γ (▸̂ b∞)
 \end{code}
 
 Since matching on a coinductive constructor like $\tdelay$ is frowned
-upon by Agda since it can lead to a loss of subject reduction
-\citep{mcBride:calco09},
+upon by Agda----it can lead to a loss of subject reduction
+\citep{mcBride:calco09}---,
 the constructors $\anext$ and ∗ are parameterized over
-$\vainf\;\vbinf : \infTy$ rather than $\va\;\vb : \Ty$---the latter
-would lead to indices like $\hatlater\;\tdelay\;\va$.
+$\vainf\;\vbinf : \infTy$ rather than $\va\;\vb : \Ty$.
+The latter
+would lead to indices like $\hatlater\;\tdelay\;\va$ and unification
+problems Agda cannot solve.
 
 \AgdaHide{
 \begin{code}

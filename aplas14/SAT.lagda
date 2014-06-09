@@ -18,11 +18,15 @@ open import IndRen
 
 As a preliminary towards saturated sets we define sets of well-typed
 terms in an arbitrary typing context but fixed type,
-\AgdaFunction{TmSet} \AgdaBound{a}. We also define shorthands for set
-inclusion and closure under reduction.
+\AgdaFunction{TmSet} \AgdaBound{a}. We also define shorthands for
+the largest set,
+set inclusion and closure under expansion.
 \begin{code}
 TmSet : (a : Ty) → Set₁
 TmSet a = {Γ : Cxt} (t : Tm Γ a) → Set
+
+[⊤] : ∀{a} → TmSet a
+[⊤] t = ⊤
 
 _⊆_ : ∀{a} (𝑨 𝑨′ : TmSet a) → Set
 𝑨 ⊆ 𝑨′ = ∀{Γ}{t : Tm Γ _} → 𝑨 t → 𝑨′ t
@@ -44,8 +48,7 @@ quantifying over all possible extended contexts \AgdaBound{Δ} makes
 \AgdaBound{𝓐} \AgdaFunction{[→]} \AgdaBound{𝓑} closed under renamings.
 \begin{code}
 _[→]_ : ∀{a b} → TmSet a → TmSet b → TmSet (a →̂ b)
-(𝓐 [→] 𝓑) {Γ} t =
-  ∀{Δ} (ρ : Δ ≤ Γ) → {u : Tm Δ _} → 𝓐 u → 𝓑 (app (rename ρ t) u)
+(𝓐 [→] 𝓑) {Γ} t = ∀{Δ} (ρ : Δ ≤ Γ) → ∀ {u} → 𝓐 u → 𝓑 (app (rename ρ t) u)
 \end{code}
 
 
@@ -74,10 +77,10 @@ dealing with terms in a context.
 \begin{code}
 record IsSAT (n : ℕ) {a} (𝑨 : TmSet a) : Set where
   field
-    satSNe     :  SNe n ⊆ 𝑨
-    satSN      :  𝑨 ⊆ SN n
+    satSNe     :  SNe n  ⊆ 𝑨
+    satSN      :  𝑨      ⊆ SN n
     satExp     :  Closed n 𝑨
-    satRename  :  ∀ {Γ Δ} → (ρ : Δ ≤ Γ) → ∀ {t} → 𝑨 t → 𝑨 (rename ρ t)
+    satRename  :  ∀ {Γ Δ} (ρ : Δ ≤ Γ) → ∀ {t} → 𝑨 t → 𝑨 (rename ρ t)
 
 record SAT (a : Ty) (n : ℕ) : Set₁ where
   field
@@ -92,7 +95,7 @@ open SAT public
 }
 
 For function types we will also need a notion of a sequence of
-saturated sets up to a specified upper bound.
+saturated sets up to a specified maximum depth $\vn$.
 \begin{code}
 SAT≤ : (a : Ty) (n : ℕ) → Set₁
 SAT≤ a n = ∀ {m} → m ≤ℕ n → SAT a m
@@ -105,7 +108,7 @@ module SAT≤ {a : Ty} {n : ℕ} (𝓐 : SAT≤ a n) {m} (m≤n : m ≤ℕ _) wh
 \end{code}
 }
 
-To help Agda's type inference we also define a record type for
+To help Agda's type inference, we also define a record type for
 membership of a term into a saturated set.
 \AgdaHide{
 \begin{code}
@@ -137,7 +140,7 @@ generalization to smaller depths, so that we can maintain antitonicity.
 _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →̂ b) n
 𝓐 ⟦→⟧ 𝓑 = record
   { satSet  = λ t → ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
-  -- ...
+  -- etc.
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -204,14 +207,18 @@ renamings.
 \end{code}
 
 The \af{TmSet} for product types is directly saturated, inclusion into
-\af{SN} uses \af{fromFstSN} to derive \af{SN} \ab{n} \ab{t} from the
-membership into \af{SN} of \aic{fst} \ab{t}, which follows from the
-inclusion of \ab{𝓐} into \af{SN}.
+\af{SN} uses a lemma % $\af{fromFstSN}$
+to derive \af{SN} \ab{n} \ab{t} from
+\af{SN} \ab{n} (\af{fst} \ab{t}),
+% the membership into \af{SN} of \aic{fst} \ab{t},
+which follows
+from \ab{𝓐} $\subseteq$ \af{SN}.
+% from the inclusion of \ab{𝓐} into \af{SN}.
 \begin{code}
 _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 𝓐 ⟦×⟧ 𝓑 = record
   { satSet   = satSet 𝓐 [×] satSet 𝓑
-  -- ...
+  -- etc.
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -241,12 +248,13 @@ _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 \end{code}
 }
 \SHORTVERSION{
-We easily define
+Semantic introduction
 ⟦pair⟧  : t₁ ∈ 𝓐 → t₂ ∈ 𝓑 → pair t₁ t₂ ∈ (𝓐 ⟦×⟧ 𝓑)
-and
+and eliminations
 ⟦fst⟧   : t ∈ (𝓐 ⟦×⟧ 𝓑) → fst t ∈ 𝓐
 and
-⟦snd⟧   : t ∈ (𝓐 ⟦×⟧ 𝓑) → snd t ∈ 𝓑.
+⟦snd⟧   : t ∈ (𝓐 ⟦×⟧ 𝓑) → snd t ∈ 𝓑
+for pairs are straightforward.
 }
 \LONGVERSION{
 \begin{code}
@@ -276,7 +284,7 @@ SATpred a zero     = ⊤
 SATpred a (suc n)  = SAT a n
 
 SATpredSet : {n : ℕ}{a : Ty} → SATpred a n → TmSet a
-SATpredSet {zero}   𝓐   = λ _ → ⊤
+SATpredSet {zero}   𝓐   = [⊤]
 SATpredSet {suc n}  𝓐   = satSet 𝓐
 \end{code}
 

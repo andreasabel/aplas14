@@ -20,9 +20,9 @@ open import Terms
 \begin{code}
 mutual
   data _≅_ : (a b : Ty) → Set where
-    _×̂_  : ∀{a a' b b'} (a≅ : a ≅ a') (b≅ : b ≅ b')  → (a ×̂ b) ≅ (a' ×̂ b')
-    _→̂_  : ∀{a a' b b'} (a≅ : a' ≅ a) (b≅ : b ≅ b')  → (a →̂ b) ≅ (a' →̂ b')
-    ▸̂_   : ∀{a∞ b∞}     (a≅ : a∞ ∞≅ b∞)              → ▸̂ a∞    ≅ ▸̂ b∞
+    _×̂_  : ∀{a a' b b'}  (a≅ : a ≅ a') (b≅ : b ≅ b')  → (a ×̂ b) ≅ (a' ×̂ b')
+    _→̂_  : ∀{a a' b b'}  (a≅ : a' ≅ a) (b≅ : b ≅ b')  → (a →̂ b) ≅ (a' →̂ b')
+    ▸̂_   : ∀{a∞ b∞}      (a≅ : a∞ ∞≅ b∞)              → ▸̂ a∞    ≅ ▸̂ b∞
 
   record _∞≅_ (a∞ b∞ : ∞Ty) : Set where
     coinductive
@@ -35,6 +35,7 @@ open _∞≅_ public
 \end{code}
 }
 
+\noindent
 $\Ty$-equality is indeed an equivalence relation (we omit the standard proof).
 
 \begin{code}

@@ -5,7 +5,7 @@
 In untyped lambda calculus, fixed-point combinators can be defined
 using self-app\-li\-ca\-tion.  Such combinators can be assigned recursive
 types, albeit only negative ones.  Since such types introduce logical
-inconsistency, they are problematic, especially in Martin-L\"of
+inconsistency, they are ruled out in Martin-L\"of
 Type Theory and other systems based on the Curry-Howard isomorphism.
 \citet{nakano:lics00} introduced \emph{a modality for recursion} that
 allows a stratification of negative recursive types to recover
@@ -29,15 +29,15 @@ allowing reduction under finitely many $\tnext$s, we establish
 termination irrespective of the reduction strategy.  
 %
 Showing strong normalization of $\lambdalater$ is a first step towards
-a operationally well-behaved type theory with guarded recursive types, for
+an operationally well-behaved type theory with guarded recursive types, for
 which \citet{birkedalMogelberg:lics13} have given a categorical model.
 
 Our proof is fully formalized in the proof assistant Agda
-\citep{agda24} which is based on intensional Martin-L\"of Type Theory.
+\citeyearpar{agda24} which is based on intensional Martin-L\"of Type Theory.
 One key idea of the formalization is to represent the recursive types
 of $\lambdalater$ as infinite type expressions in form of a
 coinductive definition.  For this, we utilize Agda's new
-\emph{copattern} feature \cite{abelPientkaThibodeauSetzer:popl13}.  
+\emph{copattern} feature \citep{abelPientkaThibodeauSetzer:popl13}.  
 The set of strongly normalizing terms is defined inductively by
 distinguishing on the shape of terms
 \citep{raamsdonk:perpetualReductions,matthes:shortproofs}.  The first author has

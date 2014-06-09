@@ -24,7 +24,7 @@ denotes $\mu X \,(X \to X)$, while $\mu X X \to X$ denotes $(\mu X.X)
 
 Formation of fixed-points $\mu X A$ is subject to the side condition that $X$ is
 guarded in $A$, \ie, $X$
-appears in $A$ only under a \emph{later} modality.  
+appears in $A$ only under a \emph{later} modality $\tlater$.  
 This rules out all unguarded recursive types like $\mu X.\, A \times
 X$ or $\mu X.\, X \to A$, but allows their variants 
 $\mu X.\, \later (A \times X)$ and  $\mu X.\, A \times \later X$,
@@ -74,7 +74,7 @@ that witness \emph{applicative functoriality} of the later modality
 \citep{atkeyMcBride:icfp13}. 
 \[
 \begin{array}{lrl@{\qquad}l}
-  r,s,t,u & ::= & x \mid \lambda x . ; t \mid t\,u \mid (t_1,t_2) \mid
+  r,s,t,u & ::= & x \mid \lambda x \, t \mid t\,u \mid (t_1,t_2) \mid
   \fst t \mid \snd t \mid \pure t \mid \apply t u
 \end{array}
 \]

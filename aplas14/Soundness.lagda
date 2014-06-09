@@ -36,9 +36,8 @@ becomes coinductive and would no longer support recursion.
 ⟦ ▸̂ a∞     ⟧  n  = ⟦▸⟧ P n
   where
     P : ∀ n → SATpred (force a∞) n
-    P zero     = _
-    P (suc n)  = ⟦ force a∞ ⟧ n
-
+    P zero       = _
+    P (suc n)    = ⟦ force a∞ ⟧ n
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -58,8 +57,8 @@ inequality proof. It is however straightforward to convert in and out
 of the original interpretation, or between different upper bounds.
 
 \begin{code}
-in≤      : ∀ a {n m} (m≤n : m ≤ℕ n) → satSet (⟦ a ⟧ m) ⊆ satSet (⟦ a ⟧≤ m≤n)
-out≤     : ∀ a {n m} (m≤n : m ≤ℕ n) → satSet (⟦ a ⟧≤ m≤n) ⊆ satSet (⟦ a ⟧ m)
+in≤      : ∀ a {n m} (m≤n : m ≤ℕ n) →  satSet (⟦ a ⟧   m)    ⊆ satSet (⟦ a ⟧≤ m≤n)
+out≤     : ∀ a {n m} (m≤n : m ≤ℕ n) →  satSet (⟦ a ⟧≤  m≤n)  ⊆ satSet (⟦ a ⟧ m)
 
 coerce≤   :  ∀ a {n n' m} (m≤n : m ≤ℕ n) (m≤n' : m ≤ℕ n')
              → satSet (⟦ a ⟧≤ m≤n) ⊆ satSet (⟦ a ⟧≤ m≤n')
