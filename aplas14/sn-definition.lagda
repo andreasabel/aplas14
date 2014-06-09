@@ -1,6 +1,6 @@
 \AgdaHide{
 \begin{code}
-module sn where
+module sn-definition where
 open import Data.Sum
 open import Library
 open import InfiniteTypes
