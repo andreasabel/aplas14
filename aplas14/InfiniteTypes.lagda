@@ -35,8 +35,8 @@ $\hattimes$ and $\hatto$ are again in $\Ty$, the prefix constructor
 $\hatlater$ expects and argument $\vainf$ in $\infTy$, which is
 basically a wrapping of $\Ty$.\footnote{Similar to a \texttt{newtype}
   in the functional programming language Haskell.}
-The functions \tdelay and \tforce convert back and forth so that both
-\Ty and \infTy are valid representations of the set of types of \lambdalater.
+The functions $\tdelay$ and $\tforce$ convert back and forth between the two so that both
+$\Ty$ and $\infTy$ are valid representations of the set of types of $\lambdalater$.
 \[
 \begin{array}{lll}
   \tdelay & : & \Ty \to \infTy \\
