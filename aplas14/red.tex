@@ -25,15 +25,15 @@ From this, we get the special case of substituting de Bruijn index 0.
 
 \input{Subst0}
 
-Reduction $t \red_n t'$ is formalized as inductive family $\vt \nred n
+Reduction $t \red_n t'$ is formalized as the inductive family $\vt \nred n
 \vtprime$ with four constructors \AgdaInductiveConstructor{β...} 
 representing the contraction rules and one congruence rule $\tcong$ to
 reduce in subterms.
 
 \input{NReduction}
 
-The congruence rule makes use of shallow one hole contexts $\vC$, which in
-mathematical notation would be given by the grammar
+The congruence rule makes use of shallow one hole contexts $\vC$, which 
+are given by the following grammar
 \[
   \vC ::= \lambda x \_  \mid \_\,u \mid t\,\_
   \mid (t,\_) \mid (\_,u) \mid \fst\_ \mid \snd\_ 
