@@ -3,7 +3,7 @@
 
 In this section, we describe the implementation of parametrized
 reduction $\red_n$ in Agda.  As a prerequisite, we need to define
-substitution, which in term depends on renaming 
+substitution, which in turn depends on renaming 
 \citep{bentonHurKennedyMcBride:jar12}.
 
 A \emph{renaming} from context $\Gam$ to context $\Del$, written $\Del
@@ -46,8 +46,8 @@ $\vC[\vtprime]$, and (3) $\vt$ reduces to $\vtprime$.  As witnessed by
 relation $\NbetaHole$, context
 $\vC : \NbetaCxt\;\Gam\;\Del\;\va\;\vb\;\vn\;\vnprime$ produces a term
 $\vCt : \Tm\;\Gam\;\vb$ of depth $\vnprime$ if filled with a term $\vt
-: \Tm\;\Del\;\va$ of depth $\vn$.  The depth is unchanced except for
-case $\anext$, which increases the depth by 1.  
+: \Tm\;\Del\;\va$ of depth $\vn$.  The depth is unchanged except for
+the case $\anext$, which increases the depth by 1.  
 Thus,  $\vt \nred n \vtprime$ can contract every subterm that is under
 at most $\vn$ many $\anext$s.
 
