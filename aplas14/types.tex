@@ -74,12 +74,12 @@ that witness \emph{applicative functoriality} of the later modality
 \citep{atkeyMcBride:icfp13}.
 \[
 \begin{array}{lrl@{\qquad}l}
-  r,s,t,u & ::= & x \mid \lambda x \, t \mid t\,u \mid (t_1,t_2) \mid
+  t,u & ::= & x \mid \lambda x \, t \mid t\,u \mid (t_1,t_2) \mid
   \fst t \mid \snd t \mid \pure t \mid \apply t u
 \end{array}
 \]
 Figure~\ref{fig:typing} recapitulates the static semantics.  The
-dynamic semantics are induced
+dynamic semantics is induced
 by the following \emph{contractions}:
 \[
 \begin{array}{l@{~~}l@{~~}l}
@@ -99,8 +99,8 @@ Unrestricted reduction of $\Omega$ is non-terminating:
 $\Omega \red \pure \Omega \red \pure (\pure \Omega) \red \dots$
 If we let $\tnext$ act as delay operator that blocks reduction inside,
 we regain termination.  In general, we preserve termination if we only
-look under delay operators until a certain depth.  This can be made
-precise by a family $\red_n$ of reduction relations indexed by depth
+look under delay operators up to a certain depth.  This can be made
+precise by a family $\red_n$ of reduction relations indexed by a depth
 $n \in \NN$, see Figure~\ref{fig:red}.
 \begin{figure}[htbp]
 \begin{gather*}
@@ -148,7 +148,7 @@ confluent. In fact the term $(\lambda z. \, \tnext^{n+1} \, z) (\fst (u , t))$
 reduces to two different normal forms, $\tnext^{n+1} \, (\fst (u , t))$ and $\tnext^{n+1} \, u$.
 We could remedy this situation by making sure we never hide redexes
 under too many applications of $\tnext$ and instead store them in an explicit
-substitution where they would still be accessible by $\red_n$.
+substitution where they would still be accessible to $\red_n$.
 Our problematic terms would then look like $\tnext^{n} \, (\subst {\fst (u , t)} z {(\pure z)})$
 and $\tnext^{n} \, (\subst u z {(\pure z)})$ and the former would reduce
 to the latter.
@@ -164,7 +164,7 @@ We define semantic versions $\semtimes$,
 $\semto$, and $\semlater$ of product, function space, and delay type
 constructor, plus a terminal (=largest) semantic type $\semtop$.  Then
 the interpretation $\Den A n$ of closed type $A$ at depth $n$ can be given
-recursively as follows, using Kripke-style at function types:
+recursively as follows, using the Kripke construction at function types:
 \[
 \def\arraystretch{1.3}
 \begin{array}{lll@{\quad}lll}

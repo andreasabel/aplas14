@@ -8,7 +8,7 @@ characterization of strongly normalizing terms $\SN$, namely the least set
 closed under introductions, formation of neutral (=stuck) terms, and
 weak head expansion.  We adapt their technique from lambda-calculus to
 $\lambdalater$; herein, it is crucial to work with well-typed terms to
-avoid junk like $\tfst\,\lambda x. \, x$ which does not exist in pure
+avoid junk like $\tfst\,(\lambda x. \, x)$ which does not exist in pure
 lambda-calculus.  To formulate a deterministic weak head evaluation,
 we make use of the \emph{evaluation contexts} $\vE : \ECxt$
 \[
@@ -16,11 +16,11 @@ we make use of the \emph{evaluation contexts} $\vE : \ECxt$
 .\]
 Since weak head reduction does not go into introductions which include
 $\lambda$-abstraction, it does not go under binders, leaving typing
-context \Gam{} fixed. 
- 
+context \Gam{} fixed.
+
 \input{TermShape}
 
-The family of predicates $\SN\;\vn$ 
+The family of predicates $\SN\;\vn$
 is defined inductively by the following rules---we allow ourselves
 set-notation at this semi-formal level:
 \begin{gather*}
@@ -43,17 +43,17 @@ set-notation at this semi-formal level:
 \end{gather*}
 The last two rules close $\SN$ under neutrals $\SNe$, which is an
 instance of $\PNe$ with $\vP = \SN\;\vn$,
-and level-$\vn$ 
-\emph{strong head expansion} $t \nwhr n t'$, 
+and level-$\vn$
+\emph{strong head expansion} $t \nwhr n t'$,
 which is an instance of $\vP$-whe with
-also $\vP = \SN\;\vn$.  
+also $\vP = \SN\;\vn$.
 \LONGVERSION{
 We represent the inductive $\SN$ in Agda as a sized
 type \citep{hughesParetoSabry:popl96,abelPientka:icfp13} for the
 purpose of termination checking certain inductions on $\SN$ later.
 The assignment of sizes follows the principle that recursive
-invokations of $\SN$ within a constructor of $\SN\;\{\vi\}$ 
-must carry a strictly smaller size $\vj : \SizeLt\;\vi$.  
+invokations of $\SN$ within a constructor of $\SN\;\{\vi\}$
+must carry a strictly smaller size $\vj : \SizeLt\;\vi$.
 The mutually defined relations $\SNe\;\vn\;\vt$ (instance of $\PNe$) and
 strong head reduction (shr)
 $\vt \nwhr n \vtprime$ just thread the size argument through.  Note
@@ -65,7 +65,7 @@ that makes the size argument visible, to be supplied in case $\texp$.
 \input{AntiRename}
 
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "aplas14.tex"
-%%% End: 
+%%% End:

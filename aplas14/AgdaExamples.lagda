@@ -12,19 +12,6 @@ open import TypeEquality
 }
 
 
-We can adapt the $Y$ combinator from the untyped lambda calculus to
-define a guarded fixed point combinator
-\[
-  \tfix = \lambda f.\; (\lambda x. \; f \; (\apply x {\pure x}))\; (\tnext \; (\lambda x. \; f \; (\apply x {\pure x})))
-.\]
-We construct an auxiliary type \AgdaFunction{Fix}
-\va{} that allows safe self application, since the argument will only
-be available "later". This fits with the type we want for the
-\AgdaFunction{fix} combinator, 
-which makes the recursive instance $y$ in $\tfix\;(\lambda y.\, t)$ available only  at the next time slot.
-% the function of which we are taking the
-% fixed point will only be able to use its input at the next time slot.
-
 \begin{code}
 fix : ∀{Γ a} → Tm Γ ((▸ a →̂ a) →̂ a)
 
@@ -70,7 +57,7 @@ tail s = cast (▸̂ (≅delay ≅refl)) (snd s)
 
 Note that \AgdaFunction{tail} returns a stream inside the later
 modality.  This ensures that functions that transform streams have to
-be causal, i.e. can only have access to the first $n$ elements of the
+be causal, \ie, can only have access to the first $n$ elements of the
 input when producing the $n$th element of the output.
 A simple example is mapping a function over a stream.
 \begin{code}
@@ -80,7 +67,7 @@ mapS : ∀{Γ a b} → Tm Γ ((a →̂ b) →̂ (Stream a →̂ Stream b))
 \noindent
 Which is also better read with named variables.
 \[
-\tmapS = \lambda f. \; \afix \; (\lambda \vmapS.\; \lambda s.\; (f \; s, \, \apply{\vmapS}{(\ttail \; s)}))
+\tmapS = \lambda f. \; \afix \; (\lambda \vmapS.\; \lambda s.\; (f \; s, \, \apply{\vmapS}{\ttail \; s}))
 \]
 
 \AgdaHide{

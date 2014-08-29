@@ -122,6 +122,7 @@ cast = castC (≅L.refl ≅refl)
 \end{code}
 }
 
+\noindent
 We shall require $\tcast$ in uses of functorial application, to
 convert a type $\vcinf : \infTy$ into something that can be $\tforce$d
 into a function type.

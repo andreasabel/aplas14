@@ -24,12 +24,13 @@ mutual
     constructor  delay_
     field        force_ : Ty
 \end{code}
-
 \AgdaHide{
 \begin{code}
 open ∞Ty public
 \end{code}
 }
+
+\noindent
 While the arguments $\va$ and $\vb$ of the infix constructors
 $\hattimes$ and $\hatto$ are again in $\Ty$, the prefix constructor
 $\hatlater$ expects and argument $\vainf$ in $\infTy$, which is
@@ -53,6 +54,7 @@ top : ∞Ty
 force top = ▸̂ top
 \end{code}
 
+\noindent
 Technically, $\ttop$ is defined by \emph{copattern} matching
 \citep{abelPientkaThibodeauSetzer:popl13}; $\ttop$ is uniquely defined
 by the value of its only field, $\tforce\;\ttop$, which is given as
@@ -60,7 +62,8 @@ $\hatlater \ttop$.  Agda will use the given equation for its
 internal normalization procedure during type-checking.  Alternatively,
 we could have tried to define $\ttop : \Ty$ by $\ttop = \hatlater
 \tdelay\; \ttop$.  However, Agda will rightfully complain here since rewriting with
-this equation would keep expanding $\ttop$ and be non-terminating.  In contrast, rewriting with
+this equation would keep expanding $\ttop$ forever, thus, be non-terminating.
+In contrast, rewriting with
 the original equation is terminating since at each step, one
 application of $\tforce$ is removed.
 

@@ -13,7 +13,7 @@ $\hatlater$, and $\hatmu$.
 Instead of representing fixed-points as syntactic construction on
 types, which would require a non-trivial equality on types induced by
 $\hatmu X A = \subst{\hatmu X A}X A$, we use \emph{meta-level} fixed-points,
-\ie, Agda's recursion mechanism.  \footnote{
+\ie, Agda's recursion mechanism.\footnote{
 An alternative to get around the type equality problem would be
 iso-recursive types, \ie, with term constructors for folding and
 unfolding of $\hatmu X A$.  However, we would still have to implement
@@ -28,7 +28,7 @@ the termination checker imposes on recursive programs.
 
 Viewed as infinite expressions, guarded types are regular trees with
 an infinite number of $\hatlater$-nodes on each infinite path.  This
-can be expressed as the mixed coinductive-inductive (meta-level) type
+can be expressed as the mixed coinductive($\nu$)-inductive($\mu$) (meta-level) type
 \[
   \nu X \mu Y.\; (Y \times Y) + (Y \times Y) + X.
 \]
@@ -53,7 +53,7 @@ follow in Section~\ref{sec:sn}.  Since it relies on a classification
 of terms into the three shapes \emph{introduction},
 \emph{elimination}, and \emph{weak head redex}, it does not capture all strongly normalizing raw terms, in particular
 ``junk'' terms such as $\fst (\lambda x x)$.  Of
-course, statically well-typed terms come also at cost: for almost all
+course, statically well-typed terms come also at a cost: for almost all
 our predicates on terms we need to show that they are natural in the
 typing context, \ie, closed under well-typed renamings.  This expense
 might be compensated by the extra assistance Agda can give us in

@@ -1,5 +1,5 @@
 We consider a simplified version of Nakano's guarded fixed-point types
-in a presentation of infinite type expression, defined coinductively.
+in a representation by infinite type expressions, defined coinductively.
 Small-step reduction is parametrized by a natural number ``depth'' that
 expresses under how many guards we may step during evaluation.  We
 prove that reduction is strongly normalizing for any depth.  The proof

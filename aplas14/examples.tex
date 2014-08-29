@@ -4,7 +4,7 @@
 
 Although our coinductive representation of $\lambdalater$ types saves
 us from type variables, type substitution, and fixed-point unrolling,
-the question of type equality is not completely settled.  
+the question of type equality is not completely settled.
 The propositional equality $\propeq$ of Martin-L\"of Type Theory is intensional
 in the sense that only objects with the same \emph{code} (modulo
 definitional equality) are considered equal.  Thus, $\propeq$ is
@@ -12,20 +12,34 @@ adequate only for finite objects (such as natural numbers and lists)
 but not for infinite objects like functions, streams, or
 $\lambdalater$ types.
 
-However, we can define extensional equality or \emph{bisimulation} 
+However, we can define extensional equality or \emph{bisimulation}
 on $\Ty$ as a mixed
 coinductive-inductive relation $\bisim/\bisiminf$ that follows the
 structure of $\Ty/\infTy$ (hence, we reuse the constructor names
 $\hattimes$, $\hatto$, and $\hatlater$).
-  
+
 \input{TypeEquality}
 
 \subsection{Examples}
 \label{sec:examples}
 
+Following \cite{nakano:lics00},
+we can adapt the $Y$ combinator from the untyped lambda calculus to
+define a guarded fixed point combinator:
+\[
+  \tfix = \lambda f.\; (\lambda x. \; f \; (\apply x {\pure x}))\; (\tnext \; (\lambda x. \; f \; (\apply x {\pure x})))
+.\]
+We construct an auxiliary type \AgdaFunction{Fix}
+\va{} that allows safe self application, since the argument will only
+be available "later". This fits with the type we want for the
+\AgdaFunction{fix} combinator,
+which makes the recursive instance $y$ in $\tfix\;(\lambda y.\, t)$ available only  at the next time slot.
+% the function of which we are taking the
+% fixed point will only be able to use its input at the next time slot.
+
 \input{AgdaExamples}
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "aplas14.tex"
-%%% End: 
+%%% End:
