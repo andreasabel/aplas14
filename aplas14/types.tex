@@ -4,7 +4,7 @@
 
 Nakano's type system \citeyearpar{nakano:lics00} is equipped with subtyping,
 but we stick to a simpler variant without, a simply-typed version of
-\citet{birkedalMogelberg:lics13}, which we shall call $\lambdalater$.  
+\citet{birkedalMogelberg:lics13}, which we shall call $\lambdalater$.
 Our rather minimal grammar of types
 includes product $A \times B$ and function types $A \to B$, delayed
 computations $\later A$, variables $X$ and explicit fixed-points $\mu
@@ -24,18 +24,18 @@ denotes $\mu X \,(X \to X)$, while $\mu X X \to X$ denotes $(\mu X.X)
 
 Formation of fixed-points $\mu X A$ is subject to the side condition that $X$ is
 guarded in $A$, \ie, $X$
-appears in $A$ only under a \emph{later} modality $\tlater$.  
+appears in $A$ only under a \emph{later} modality $\tlater$.
 This rules out all unguarded recursive types like $\mu X.\, A \times
-X$ or $\mu X.\, X \to A$, but allows their variants 
+X$ or $\mu X.\, X \to A$, but allows their variants
 $\mu X.\, \later (A \times X)$ and  $\mu X.\, A \times \later X$,
-and $\mu X.\, \later (X \to A)$ and $\mu X.\, \later X \to A$. 
+and $\mu X.\, \later (X \to A)$ and $\mu X.\, \later X \to A$.
 Further, fixed-points give rise to an equality relation on types
 induced by $\mu X A = \subst {\mu X A} X A$.
 
 \begin{figure}[htbp]
 \begin{gather*}
 \ru{\Gamma(x) = A
-  }{\Gamma \der x : A} 
+  }{\Gamma \der x : A}
 \qquad
 \ru{\Gamma, x \of A \der t : B
   }{\Gamma \der \lambda x . \; t : A \to B}
@@ -44,14 +44,14 @@ induced by $\mu X A = \subst {\mu X A} X A$.
     \Gamma \der u : A
   }{\Gamma \der t\,u : B}
 \\[2ex]
-\ru{\Gamma \der t_1 : A_1 \qquad 
-    \Gamma \der t_2 : A_2 
+\ru{\Gamma \der t_1 : A_1 \qquad
+    \Gamma \der t_2 : A_2
   }{\Gamma \der (t_1, t_2) : A_1 \times A_2}
 \qquad
-\ru{\Gamma \der t : A_1 \times A_2 
+\ru{\Gamma \der t : A_1 \times A_2
   }{\Gamma \der \fst t : A_1}
-\qquad  
-\ru{\Gamma \der t : A_1 \times A_2 
+\qquad
+\ru{\Gamma \der t : A_1 \times A_2
   }{\Gamma \der \snd t : A_2}
 \\[2ex]
 \ru{\Gamma \der t : A
@@ -63,7 +63,7 @@ induced by $\mu X A = \subst {\mu X A} X A$.
 \qquad
 \ru{\Gamma \der t : A \qquad
     A = B
-  }{\Gamma \der t : B} 
+  }{\Gamma \der t : B}
 \end{gather*}
 \caption{Typing rules.}
 \label{fig:typing}
@@ -71,7 +71,7 @@ induced by $\mu X A = \subst {\mu X A} X A$.
 
 Terms are lambda-terms with pairing and projection plus operations
 that witness \emph{applicative functoriality} of the later modality
-\citep{atkeyMcBride:icfp13}. 
+\citep{atkeyMcBride:icfp13}.
 \[
 \begin{array}{lrl@{\qquad}l}
   r,s,t,u & ::= & x \mid \lambda x \, t \mid t\,u \mid (t_1,t_2) \mid
@@ -89,12 +89,12 @@ by the following \emph{contractions}:
   \applyp{\pure t}{\pure u} & \contr & \pure(t\,u) \\
 \end{array}
 \]
-If we conceive our small-step reduction relation $\red$ as 
+If we conceive our small-step reduction relation $\red$ as
 the compatible closure of $\contr$, we obtain a non-normalizing
 calculus, since terms like $\Omega = \omega \; (\pure\omega)$ with
 $\omega = (\lambda x.\; \apply x (\pure x))$ are
 typeable.\footnote{$\der \Omega : A$ with $A = \mu X (\later X)$.  To type
-  $\omega$, we use $x : \mu Y (\later (Y \to A))$.} 
+  $\omega$, we use $x : \mu Y (\later (Y \to A))$.}
 Unrestricted reduction of $\Omega$ is non-terminating:
 $\Omega \red \pure \Omega \red \pure (\pure \Omega) \red \dots$
 If we let $\tnext$ act as delay operator that blocks reduction inside,
@@ -110,13 +110,13 @@ $n \in \NN$, see Figure~\ref{fig:red}
 \ru{t \red_n t'
   }{\lambda x. \; t \red_n \lambda x. \; t'}
 \qquad
-\ru{t \red_n t' 
+\ru{t \red_n t'
   }{t\,u \red_n t'\,u}
 \qquad
 \ru{u \red_n u'
   }{t\,u \red_n t\,u'}
 \\[2ex]
-\ru{t \red_n t' 
+\ru{t \red_n t'
   }{(t,u) \red_n (t',u)}
 \qquad
 \ru{u \red_n u'
@@ -133,7 +133,7 @@ $n \in \NN$, see Figure~\ref{fig:red}
   }{\pure t \red_{n+1} \pure t'}
 $}
 \qquad
-\ru{t \red_n t' 
+\ru{t \red_n t'
   }{\apply t u \red_n \apply {t'} u}
 \qquad
 \ru{u \red_n u'
@@ -145,7 +145,7 @@ $}
 
 
 To show termination, we interpret types as sets $\A,\B,\C$ of
-depth-$n$ strongly normalizing terms. 
+depth-$n$ strongly normalizing terms.
 We define semantic versions $\semtimes$,
 $\semto$, and $\semlater$ of product, function space, and delay type
 constructor, plus a terminal (=largest) semantic type $\semtop$.  Then
@@ -185,7 +185,7 @@ inductively defined well-typed terms.  However, the complexity was
 discouraging and lead us to a much more economic representation of
 types, which is described in the next section.
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "aplas14.tex"
-%%% End: 
+%%% End:
