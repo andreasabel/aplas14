@@ -153,13 +153,28 @@ the interpretation $\Den A n$ of closed type $A$ at depth $n$ can be given
 recursively as follows, using Kripke-style at function types:
 \[
 \def\arraystretch{1.3}
-\begin{array}{lll}
-  \Den{A \times B}n & = & \Den A n \semtimes \Den B n \\
-  \Den{A \to B}n & = & \bigcap_{n' \leq n} (\Den A {n'} \semto \Den B
-  {n'}) \\
-  \Den{\later A}0 & = & \semtop \\
-  \Den{\later A}{n+1} & = & \semlater \Den A n \\
-  \Den{\mu X A}n & = & \Den{\subst{\mu X A}X A}n \\
+\begin{array}{lll@{\quad}lll}
+  \Den{A \times B}n & = & \Den A n \semtimes \Den B n
+  &
+  \A \semtimes \B & = & \{ t \mid \fst t \in \A \mand \snd t \in \B \}
+\\
+  \Den{A \to B}n & = & \bigcap_{n' \leq n} (\Den A {n'} \semto \Den B {n'})
+  &
+  \A \semto \B & = & \{ t \mid t\,u \in \B \mforall u \in \A \}
+\\
+  \Den{\later A}0 & = & \semlater \semtop
+  &
+  \semtop & = & \{ t \mid t \mbox{ term} \}
+\\
+  \Den{\later A}{n+1} & = & \semlater \Den A n
+  &
+  \semlater \A & = & \overline{\{ \pure t \mid t \in \A \}}
+\\
+  \Den{\mu X A}n & = & \Den{\subst{\mu X A}X A}n
+  &
+  \multicolumn 3 l {(\overline\A \mbox{ is weak head expansion closure
+      of } \A)}
+\\
 \end{array}
 \]
 % The \emph{stage} $n$ can be seen as \emph{time} or evaluation
