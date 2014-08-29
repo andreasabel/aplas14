@@ -16,7 +16,7 @@ open import IndRen
 \end{code}
 }
 
-As a preliminary towards saturated sets we define sets of well-typed
+As a preliminary step towards saturated sets we define sets of well-typed
 terms in an arbitrary typing context but fixed type,
 \AgdaFunction{TmSet} \AgdaBound{a}. We also define shorthands for
 the largest set,
@@ -58,6 +58,9 @@ depth. The first two constructors are for terms in the canonical form
 \AgdaBound{t}, otherwise we use the given set \AgdaBound{𝑨}.
 The other two constructors are needed to satisfy the properties we
 require of our saturated sets.
+
+\noindent
+\begin{minipage}{\textwidth}
 \begin{code}
 data [▸] {a∞} (𝑨 : TmSet (force a∞)) {Γ} : (n : ℕ) → Tm Γ (▸̂ a∞) → Set where
   next0  :  ∀  {t : Tm Γ (force a∞)}                        → [▸] 𝑨  zero     (next t)
@@ -66,7 +69,7 @@ data [▸] {a∞} (𝑨 : TmSet (force a∞)) {Γ} : (n : ℕ) → Tm Γ (▸̂ 
   exp    :  ∀  {n}{t t'  : Tm Γ (▸̂ a∞)}
                (t⇒ : t ⟨ n ⟩⇒ t')         (𝒕 : [▸] 𝑨 n t')  → [▸] 𝑨  n        t
 \end{code}
-
+\end{minipage}
 
 The particularity of our saturated sets is that they are indexed by
 the depth, which in our case is needed to state the usual properties.
@@ -140,22 +143,25 @@ generalization to smaller depths, so that we can maintain antitonicity.
 _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →̂ b) n
 𝓐 ⟦→⟧ 𝓑 = record
   { satSet  = λ t → ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
+  ; satProp = record
+    {  satSN      = CSN
 \end{code}%
 \SHORTVERSION{%
 \vspace{-4ex}
 \begin{code}
-  -- etc.
+    -- etc.
 \end{code}
 }%
 \LONGVERSION{%
 \vspace{-4.5ex}
 \begin{code}
-  ; satProp = record
-    {  satSNe     = CSNe
-    ;  satSN      = CSN
+    ;  satSNe     = CSNe
     ;  satExp     = CExp
-    ;  satRename  = λ ρ {t} 𝒕 m m≤n ρ' {u} 𝒖 →
-                    ≡.subst (λ t₁ → 𝑩 {m} m≤n (app t₁ u)) (subst-∙ ρ' ρ t) (𝒕 m m≤n (ρ' •s ρ) 𝒖)
+    ;  satRename  = CRename
+\end{code}
+}
+\vspace{-4ex}
+\begin{code}
     }
   }
   where
@@ -168,9 +174,18 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
     𝑪 t  =  ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
 
     CSN    :  𝑪 ⊆ SN _
-    CSN 𝒕  =  unRenameSN suc (absVarSN
+    CSN 𝒕  =  fromRenameSN suc (absVarSN
              (𝓑.satSN ≤ℕ.refl (𝒕 _ ≤ℕ.refl suc (𝓐.satSNe ≤ℕ.refl (var zero)))))
-
+\end{code}%
+\SHORTVERSION{%
+\vspace{-4ex}
+\begin{code}
+    -- etc.
+\end{code}
+}%
+\LONGVERSION{%
+\vspace{-4.5ex}
+\begin{code}
     CSNe   :  SNe _ ⊆ 𝑪
     CSNe 𝒏 m m≤n ρ 𝒖 =
          𝓑.satSNe m≤n (sneApp (mapSNe m≤n (renameSNe ρ 𝒏)) (𝓐.satSN m≤n 𝒖))
@@ -178,6 +193,10 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
     CExp   :  ∀{Γ}{t t' : Tm Γ _} → t ⟨ _ ⟩⇒ t' → 𝑪 t' → 𝑪 t
     CExp t⇒ 𝒕 m m≤n ρ 𝒖 =
        𝓑.satExp m≤n ((cong (appl _) (appl _) (map⇒ m≤n (rename⇒ ρ t⇒)))) (𝒕 m m≤n ρ 𝒖)
+
+    CRename : {Γ Δ : List Ty} (ρ : Δ ≤ Γ) {t : Tm Γ _} → 𝑪 t → 𝑪 (rename ρ t)
+    CRename =  λ ρ {t} 𝒕 m m≤n ρ' {u} 𝒖 →
+                    ≡.subst (λ t₁ → 𝑩 {m} m≤n (app t₁ u)) (subst-∙ ρ' ρ t) (𝒕 m m≤n (ρ' •s ρ) 𝒖)
 \end{code}
 }
 
@@ -197,14 +216,14 @@ renamings.
 \begin{code}
 ⟦abs⟧  :  ∀  {n a b} {𝓐 : SAT≤ a n} {𝓑 : SAT≤ b n} {Γ} {t : Tm (a ∷ Γ) b} →
              (∀  {m} (m≤n : m ≤ℕ n) {Δ} (ρ : Δ ≤ Γ) {u : Tm Δ a} →
-                 u ∈⟨ m≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ m≤n ⟩ 𝓑) 
+                 u ∈⟨ m≤n ⟩ 𝓐 → (subst0 u (subst (lifts ρ) t)) ∈⟨ m≤n ⟩ 𝓑)
           →  abs t ∈ (𝓐 ⟦→⟧ 𝓑)
 (⇃ ⟦abs⟧ {𝓐 = 𝓐}{𝓑 = 𝓑} 𝒕) m m≤n ρ 𝒖 =
   SAT≤.satExp 𝓑 m≤n (β (SAT≤.satSN 𝓐 m≤n 𝒖)) (⇃ 𝒕 m≤n ρ (↿ 𝒖))
 
 ⟦app⟧  :  ∀ {n a b}{𝓐 : SAT≤ a n}{𝓑 : SAT≤ b n}{Γ}{t : Tm Γ (a →̂ b)}{u : Tm Γ a} →
           t ∈ (𝓐 ⟦→⟧ 𝓑) → u ∈⟨ ≤ℕ.refl ⟩ 𝓐 → app t u ∈⟨ ≤ℕ.refl ⟩ 𝓑
-⟦app⟧ {𝓑 = 𝓑} {u = u} (↿ 𝒕) (↿ 𝒖) =  ≡.subst (λ t → app t u ∈⟨ ≤ℕ.refl ⟩ 𝓑) renId 
+⟦app⟧ {𝓑 = 𝓑} {u = u} (↿ 𝒕) (↿ 𝒖) =  ≡.subst (λ t → app t u ∈⟨ ≤ℕ.refl ⟩ 𝓑) renId
                                      (↿ 𝒕 _ ≤ℕ.refl id 𝒖)
 \end{code}
 

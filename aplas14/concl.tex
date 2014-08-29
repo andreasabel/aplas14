@@ -2,19 +2,16 @@
 \section{Conclusions}
 \label{sec:concl}
 
-In this paper, we presented a family of reduction
+In this paper, we presented a family of strongly-normalizing reduction
 relations for simply-typed lambda calculus with Nakano's modality for
-recursion.  While each of the relations is strongly normalizing, their
-limit, which they approximate, is the diverging, unrestricted
-reduction relation.  A similar result, weak normalization, has been obtained by
-\cite{krishnaswamiBenton:icfp11}
+recursion. Using a similar stratification, \cite{krishnaswamiBenton:icfp11} have shown weak normalization
 using hereditary substitutions, albeit
 for a system without recursive types.
 
-Strong normalization has formally been proven in Agda using a
-saturated sets semantics based on an inductive notion of strong
-normalization.  Herein, we represented recursive types as infinite
-type expressions and terms as intrinsically well-typed ones.
+Our Agda formalization uses a saturated sets semantics based on an
+inductive notion of strong normalization.  Herein, we represented
+recursive types as infinite type expressions and terms as
+intrinsically well-typed ones.
 
 Our treatment of infinite type expressions was greatly simplified by
 adding an extensionality axiom for the underlying coinductive type to
@@ -33,7 +30,7 @@ types, for instance.
 \paradot{Acknowledgments}
 Thanks to Lars Birkedal, Ranald Clouston, and Rasmus M\o{}gelberg for
 fruitful discussions on guarded recursive types, and Hans Bugge
-Grathwohl and Fabien Renaud for useful feedback on the Agda
+Grathwohl, Fabien Renaud, and some anonymous referees for useful feedback on the Agda
 development and a draft version of this paper.
 The first author acknowledges support by Vetenskapsr\aa{}det framework
 grant 254820104 (Thierry Coquand).  This paper has been prepared with

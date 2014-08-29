@@ -112,11 +112,11 @@ map⟦_⟧∈ a m≤n (↿ 𝑡) = ↿ map⟦ a ⟧ m≤n 𝑡
 \end{code}
 }
 
-We lift the interpretation of types to the interpretation of typing
-contexts pointwise, as predicates on substitutions, which take the
-role of environments. These predicates inherit antitonicity and
-closure under renaming. We will need \AgdaFunction{Ext} to extend the
-environment for the interpretation of lambda abstractions.
+Typing contexts are interpreted as predicates on substitutions. These
+predicates inherit antitonicity and closure under renaming.
+Semantically sound substitutions act as environments \AgdaBound{θ}. We will
+need \AgdaFunction{Ext} to extend the environment for the
+interpretation of lambda abstractions.
 \begin{code}
 ⟦_⟧C : ∀ Γ {n} → ∀ {Δ} (σ : Subst Γ Δ) → Set
 ⟦ Γ ⟧C {n} σ = ∀ {a} (x : Var Γ a) → σ x ∈ ⟦ a ⟧ n
@@ -213,11 +213,11 @@ sound :  ∀ {n a Γ} (t : Tm Γ a) {Δ} {σ : Subst Γ Δ} →
 sound (var x) θ = θ x
 sound (abs t) θ = ⟦abs⟧ {t = t} λ m≤n ρ 𝑢 →
     ↿ in≤ _ m≤n (⇃ sound t (Ext (↿ out≤ _ m≤n (⇃ 𝑢)) (Rename ρ (Map m≤n θ))))
-sound (app t u)   θ  = ⟦app⟧ (sound t θ) (sound u θ)
-sound (pair t u)  θ  = ⟦pair⟧ (sound t θ) (sound u θ)
-sound (fst t)     θ  = ⟦fst⟧ (sound t θ)
-sound (snd t)     θ  = ⟦snd⟧ (sound t θ)
-sound (t ∗ u)     θ  = ⟦∗⟧ (sound t θ) (sound u θ)
+sound (app t u)   θ  = ⟦app⟧   (sound t θ)  (sound u θ)
+sound (pair t u)  θ  = ⟦pair⟧  (sound t θ)  (sound u θ)
+sound (fst t)     θ  = ⟦fst⟧   (sound t θ)
+sound (snd t)     θ  = ⟦snd⟧   (sound t θ)
+sound (t ∗ u)     θ  = ⟦∗⟧     (sound t θ)  (sound u θ)
 sound {zero}  (next t)  θ  = ↿ next0
 sound {suc n} (next t)  θ  = ↿ (next (⇃ sound t (Map n≤sn θ)))
 \end{code}
@@ -226,6 +226,6 @@ The interpretation of $\anext$ depends on the depth, at $\tzero$ we
 are done, at \tsuc{} \AgdaBound{n} we recurse on the subterm at depth
 \AgdaBound{n}, using antitonicity to \AgdaFunction{Map} the current
 environment to depth \AgdaBound{n} as well.
-In fact without $\anext$ we would not have needed antitonocity at all since
+In fact without $\anext$ we would not have needed antitonicity at all since
 there would have been no way to embed a term from a smaller depth into
 a larger one. %% cite Neel?
