@@ -37,11 +37,14 @@
 \usepackage{pifont}
 \usepackage{natbib}
 \renewcommand{\bibname}{\refname}
+\renewcommand{\bibsection}{\section*{\bibname}}
+\renewcommand{\bibfont}{\small}
+
 % \usepackage{unicode-math}  % xelatex only, but not needed
 
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage{hyperref}
-\hypersetup{colorlinks=true, 
+\hypersetup{colorlinks=true,
   linkcolor=RoyalBlue,
   citecolor=RoyalBlue, %citecolor=ForestGreen,
   urlcolor=RoyalBlue}
@@ -110,13 +113,13 @@
 Andreas Abel
 \and
 Andrea Vezzosi
-%\thanks{Supported by 
+%\thanks{Supported by
 %Vetenskapsr\aa{}det framework grant to the ProgLog group (Thierry Coquand et al.) of
 %the Department of Computer Science and Engineering at Chalmers and
-%Gothenburg University} 
-% \and 
-% Lars Birkedal\inst{2} 
-% \and 
+%Gothenburg University}
+% \and
+% Lars Birkedal\inst{2}
+% \and
 % Ranald Clouston\inst{2}
 % \and
 % Hans Bugge Grathwohl\inst{2}
@@ -132,7 +135,7 @@ Andrea Vezzosi
 Computer Science and Engineering, Chalmers and Gothenburg University,\\
 R\"annv\"agen 6, 41296 G\"oteborg, Sweden \\
 \email{andreas.abel@gu.se,vezzosi@chalmers.se}
-% \and 
+% \and
 % Department of Computer Science, Aarhus University, Denmark\\
 % \email{\{birkedal,hbugge,ranald.clouston\}@cs.au.dk}
 }
@@ -142,13 +145,13 @@ R\"annv\"agen 6, 41296 G\"oteborg, Sweden \\
 
 %%% Abstract
 \begin{abstract}
-\input{abstract.txt}  
+\input{abstract.txt}
 \end{abstract}
 
 % Template
 \AgdaHide{
 \begin{code}
-  
+
 \end{code}
 }
 
@@ -167,7 +170,7 @@ R\"annv\"agen 6, 41296 G\"oteborg, Sweden \\
 
 \input{examples}
 % Abbreviations, Cast
-% Examples: 
+% Examples:
 % * Y (in Agda)
 % * Streams & cons
 % More examples in math notation (Stream map)
