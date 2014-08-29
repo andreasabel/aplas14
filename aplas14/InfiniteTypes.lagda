@@ -35,6 +35,8 @@ $\hattimes$ and $\hatto$ are again in $\Ty$, the prefix constructor
 $\hatlater$ expects and argument $\vainf$ in $\infTy$, which is
 basically a wrapping of $\Ty$.\footnote{Similar to a \texttt{newtype}
   in the functional programming language Haskell.}
+The functions $\tdelay$ and $\tforce$ convert back and forth between $\Ty$ and $\infTy$ so that both types
+are valid representations of the set of types of $\lambdalater$.
 \[
 \begin{array}{lll}
   \tdelay & : & \Ty \to \infTy \\
@@ -57,7 +59,7 @@ $\hatlater \ttop$.  Agda will use the given equation for its
 internal normalization procedure during type-checking.  Alternatively,
 we could have tried to define $\ttop : \Ty$ by $\ttop = \hatlater
 \tdelay\; \ttop$.  However, Agda will rightfully complain here since rewriting with
-this equation is clearly non-terminating.  In contrast, rewriting with
+this equation would keep expanding $\ttop$ and be non-terminating.  In contrast, rewriting with
 the original equation is terminating since at each step, one
 application of $\tforce$ is removed.
 

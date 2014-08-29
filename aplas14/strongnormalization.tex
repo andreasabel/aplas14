@@ -3,12 +3,12 @@
 
 \input{sn-definition}
 
-\Citet{raamsdonk:perpetualReductions} pioneered an ``inductive''
-definition of strongly normalizing terms $\SN$, namely the least set
+\Citet{raamsdonk:perpetualReductions} pioneered a more explicit
+characterization of strongly normalizing terms $\SN$, namely the least set
 closed under introductions, formation of neutral (=stuck) terms, and
 weak head expansion.  We adapt their technique from lambda-calculus to
 $\lambdalater$; herein, it is crucial to work with well-typed terms to
-avoid junk like $\tfst\,\lambda x x$ which does not exist in pure
+avoid junk like $\tfst\,\lambda x. \, x$ which does not exist in pure
 lambda-calculus.  To formulate a deterministic weak head evaluation,
 we make use of the \emph{evaluation contexts} $\vE : \ECxt$
 \[

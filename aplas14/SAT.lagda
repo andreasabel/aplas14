@@ -168,7 +168,7 @@ _⟦→⟧_ : ∀ {n a b} (𝓐 : SAT≤ a n) (𝓑 : SAT≤ b n) → SAT (a →
     𝑪 t  =  ∀ m (m≤n : m ≤ℕ _) → (𝑨 m≤n [→] 𝑩 m≤n) t
 
     CSN    :  𝑪 ⊆ SN _
-    CSN 𝒕  =  unRenameSN (prop→Ind suc ≡.refl) (absVarSN
+    CSN 𝒕  =  unRenameSN suc (absVarSN
              (𝓑.satSN ≤ℕ.refl (𝒕 _ ≤ℕ.refl suc (𝓐.satSNe ≤ℕ.refl (var zero)))))
 
     CSNe   :  SNe _ ⊆ 𝑪

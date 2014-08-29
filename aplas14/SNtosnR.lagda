@@ -13,7 +13,7 @@ open import InfiniteTypes
 open import Terms
 open import Substitution
 open import TermShape
-open import sn
+open import sn-definition
 open import SN
 open import NReduction
 open import NReductionProps as NR

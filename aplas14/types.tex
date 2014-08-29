@@ -79,7 +79,7 @@ that witness \emph{applicative functoriality} of the later modality
 \end{array}
 \]
 Figure~\ref{fig:typing} recapitulates the static semantics.  The
-dynamic semantics induced
+dynamic semantics are induced
 by the following \emph{contractions}:
 \[
 \begin{array}{l@{~~}l@{~~}l}
@@ -177,7 +177,7 @@ While all this sounds straightforward at an informal level, formalization
 of the described type language is quite hairy.  For one, we have to
 enforce the restriction to well-formed (guarded) types.  Secondly, our
 type system contains a conversion rule, getting us into the vincinity
-of dependent types which are still a challenge to completely formal
+of dependent types which are still a challenge to a completely formal
 treatment \citep{mcBride:wgp10}.  Our first formalization attempt used
 kinding rules for types to keep track of guardedness for formation of
 fixed-point, and a type equality relation, and building on this,
