@@ -13,7 +13,14 @@ $\hatlater$, and $\hatmu$.
 Instead of representing fixed-points as syntactic construction on
 types, which would require a non-trivial equality on types induced by
 $\hatmu X A = \subst{\hatmu X A}X A$, we use \emph{meta-level} fixed-points,
-\ie, Agda's recursion mechanism.  Extensionally, we are implementing
+\ie, Agda's recursion mechanism.  \footnote{
+An alternative to get around the type equality problem would be
+iso-recursive types, \ie, with term constructors for folding and
+unfolding of $\hatmu X A$.  However, we would still have to implement
+type variables, binding of type variables, type substitution, lemmas
+about type substitution etc.
+}
+Extensionally, we are implementing
 \emph{infinite type expressions} over the constructors $\hattimes$,
 $\hatto$, and $\hatlater$.  The guard condition on recursive types then
 becomes an instance of Agda's ``guard condition'', \ie, the condition
@@ -23,7 +30,7 @@ Viewed as infinite expressions, guarded types are regular trees with
 an infinite number of $\hatlater$-nodes on each infinite path.  This
 can be expressed as the mixed coinductive-inductive (meta-level) type
 \[
-  \nu X \mu Y.\; (Y \times Y) + (Y \times Y) + X. 
+  \nu X \mu Y.\; (Y \times Y) + (Y \times Y) + X.
 \]
 The first summand stands for the binary constructor $\hattimes$, the
 second for $\hatto$, and the third for the unary $\hatlater$.  The
@@ -35,10 +42,28 @@ choose the third alternative $\hatlater$ and restart the process.
 
 \input{InfiniteTypes}
 
+\subsection{Well-typed terms}
+
+Instead of a raw syntax and a typing relation, we represent well-typed
+terms directly by an inductive family
+\citep{dybjer:inductiveFamilies}.
+Our main motivation for this
+choice is the beautiful inductive definition of strongly normalizing terms to
+follow in Section~\ref{sec:sn}.  Since it relies on a classification
+of terms into the three shapes \emph{introduction},
+\emph{elimination}, and \emph{weak head redex}, it does not capture all strongly normalizing raw terms, in particular
+``junk'' terms such as $\fst (\lambda x x)$.  Of
+course, statically well-typed terms come also at cost: for almost all
+our predicates on terms we need to show that they are natural in the
+typing context, \ie, closed under well-typed renamings.  This expense
+might be compensated by the extra assistance Agda can give us in
+proof construction, which is due to the strong constraints on possible
+solutions imposed by the rich typing.
+
 \input{Terms}
 
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "aplas14.tex"
-%%% End: 
+%%% End:

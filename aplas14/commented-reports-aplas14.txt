@@ -122,6 +122,7 @@ ADD TO CONCLUSION: A remark that this is not covered by the partiality monad.
 > avoided, if one would use instead an iso-recursive variant?
 
 ADD: Short discussion on iso-recursive types.
+DONE
 
 > On page 3, would it be possible to state the semantics of products, arrows,
 > the delay modality and top in classical set comprehension, maybe skipping over
@@ -286,6 +287,7 @@ typing rules.
 > argument, but that's not a scientific argument.
 
 COMMENT on untyped terms in conclusion.
+DONE (A BIT)
 
 > 3. As said, some of the more mysterious parts of the formal proof are
 > related to specific Agda features. But one could also do the whole
@@ -297,6 +299,7 @@ COMMENT on untyped terms in conclusion.
 
 COMMENT: Could be done in Coq as well, except for the use of sized
 types in SN and the proof of equivalence with sn.
+DONE
 
 > A smaller point
 

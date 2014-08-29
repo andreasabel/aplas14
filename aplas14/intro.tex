@@ -13,47 +13,49 @@ consistency.  In essence, each negative recursive occurrence needs to
 be \emph{guarded} by the modality; this coined the term \emph{guarded
   recursive types} \citep{birkedalMogelberg:lics13}.\footnote{Not to
   be confused with \emph{Guarded Recursive Datatype Constructors}
-  \citep{xiChenChen:popl03}.} 
+  \citep{xiChenChen:popl03}.}
 Nakano's modality has found applications in functional reactive
 programming \citep{krishnaswamiBenton:lics11} where it is referred to
 as \emph{later} modality.
 
 While Nakano showed that every typed term has a weak head normal form,
 in this paper we prove \emph{strong normalization} for our variant
-$\lambdalater$ of Nakano's calculus.  
+$\lambdalater$ of Nakano's calculus.
 To this end, we
 make the introduction rule for the later modality explicit in the
 terms by a constructor $\tnext$, following
 \citet{birkedalMogelberg:lics13} and \citet{atkeyMcBride:icfp13}.  By
 allowing reduction under finitely many $\tnext$s, we establish
-termination irrespective of the reduction strategy.  
+termination irrespective of the reduction strategy.
 %
 Showing strong normalization of $\lambdalater$ is a first step towards
 an operationally well-behaved type theory with guarded recursive types, for
 which \citet{birkedalMogelberg:lics13} have given a categorical model.
 
 Our proof is fully formalized in the proof assistant Agda
-\citeyearpar{agda24} which is based on intensional Martin-L\"of Type Theory.
+\citeyearpar{agda24} which is based on intensional Martin-L\"of Type
+Theory. \footnote{A similar proof could be formalized in other systems
+  supporting mixed induction-coinduction, for instance, in Coq.}
 One key idea of the formalization is to represent the recursive types
 of $\lambdalater$ as infinite type expressions in form of a
 coinductive definition.  For this, we utilize Agda's new
-\emph{copattern} feature \citep{abelPientkaThibodeauSetzer:popl13}.  
+\emph{copattern} feature \citep{abelPientkaThibodeauSetzer:popl13}.
 The set of strongly normalizing terms is defined inductively by
 distinguishing on the shape of terms, following
 \citet{raamsdonk:perpetualReductions} and \citet{matthes:shortproofs}.  The first author has
 formalized this technique before in Twelf \citep{abel:entcs04};
-in this work we extend these results by a  
-proven relation to the standard notion of strong normalization. 
+in this work we extend these results by a
+proven relation to the standard notion of strong normalization.
 
 Due to space constraints, we can only give a sketch of the
 formalization; a longer version and
-the full Agda proofs 
+the full Agda proofs
 are available online
 \citep{abelVezzosi:guardedNormalization}.
 This paper is extracted from a literate Agda file; all the colored
 code in displays is necessarily type-correct.
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "aplas14.tex"
-%%% End: 
+%%% End:

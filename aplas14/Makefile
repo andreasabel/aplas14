@@ -17,7 +17,7 @@ bibtool=bibtool -- 'preserve.key.case = ON' \
 catcfg=sed -e "s/%.*//g" <
 pdflatex=pdflatex
 # pdflatex=xelatex
-stdlib=$(HOME)/tmp/Agda2/std-lib/src
+stdlib=$(HOME)/agda-master/std-lib/src
 
 bibliography=medium.bib
 sedfile=postprocess.sed

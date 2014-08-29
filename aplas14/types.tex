@@ -144,17 +144,17 @@ $}
 \end{figure}
 
 We should note that for a fixed depth $n$ the relation $\red_n$ is not
-confluent. In fact the term $(\lambda z. \, \pure^{n+1} \, z) (\fst (u , t))$
-reduces to two different normal forms, $\pure^{n+1} \, (\fst (u , t))$ and $\pure^{n+1} \, u$.
+confluent. In fact the term $(\lambda z. \, \tnext^{n+1} \, z) (\fst (u , t))$
+reduces to two different normal forms, $\tnext^{n+1} \, (\fst (u , t))$ and $\tnext^{n+1} \, u$.
 We could remedy this situation by making sure we never hide redexes
 under too many applications of $\tnext$ and instead store them in an explicit
 substitution where they would still be accessible by $\red_n$.
-Our problematic terms would then look like $\pure^{n} \, (\subst {\fst (u , t)} z {(\pure z)})$
-and $\pure^{n} \, (\subst u z {(\pure z)})$ and the former would reduce
+Our problematic terms would then look like $\tnext^{n} \, (\subst {\fst (u , t)} z {(\pure z)})$
+and $\tnext^{n} \, (\subst u z {(\pure z)})$ and the former would reduce
 to the latter.
 However, we are not bothered by the non-confluence since our semantics
-at level $n$ (see below) does not distinguish between $\pure^{n+1} u$ and
-$\pure^{n+1} u'$ (as in $u' = \fst (u,t)$); neither $u$ nor $u'$ is
+at level $n$ (see below) does not distinguish between $\tnext^{n+1} u$ and
+$\tnext^{n+1} u'$ (as in $u' = \fst (u,t)$); neither $u$ nor $u'$ is
 required to terminate if buried under more than $n$ $\tnext$s.
 
 

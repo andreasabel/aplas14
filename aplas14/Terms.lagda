@@ -9,24 +9,6 @@ open import InfiniteTypes
 
 \end{code}}
 
-\subsection{Well-typed terms}
-
-Instead of a raw syntax and a typing relation, we represent well-typed
-terms directly by an inductive family
-\citep{dybjer:inductiveFamilies}.
-Our main motivation for this
-choice is the beautiful inductive definition of strongly normalizing terms to
-follow in Section~\ref{sec:sn}.  Since it relies on a classification
-of terms into the three shapes \emph{introduction},
-\emph{elimination}, and \emph{weak head redex}, it does not deal well with
-junk terms such as $\fst (\lambda x x)$ contained in raw syntax.  Of
-course, statically well-typed terms come also at cost: for almost all
-our predicates on terms we need to show that they are natural in the
-typing context, \ie, closed under well-typed renamings.  This expense
-might be compensated by the extra assistance Agda can give us in
-proof construction, which is due to the strong constraints on possible
-solutions imposed by the rich typing.
-
 Our encoding of well-typed terms follows closely \citet{alti:monadic,mcBride:renSubst,bentonHurKennedyMcBride:jar12}.
 We represent typed variables $\vx : \Var\;\Gam\;\va$
 by de Brujin indices, \ie positions in a typing context $\Gam : \Cxt$
