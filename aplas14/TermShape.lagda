@@ -13,10 +13,11 @@ open import Substitution
 
 \begin{code}
 data ECxt (Γ : Cxt) : (a b : Ty) → Set
-data EHole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
+data _≅_[_] {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
 \end{code}
 \AgdaHide{
 \begin{code}
+EHole = _≅_[_]
 data ECxt (Γ : Cxt) -- : (a b : Ty) → Set
  where
   appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
@@ -24,7 +25,7 @@ data ECxt (Γ : Cxt) -- : (a b : Ty) → Set
   snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
   ∗l_   : ∀ {a∞ b∞} (u : Tm Γ (▸̂ a∞)) → ECxt Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞)
   ∗r_   : ∀ {a∞}{b∞} (t : Tm Γ (force a∞ →̂ force b∞)) → ECxt Γ (▸̂ a∞) (▸̂ b∞)
-data EHole {Γ : Cxt} -- : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
+data _≅_[_] {Γ : Cxt} -- : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
  where
   appl  : ∀ {a b t} (u : Tm Γ a)  → EHole (app t u) (appl u) (t ∶ (a →̂ b))
   fst   : ∀ {a b t} → EHole {a = a ×̂ b} (fst t) fst t
@@ -34,7 +35,7 @@ data EHole {Γ : Cxt} -- : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a �
 \end{code}
 }
 
-$\Ehole\;\vEt\;\vE\;\vt$ witnesses the splitting of a term $\vEt$ into
+$\Ehole {\vEt\,} {\,\vE} \vt$ witnesses the splitting of a term $\vEt$ into
 evaluation context $\vE$ and hole content $\vt$.
 %
 \AgdaHide{
@@ -72,7 +73,7 @@ mkEHole (∗r t)    = _ , ∗r t
 %% Should we try to avoid this parametrization, for simplicity?
 %% Andrea: Tried to but the termination checker didn't like it.
 %
-A generalization of $\Ehole$ is $\PCxt\;\vP$ which additionally
+A generalization of $\Ehole \_ \_ \_$ is $\PCxt\;\vP$ which additionally
 requires that all terms contained in the evaluation context (that is
 one or zero terms) satisfy predicate $\vP$.  This allows us the
 formulation of $\vP$-neutrals as terms of the form $\vect E[x]$ for
@@ -123,8 +124,8 @@ data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
            → P / (next t ∗ next {a∞ = a∞} u) ⇒ (next {a∞ = b∞} (app t u))
 
   cong  :  ∀ {a b t t' Et Et'}{E : ECxt Γ a b}
-           → (𝑬𝒕   : EHole Et E t)
-           → (𝑬𝒕'  : EHole Et' E t')
+           → (𝑬𝒕   : Et ≅ E [ t ])
+           → (𝑬𝒕'  : Et' ≅ E [ t' ])
            → (t⇒   : P / t ⇒ t')
            → P / Et ⇒ Et'
 \end{code}
