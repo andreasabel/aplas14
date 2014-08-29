@@ -28,8 +28,8 @@ data _⟨_⟩⇒β_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
         → (next t ∗ next {a∞ = a∞} u) ⟨ n ⟩⇒β (next {a∞ = b∞} (app t u))
 
   cong  : ∀ {n n' Δ a b t t' Ct Ct'}{C : NβCxt Δ Γ a b n n'}
-        → (𝑪𝒕   : NβHole Ct C t)
-        → (𝑪𝒕'  : NβHole Ct' C t')
+        → (𝑪𝒕   : Ct ≡ C [ t ])
+        → (𝑪𝒕'  : Ct' ≡ C [ t' ])
         → (t⇒β  : t ⟨ n ⟩⇒β t')
         → Ct ⟨ n' ⟩⇒β Ct'
 \end{code}
