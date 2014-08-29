@@ -12,8 +12,8 @@ bibtool=bibtool -- 'preserve.key.case = ON' \
 	  -- 'delete.field = { postscript }' \
 	  -- 'delete.field = { pdf }' \
 	  -- 'delete.field = { month }' \
-	  -- 'delete.field = { isbn }' \
-	  -- 'delete.field = { doi }' 
+	  -- 'delete.field = { isbn }'
+#	  -- 'delete.field = { doi }'
 catcfg=sed -e "s/%.*//g" <
 pdflatex=pdflatex
 # pdflatex=xelatex
@@ -36,7 +36,7 @@ lagdafiles=$(patsubst %.tex,%.lagda,$(generatedfiles))
 # All dependencies
 files=byhand.bib macros.tex intro.tex types.tex syntax.tex red.tex strongnormalization.tex soundnessproof.tex SNcorrectness.tex examples.tex concl.tex $(generatedfiles) $(stylefile)
 
-allfiles=Makefile aplas14.tex aplas14.bbl auto-aplas14.bib $(files) $(lagdafiles) 
+allfiles=Makefile aplas14.tex aplas14.bbl auto-aplas14.bib $(files) $(lagdafiles)
 
 .PRECIOUS : %.tex latex/%.tex aplas14.pdf aplas14long.pdf
 
@@ -54,13 +54,13 @@ $(destdir)/%.zip : %.zip
 
 pack : aplas14.zip
 
-aplas14.zip : $(allfiles) 
+aplas14.zip : $(allfiles)
 	zip $@ $^
 
 # aplas14
 ##################################################################
 
-%.tex : latex/%.tex $(sedfile)  
+%.tex : latex/%.tex $(sedfile)
 	sed --file=$(sedfile) < $< > $@
 
 latex/%.tex : %.lagda
@@ -82,10 +82,10 @@ aplas14_aux : aplas14.tex $(files)
 	touch $@;
 
 # then, run bibtex
-aplas14.bbl : aplas14_aux auto-aplas14.bib 
+aplas14.bbl : aplas14_aux auto-aplas14.bib
 	-bibtex aplas14;
 
-aplas14long.bbl : aplas14long_aux auto-aplas14.bib 
+aplas14long.bbl : aplas14long_aux auto-aplas14.bib
 	-bibtex aplas14long;
 
 # finally, finish by running latex twice again
