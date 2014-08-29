@@ -209,7 +209,7 @@ DONE
 
 TODO: Comment on non-confluence.
 (Andrea)
-
+DONE
 
 > ----------------------- REVIEW 3 ---------------------
 > PAPER: 68

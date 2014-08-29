@@ -143,6 +143,16 @@ $}
 \label{fig:red}
 \end{figure}
 
+We should note that for a fixed depth $n$ the relation $\red_n$ is not
+confluent. In fact the term $(\lambda z. \, \pure^{n+1} \, z) (\fst (u , t))$ 
+reduces to two different normal forms, $\pure^{n+1} \, (\fst (u , t))$ and $\pure^{n+1} \, u$.
+We could remedy this situation by making sure we never hide redexes
+under too many applications of $\pure$ and instead store them in an explicit
+substitution where they would still be accessible by $\red_n$.
+Our problematic terms would then look like $\pure^{n} \, (\subst {\fst (u , t)} z {(\pure z)})$ 
+and $\pure^{n} \, (\subst u z {(\pure z)})$ and the former would reduce
+to the latter.
+
 
 To show termination, we interpret types as sets $\A,\B,\C$ of
 depth-$n$ strongly normalizing terms.
