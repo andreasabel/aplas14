@@ -14,7 +14,7 @@ open import IndRen
 open import SN
 \end{code}
 }
-
+\vspace{-2ex}
 %%% Does it make sense to talk about IndRen if we don't show the proofs?
 %%% It's mostly a technical trick to get Agda's pattern matching to do "inversion" for us.
 \begin{code}
@@ -22,7 +22,7 @@ fromRenameSN   :  ∀{n a Γ Δ} (ρ : Δ ≤ Γ) {t : Tm Γ a} →
                   SN n (rename ρ t) → SN n t
 
 \end{code}
-
+\vspace{-2ex}
 \AgdaHide{
 \begin{code}
 fromRenameSN'   :  ∀{n a Γ Δ} {ρ : Δ ≤ Γ} {t : Tm Γ a} {t'} → IndRen ρ t t' →
@@ -88,7 +88,7 @@ essential for the construction of the function space on sn sets
 absVarSN   :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
                app t (var zero) ∈ SN n → t ∈ SN n
 \end{code}
-
+\vspace{-8ex}
 \AgdaHide{
 \begin{code}
 absVarSNe  :   ∀{Γ a b n}{t : Tm (a ∷ Γ) (a →̂ b)} →
