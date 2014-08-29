@@ -136,6 +136,7 @@ ADD: Short discussion on iso-recursive types.
 
 ADD: Definition of semantic type operators.
 (Andreas)
+DONE
 
 > The equivalence relation, introduced on page 6-7, seems to be an adaption of
 > the observational equality by Altenkirch et al., since "force" is an
