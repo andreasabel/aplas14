@@ -37,6 +37,7 @@ lagdafiles=$(patsubst %.tex,%.lagda,$(generatedfiles))
 files=byhand.bib macros.tex abstract.txt intro.tex types.tex syntax.tex red.tex strongnormalization.tex soundnessproof.tex SNcorrectness.tex examples.tex concl.tex $(generatedfiles) $(stylefile)
 
 allfiles=Makefile aplas14.tex aplas14.bbl auto-aplas14.bib $(files) $(lagdafiles)
+finalfiles=Makefile aplas14.tex aplas14.bbl auto-aplas14.bib $(files) $(generatedfiles)
 
 .PRECIOUS : %.tex latex/%.tex aplas14.pdf aplas14long.pdf
 
@@ -53,6 +54,9 @@ $(destdir)/%.zip : %.zip
 	cp -p $< $@
 
 pack : aplas14.zip
+
+aplasfinal.zip : $(finalfiles)
+	zip $@ $^
 
 aplas14.zip : $(allfiles)
 	zip $@ $^
