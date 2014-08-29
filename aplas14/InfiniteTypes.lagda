@@ -33,8 +33,9 @@ open ∞Ty public
 While the arguments $\va$ and $\vb$ of the infix constructors
 $\hattimes$ and $\hatto$ are again in $\Ty$, the prefix constructor
 $\hatlater$ expects and argument $\vainf$ in $\infTy$, which is
-basically a wrapping of $\Ty$.\footnote{Similar to a \texttt{newtype}
+basically a wrapping\footnote{Similar to a \texttt{newtype}
   in the functional programming language Haskell.}
+of $\Ty$.
 The functions $\tdelay$ and $\tforce$ convert back and forth between $\Ty$ and $\infTy$ so that both types
 are valid representations of the set of types of $\lambdalater$.
 \[
@@ -49,7 +50,7 @@ infinite type expressions, like $\ttop = \hatmu X (\hatlater X)$.
 
 \begin{code}
 top : ∞Ty
-force top = ▸̂ top   
+force top = ▸̂ top
 \end{code}
 
 Technically, $\ttop$ is defined by \emph{copattern} matching

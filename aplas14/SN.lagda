@@ -219,15 +219,15 @@ renaming).  Besides \AgdaFunction{renameSN}, we have analogous lemmata
 \AgdaFunction{renameSNe} and \AgdaFunction{rename⇒}.
 
 \begin{code}
-renameSN    :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
+renameSN    :  ∀ {n a Δ Γ} (ρ : Δ ≤ Γ) {t : Tm Γ a} →
                SN n t → SN n (rename ρ t)
 \end{code}
 
 \AgdaHide{
 \begin{code}
-renameSNe   :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t : Tm Δ a} →
+renameSNe   :  ∀ {n a Δ Γ} (ρ : Δ ≤ Γ) {t : Tm Γ a} →
                SNe n t → SNe n (rename ρ t)
-rename⇒      :  ∀ {n a Γ Δ} (ρ : Γ ≤ Δ) {t t' : Tm Δ a} →
+rename⇒      :  ∀ {n a Δ Γ} (ρ : Δ ≤ Γ) {t t' : Tm Γ a} →
                t ⟨ n ⟩⇒ t' → rename ρ t ⟨ n ⟩⇒ rename ρ t'
 \end{code}
 }

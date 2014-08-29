@@ -1,0 +1,276 @@
+Dear Andreas Abel,
+
+On behalf of the APLAS 2014 Program Committee, I am delighted to
+inform you that the following submission has been accepted to be
+presented at APLAS 2014:
+
+     A Formalized Proof of Strong Normalization for Guarded Recursive Types
+
+The Program Committee worked very hard to thoroughly review all the
+submitted papers.  The reviews for your paper are attached
+below. Please repay the reviewers' efforts, by giving serious
+consideration to their suggestions as you prepare the final version.
+
+We should receive your final manuscript and the copyright form by
+September 1 (this is a hard deadline!). The limit of paper length
+is 20 pages in Springer's LNCS format.
+Please see more detailed instructions attached below.
+
+Congratulations on your fine work!
+
+I look forward to meeting you at the conference.
+
+Best regards,
+
+Jacques Garrigue
+APLAS 2014 Program Chair
+------------
+
+
+Instructions for preparing final manuscript
+============================================
+Deviating from the following instructions may prevent your paper
+from being included in the official LNCS proceedings of APLAS 2014.
+
+1. Prepare the final manuscript for inclusion in LNCS proceedings,
+   following the instructions for LNCS authors
+    (visit http://www.springer.com/lncs and follow the link to
+     "Author & Editor Guidelines," and then follow the link to
+     "Information for LNCS Authors", i.e. the "more" at the end of
+     the paragraph).
+
+   The limit of the paper length is 20 pages.
+   (This is 2 pages longer than the length of submissions. That extra
+    space should be used to address reviewers' comments.)
+
+2. Fill the copyright form and sign it. At least one copyright form
+   must be filled per paper. You can get a PDF version of the
+   copyright form at:
+
+   http://www.math.nagoya-u.ac.jp/~garrigue/APLAS2014/copyrightlncs_15_03_2013_CH_final.pdf
+
+   Please beware that this copyright form was changed last year, and
+   do not use old versions of this form.
+   Once you have signed the form, scan it as PDF.
+
+3. Upload your manuscript (including all the source files) and the
+   signed copyright form from the EasyChair submission page by
+   **September 1**:
+
+   https://www.easychair.org/conferences/?conf=aplas2014
+
+4. Later, the final PDF file will be sent from the publisher to
+   the contact author's email address (i.e., the address to which
+   this notication is being delivered). If you wish to change the
+   contact author's email address, please let us know at
+   aplas2014@easychair.org by September 1.
+
+   The final PDF file will be sent from an email address in India.
+   Please make sure that the message will not be rejected by a spam
+   filter.
+
+
+----------------------- REVIEW 1 ---------------------
+PAPER: 68
+TITLE: A Formalized Proof of Strong Normalization for Guarded Recursive Types
+AUTHORS: Andreas Abel and Andrea Vezzosi
+
+OVERALL EVALUATION: 3 (strong accept)
+
+----------- REVIEW -----------
+
+In the paper "A Formalized Proof of Strong Normalization for Guarded
+Recursive Types", Abel and Vezzosi, introduce a rewriting relation for
+Nakano's language with guarded recursive types, and prove that it is
+strongly normalising. The type system of Nakano allows taking fixed
+points of types with variables in negative position, albeit with the
+necessity of guarding the variable under a delay modality.
+
+The given rewriting relation is an operational implementation of the
+categorical model by Birkedal and Mogelberg. This is an important step
+towards giving an operational model that does not depend on existing
+models.
+
+Remarkably, the authors do all this work in the theorem prover Agda
+(admittedly, Andreas Abel is one of the main developers of Agda). This
+shows how modern type theory has evolved, allowing to write proofs of
+highly non-trivial results.  This is especially true for results that
+are inherently coalgebraic.
+
+Therefore, I vote to accept the paper.
+
+Remarks for the authors
+==========================
+
+What is the relation to the partiality monad? Let F : Set x Set -> Set be the
+functor given by F(A, X) = A + X. Then for a fixed set of states X,
+F(-, X) = Id + X is the said monad. The multiplication μ : (A + X) + X -> A + X
+is given by the copairing μ = [[inl,inr], inr], and the unit η : A -> A + X is
+given by η = inl. The latter seems to correspond to next in the given syntax.
+The functor F gives even more structure. For fixed a set of outcomes A, the
+endofunctor F(A, -) has the final coalgebra (Nat x A) + 1 (where Nat are the
+natural numbers and 1 represents infinity). The natural number says after how
+many steps a coalgebra X -> A + X produced an output. This seems to be strongly
+related to the depth of the given rewriting rules. The given data type to
+represent the type system is also isomorphic (in Set or with the proposed
+equivalence) to νX.(μY. (Y x Y) + (Y x Y)) + X, i.e., the final coalgebra of
+F(μY. (Y x Y) + (Y x Y), - ), if I am not mistaken.
+
+Could the described complication, arising from the equi-recursive type, be
+avoided, if one would use instead an iso-recursive variant?
+
+On page 3, would it be possible to state the semantics of products, arrows,
+the delay modality and top in classical set comprehension, maybe skipping over
+some details? This might help to read the later definitions and make the
+Kripke-semantics clearer:
+(M [[->]] N)(n) = {𝛤 ⊢ t : A -> B | ∀m≤n.∀ρ:𝛥≤𝛤. ρ(t) ∈ (M(m) => N(m)) }
+where
+(M(m) => N(m)) = {𝛥 ⊢ r : A -> B | ∀ 𝛥 ⊢ u : A. if u ∈ M(m), then (r u) ∈ N(m)}.
+The first corresponds rather closely to Kripke-semantics of "->" in a 2-dim.
+model (up-to antitonicity). The second part corresponds to "meta-level"
+implication.
+
+The equivalence relation, introduced on page 6-7, seems to be an adaption of
+the observational equality by Altenkirch et al., since "force" is an
+observation. This should probably be made more explicit.
+
+On page 9, in "of rename which" is a comma missing before which.
+On the same page, can you leave out the name t=>β? This would ease readability.
+Also, even it might be "suggestive" the notation
+NβHole Ct C t is extremely hard to read, since one has to carefully look for
+the space. Would the notation, or something similar,  _=_[_] = NβHole be
+possible? This would result into Ct = C[t]. Moreover, the inductive extension
+of "cong" might be useful, since it can be very hard to define.
+Finally, just write "which are given by the following grammar".
+
+Page 10: Why is inductive put into quotes? This _is_ an inductive definition.
+
+Page 12: "unRenameSN" seems to be an unfortunate name choice, since it suggests
+that renaming can be undone. This is not the case, as such a map does not have
+to be bijective. Also the type of "unRenameSN" should be analogous to
+"renameSN". Is there any technical difficulty in doing so?
+
+Page 17: The last sentence should probably read: "how they relate to other
+approaches like coinduction with sized types, for instance."
+
+
+----------------------- REVIEW 2 ---------------------
+PAPER: 68
+TITLE: A Formalized Proof of Strong Normalization for Guarded Recursive Types
+AUTHORS: Andreas Abel and Andrea Vezzosi
+
+OVERALL EVALUATION: 1 (weak accept)
+
+----------- REVIEW -----------
+
+The paper presents a proof of strong normalization for guarded
+recursive types (GRT) originally due to Nakano (Nakano 2000). Mostly
+it is about formalizing this proof in Agda.
+
+I have no concern over the correctness of the proof. Actually, I think
+that the original proof of weak-head normalization by Nakano (Nakano
+2000) should imply strong normalization, and this implication can be
+given an elementary proof (that is, a proof in PA).
+
+The contribution of the paper is rather technical; it domonstrates a
+way to rely on specific features in Agda to encode types in GRT. This
+is understandable as a direct first-order encoding of the types of GRT
+would make it a very onerous task to handle non-trivial type equality
+in GRT (involving folding/unfolding). I could not follow the details
+expressed in the presented Agda code, but the used proof strategy is a
+very familiar one. Personally, I would prefer a direct Girard-style of
+strong normalization (instead of using the SAT-set).
+
+Overall, I feel that this paper is a bit too narrow for APLAS. It
+should probably target something like Agda workshop?
+
+
+----------------------- REVIEW 3 ---------------------
+PAPER: 68
+TITLE: A Formalized Proof of Strong Normalization for Guarded Recursive Types
+AUTHORS: Andreas Abel and Andrea Vezzosi
+
+OVERALL EVALUATION: -1 (weak reject)
+
+----------- REVIEW -----------
+
+This paper presents a formalised proof of strong normalization of a
+subsystem of Nakano's (2000) type system with guarded fixed poin
+types.  Nakano proved weak normalization, and now the authors prove
+strong normalization of a subsystem (but extending that to the full
+system of Nakano seems to not add any serious difficulty.)  As the
+authors state themselves on page 4 about their proof: "While all this
+sounds straightforward at an informal level, formalization of the
+described type language is quite hairy." Indeed, the suprise is not in
+the fact that SN holds, neither is the difficulty in the proof, which,
+given with pen and paper, is not very difficult.  So, the added value
+of the paper is in the formalization. The authors show a lot of nice
+Agda features and also the presentation of formal code using a special
+Agda to Latex script is nice. But here I am not really convinced about
+the added value of this work.
+
+Let me summarize my reasons pointwise
+
+1. The connection between the formlized result and the original
+problem are not made clear, while this is not immediate.How should we
+interpret a typing judgment as in Fig 1 as a formal judgemt? In the
+formal judgments, we have Ty and \infty~Ty. How should these be
+reconciled?
+
+Note that this is a crucial aspect of doing a formalization: to argue
+convincingly that what you prove formally is actually what you stated
+in mathematical terms. (This can also be peoved, but then with pen and
+paper on the meta level) Some other places where this question pops
+up:
+
+* page 6 in the def of Tm: the cases for next and _*_ take an
+  \infty-Ty and not a Ty. But in the rules, they take just a type ...
+
+* page 9 in the def of beta, in the case for beta>, the function we
+  take is of type "force a\inty -> force b\infty", whereas in Fig 1,
+  it is of type "(A->B)". (Then next moves it to ">(A->B)".) How
+  should I reconcile this?
+
+  I was tacitly thinking that force would be >, but it seems it is not.
+
+2.The paper makes a number of badly motivated choices and at page 7
+makes a dramatic shortcut.
+
+Given the fact that we work with types modulo an equality, we can not
+use the standard (inductively defined) equality on types. That
+complicates matters of course, so "Hence, we fall for the shortcut: It
+is consistent to postulate that bisimulation implies equality,
+similarly to the functional extensionality principle for function
+types. This lets us define the function cast to convert terms between
+bisimilar types."  And in the Conclusion some fairly "gratuit"
+reference to HoTT is made, basically saying that in presenceof
+univalence, we wouldn't have these problems anyway.  That's a too easy
+way out: first saying that the formal proof is considerably harder
+then the paper proof, and when it _really_ gets tricky, you add an
+axiom!
+
+But maybe you could have made different choices from the start,
+e.g. work with raw terms and a typing judment? Work with SAT as sets
+of _untyped_ terms? The last paragraph of page 5 gives "beauty" as an
+argument, but that's not a scientific argument.
+
+3. As said, some of the more mysterious parts of the formal proof are
+related to specific Agda features. But one could also do the whole
+work in Coq, or maybe in Isabelle. In Coq, for example, Yves Bertot
+has done formalizations using coinductive types and there is work by
+Niqui and others.It is not even mentioned that this is possible and
+there is no comparison with how one would do this in Coq.Are the
+problems mentioned even more difficult in Coq?
+
+A smaller point
+
+The paper is very Agda specific.  Agda syntax is quite Haskell like, so
+that's more or less ok, but the formal definitions may be hard to
+follow where it comes to coinductive types It is very unclear what is
+allowed and what not. The authors say why they choose some form and
+not another, but sentences like "However, Agda will rightfully
+complain here since rewriting with this equation is clearly
+non-terminating." don't add much information.
+
+Same applies to the paragraph mi of page 6.
+

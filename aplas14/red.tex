@@ -3,41 +3,42 @@
 
 In this section, we describe the implementation of parametrized
 reduction $\red_n$ in Agda.  As a prerequisite, we need to define
-substitution, which in turn depends on renaming 
+substitution, which in turn depends on renaming
 \citep{bentonHurKennedyMcBride:jar12}.
 
 A \emph{renaming} from context $\Gam$ to context $\Del$, written $\Del
 \aleq \Gam$, is a mapping from variables of $\Gam$ to those of $\Del$
 of the same type $\va$.
+The function $\arename$ lifts such a mapping to terms.
 
 \input{Rename}
 
-The function $\arename$ lifts such a mapping to terms.  We also give
-an inductive relational specification $\IndRen$ of $\arename$ which
-will be useful to show that strong normalization (sn) is closed under
-renaming and even the undoing of renaming (if a renamed term is sn, so
-is the original term). 
-
-\input{IndRen}
-
+% We also give
+% an inductive relational specification $\IndRen$ of $\arename$, which
+% will be useful to show that strong normalization (sn) is closed under
+% renaming and even the undoing of renaming (if a renamed term is sn, so
+% is the original term).
+%
+% \input{IndRen}
+%
 Building on renaming, we define well-typed parallel substitution.
-From this, we get the special case of substituting de Bruijn index 0. 
+From this, we get the special case of substituting de~Bruijn index 0.
 
 \input{Subst0}
 
 Reduction $t \red_n t'$ is formalized as the inductive family $\vt \nred n
-\vtprime$ with four constructors \AgdaInductiveConstructor{β...} 
+\vtprime$ with four constructors \AgdaInductiveConstructor{β...}
 representing the contraction rules and one congruence rule $\tcong$ to
 reduce in subterms.
 
 \input{NReduction}
 
-The congruence rule makes use of shallow one hole contexts $\vC$, which 
+The congruence rule makes use of shallow one hole contexts $\vC$, which
 are given by the following grammar
 \[
   \vC ::= \lambda x \_  \mid \_\,u \mid t\,\_
-  \mid (t,\_) \mid (\_,u) \mid \fst\_ \mid \snd\_ 
-  \mid \tnext\,\_ \mid \_∗u \mid t∗\_ 
+  \mid (t,\_) \mid (\_,u) \mid \fst\_ \mid \snd\_
+  \mid \tnext\,\_ \mid \_∗u \mid t∗\_
 .\]
 $\tcong$ says that we can reduce a term, suggestively
 called $\vCt$, to a term $\vCtprime$, if (1) $\vCt$ decomposes into
@@ -47,14 +48,14 @@ relation $\NbetaHole$, context
 $\vC : \NbetaCxt\;\Gam\;\Del\;\va\;\vb\;\vn\;\vnprime$ produces a term
 $\vCt : \Tm\;\Gam\;\vb$ of depth $\vnprime$ if filled with a term $\vt
 : \Tm\;\Del\;\va$ of depth $\vn$.  The depth is unchanged except for
-the case $\anext$, which increases the depth by 1.  
+the case $\anext$, which increases the depth by 1.
 Thus,  $\vt \nred n \vtprime$ can contract every subterm that is under
 at most $\vn$ many $\anext$s.
 
 
 \input{NContexts}
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "aplas14.tex"
-%%% End: 
+%%% End:
