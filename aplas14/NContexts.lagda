@@ -27,23 +27,25 @@ data NβCxt : (Δ Γ : Cxt) (a b : Ty) (n n' : ℕ) → Set where
                (t : Tm Γ (▸̂ (a∞ ⇒ b∞)))         → NβCxt Γ Γ (▸̂ a∞) (▸̂ b∞) n n
 \end{code}
 \begin{code}
-data NβHole  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
+data _≡_[_]  {n : ℕ} {Γ : Cxt} : {n' : ℕ} {Δ : Cxt} {b a : Ty} →
              Tm Γ b → NβCxt Δ Γ a b n n' → Tm Δ a → Set
 \end{code}
 \end{small}
 \AgdaHide{
 \begin{code}
  where
-  appl  : ∀ {a b t} (u : Tm Γ a)                          → NβHole (app t u) (appl u) (t ∶ (a →̂ b))
-  appr  : ∀ {a b u} (t : Tm Γ (a →̂ b))                   → NβHole (app t u) (appr t) u
-  pairl : ∀ {a b}{t} (u : Tm Γ b)                         → NβHole (pair t u) (pairl u) (t ∶ a)
-  pairr : ∀ {a b}{u} (t : Tm Γ a)                         → NβHole (pair t u) (pairr t) (u ∶ b)
-  fst   : ∀ {a b t}                                       → NβHole {a = a ×̂ b} (fst t) fst t
-  snd   : ∀ {a b t}                                       → NβHole {a = a ×̂ b} (snd t) snd t
-  ∗l_   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞))                     → NβHole {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (∗l u) t
-  ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → NβHole ((t ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
-  abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → NβHole (abs t) abs t
-  next  : ∀ {a∞} {t : Tm Γ (force a∞)}                    → NβHole (next {a∞ = a∞} t) next t
+  appl  : ∀ {a b t} (u : Tm Γ a)                          → _≡_[_] (app t u) (appl u) (t ∶ (a →̂ b))
+  appr  : ∀ {a b u} (t : Tm Γ (a →̂ b))                   → _≡_[_] (app t u) (appr t) u
+  pairl : ∀ {a b}{t} (u : Tm Γ b)                         → _≡_[_] (pair t u) (pairl u) (t ∶ a)
+  pairr : ∀ {a b}{u} (t : Tm Γ a)                         → _≡_[_] (pair t u) (pairr t) (u ∶ b)
+  fst   : ∀ {a b t}                                       → _≡_[_] {a = a ×̂ b} (fst t) fst t
+  snd   : ∀ {a b t}                                       → _≡_[_] {a = a ×̂ b} (snd t) snd t
+  ∗l_   : ∀ {a∞ b∞ t} (u : Tm Γ (▸̂ a∞))                     → _≡_[_] {a = (▸̂ (a∞ ⇒ b∞))} (t ∗ u) (∗l u) t
+  ∗r_   : ∀ {a∞ b∞}{u} (t : Tm Γ (▸̂ (a∞ ⇒ b∞))) → _≡_[_] ((t ∗ (u ∶ ▸̂ a∞)) ∶ ▸̂ b∞) (∗r t) u
+  abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → _≡_[_] (abs t) abs t
+  next  : ∀ {a∞} {t : Tm Γ (force a∞)}                    → _≡_[_] (next {a∞ = a∞} t) next t
+
+NβHole = _≡_[_]
 \end{code}
 }
 

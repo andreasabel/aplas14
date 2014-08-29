@@ -156,6 +156,7 @@ NO
 > the space. Would the notation, or something similar,  _=_[_] = NβHole be
 > possible? This would result into Ct = C[t].
 TODO
+DONE
 
 > Moreover, the inductive extension
 > of "cong" might be useful, since it can be very hard to define.
