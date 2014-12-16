@@ -1,5 +1,14 @@
 \nonstopmode
 \documentclass[t]{beamer}
+\usepackage{mathptmx}
+\usepackage{amsfonts,amssymb,textgreek,stmaryrd}
+\usepackage[postscript]{ucs}
+%\usepackage[postscript,combine]{ucs} %% combine destroys all unicode
+\usepackage[utf8x]{inputenc}
+\usepackage{pifont}
+%%\usepackage{environ}
+\usepackage{latex/agda}
+
 %\documentclass{article}\usepackage{beamerarticle}
 
 \makeatletter
@@ -53,7 +62,7 @@
 
 
 \usepackage[english]{babel}
-\usepackage[utf8]{inputenc}
+\usepackage[utf8x]{inputenc}
 %\usepackage{times}  % DYSFUNCTIONAL! looks awful when mixing mathtt and ordinary math.
 \usepackage{ifthen}
 %\usepackage[T1]{fontenc} %no effect
@@ -181,10 +190,10 @@
 %% - Use the \inst command only if there are several affiliations.
 %% - Keep it simple, no one is interested in your street address.
 
-\date[Proglog 2014] % (optional, should be abbreviation of conference name)
-{ Proglog Seminar \\
-  Chalmers, Gothenburg, Sweden \\
-  12 November 2014}
+\date[APLAS 2014] % (optional, should be abbreviation of conference name)
+{ 12th Asian Symposium on Programming Languages and Systems \\
+  %% Chalmers, Gothenburg, Sweden \\ 
+  17 November 2014}
 % - Either use conference name or its abbreviation.
 % - Not really informative to the audience, more for people (including
 %   yourself) who are reading the slides online
@@ -281,6 +290,7 @@
 \newcommand{\muT}[2]{\mu {#1} \hspace{-0.1em} . \,  {#2}}
 
 \usepackage{diagrams}
+
 \begin{document}
 \newcommand{\lat}[1]{\later \! {#1}}
 \newcommand{\arr}{\!\to\!}
@@ -312,7 +322,7 @@
   \item Applications
     \begin{itemize}
       \item Semantics (abstracting step-indexing)
-      \item FRP (causality)
+      \item Functional Reactive Programming (causality)
       \item Coinduction (productivity, with a ``Globally''/``$\square$'' modality)
     \end{itemize}
   \vspace{10pt}
@@ -366,15 +376,37 @@
 
 \begin{frame}%[fragile=singleslide]
   \frametitle{Recursion from recursive types}
-Guarded recursion combinator can be encoded.
+Guarded recursion combinator can be encoded. \\
+The standard $\Y$ combinator would need a type $T$ such that
+\[ T = T \to A \]
+to typecheck the self applications of $x$ and $\omega$:\\
+\[
+\begin{array}{lllllll}
+  &&f & : & A \to A \\
+  %% &&B & := & \muT X {\lat X \to A} & = & \lat B \to A \\
+  %% &&x & : & \lat B & = & \lat (\lat B \to A) \\
+  %% &&x \ast \nex x & : & \lat A \\
+  %% &&f\,(x \ast \nex x) & : & A \\
+  %% \omega & := & \lambda x. \, f\,(x \ast \nex x) & : & \lat B \to A  & = & B \\
+  %% \Y     & := & \omega \, (\nex \omega) & : & A \\
+  \omega & := & \lambda (x : T). \, f\,(x \, x) & : & T \to A \\
+  \Y     & := & \omega \, \omega & : & A \\
+\end{array}
+\]
+\end{frame}
+
+\begin{frame}%[fragile=singleslide]
+  \frametitle{Recursion from recursive types}
+
+What we have is a type $T$ such that $T = \lat T \to A$:
+\[
+T = \muT X {\lat X \to A}
+\]
+So we get a guarded fixpoint combinator:
 \[
 \begin{array}{lllllll}
   &&f & : & \lat A \to A \\
-  &&B & := & \muT X {\lat X \to A} & = & \lat B \to A \\
-  &&x & : & \lat B & = & \lat (\lat B \to A) \\
-  &&x \ast \nex x & : & \lat A \\
-  &&f\,(x \ast \nex x) & : & A \\
-  \omega & := & \lambda x. \, f\,(x \ast \nex x) & : & \lat B \to A  & = & B \\
+  \omega & := & \lambda (x : \lat T). \, f\,(x \ast \nex x) & : & \lat T \to A \\
   \Y     & := & \omega \, (\nex \omega) & : & A \\
 \\
 \multicolumn 7 l {
@@ -396,6 +428,7 @@ Full reduction $\red$ diverges.
     \lat A & 1 & \lTo^{!} & A_0 & \lTo^{r_0} & A_1 & \lTo^{r_1} & \ldots
   \end{diagram}
 \end{frame}
+
 
 \begin{frame}%[fragile=singleslide]
   \frametitle{Denotational Semantics}
@@ -427,6 +460,18 @@ Full reduction $\red$ diverges.
   \end{itemize}
 \end{frame}
 
+\begin{frame}%[fragile=singleslide]
+  \frametitle{Restricted reduction (Example)}
+\[
+  \begin{array}{l}
+    \Y \red^*_0 f\, (\nex \Y) \longarrownot\longrightarrow_0 \\ \\
+    \Y \red^*_1 f\, (\nex (f\, (\nex \Y))) \longarrownot\longrightarrow_1   \\ \\
+    \Y \red^*_2 f\, (\nex (f\, (\nex (f\, (\nex \Y))))) \longarrownot\longrightarrow_2   \\ \\
+    \vdots
+  \end{array}
+\]
+\end{frame}
+
 
 \begin{frame}%[fragile=singleslide]
   \frametitle{Strong normalization as well-foundedness}
@@ -443,96 +488,35 @@ Full reduction $\red$ diverges.
 \end{frame}
 
 
-\begin{frame}%[fragile=singleslide]
-  \frametitle{Inductive SN}
+\begin{frame}
+  \frametitle{Inductive $\SN_n$}
+  \vspace{-15pt}
   \begin{itemize}
-  \item Lambda-calculus:
-\[
-  \ru{\vec u \in \SN
-    }{x\,\vec u \in \SN}
-\qquad
-  \ru{t\in\SN}{\lambda x t \in \SN}
-\qquad
-  \ru{\subst u x t\, \vec u \in \SN \qquad u \in \SN
-    }{(\lambda x t)\,u\,\vec u \in \SN}
-\]
-  \item With evaluation contexts $E ::= \_ \mid E\,u$:
+  \item Take the inductively defined normal forms:
 \begin{gather*}
-  \ru{}{\_ \in \SN}
+  E ::= \_ \mid E\,u \mid E \ast u \mid \nex t \ast E\\
+  \ru{E \in \SN_n
+    }{E[x] \in \SN_n}
 \qquad
-  \ru{E \in \SN \qquad u \in \SN}{E\,u \in \SN}
-\\[2ex]
-  \ru{E \in \SN
-    }{E[x] \in \SN}
+  \ru{t\in\SN_n}{\lam x t \in \SN_n}
 \qquad
-  \ru{t\in\SN}{\lambda x t \in \SN}
-\qquad
-  \ru{E[\subst u x t] \in \SN \qquad u \in \SN
-    }{E[(\lambda x t)\,u] \in \SN}
-\end{gather*}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}%[fragile=singleslide]
-  \frametitle{Inductive SN (ctd.)}
-  \begin{itemize}
-  \item Strong contraction $t \contrSN t'$.
-\[
-  \ru{u \in \SN
-    }{(\lambda x t)\,u \contrSN \subst u x t}
-\]
-  \item ``Strong head reduction'' $t \redSN t'$.
-\[
-  \ru{t \contrSN t'}{E[t] \redSN E[t']}
-\]
-  \item $\SN$ with strong head reduction.
-\[
-  \ru{t \redSN t' \qquad t' \in \SN
-    }{t \in \SN}
-\]
-  \end{itemize}
-\end{frame}
-
-
-\begin{frame}%[fragile=singleslide]
-  \frametitle{SN with guarded types}
-  \begin{itemize}
-  \item Extending evaluation contexts:
-\(
-  E ::= \dots \mid E \ast u \mid \nex t \ast E
-\)
-%\vspace{-2ex}
-  \item Extending strong contraction:
-\[
-  \ru{u \in \SN_n
-    }{(\lambda x t)\,u \contrSN_n \subst u x t}
-\qquad
-  \ru{}{\nex t \ast \nex u \contrSN_n \nex (t\,u)}
-\]
-\vspace{-2ex}
-  \item Adding index to strong head reduction:
-\[
-  \ru{t \contrSN_n t'}{E[t] \redSN_n E[t']}
-\qquad
-  \ru{t \redSN_n t' \qquad t' \in \SN_n
-    }{t \in \SN_n}
-\]
-\vspace{-2ex}
-  \item Adding rule for introduction:
-\vspace{-2ex}
-\[
   \ru{}{\nex t \in \SN_0}
 \qquad
   \ru{t \in \SN_n
     }{\nex t \in \SN_{n+1}}
-\]
-\vspace{-2ex}
-\item $\SN_n$ is antitone in $n$.
-  \end{itemize}
+\end{gather*}
+\item And close them under ``Strong head reduction'' $t \redSN_n t'$
+\begin{gather*}
+\ru{t \redSN_n t' \qquad t' \in \SN_n }
+   {t \in \SN_n}\qquad
+\ru{t \contr t' \qquad t \in \SN_n}
+   {E[t] \redSN_n E[t']}
+\end{gather*}
+\item $t \redSN_n t'$ is like weak head reduction but erased terms must be s.n.
+\end{itemize}
 \end{frame}
 
-
-\begin{frame}%[fragile=singleslide]
+\begin{frame}%[fragile=singleslide] %% TODO cut?
   \frametitle{Notions of s.n.\ coincide?}
   \begin{itemize}
   \item Rules for $\SN_n$ are closure properties of $\sn_n$.
@@ -546,7 +530,7 @@ Full reduction $\red$ diverges.
 .\]
   \item Solution: consider only well-typed terms.
   \item Proof of $t \in \sn_n \implies t \in \SN_n$ by case
-    distinction on $t$: neutral ($E[x]$), introduction ($\lambda
+    distinction on $t$: neutral ($E[x]$), introduction ($\lam
     x t, \nex t$), or weak head redex.
   \end{itemize}
 \end{frame}
@@ -555,9 +539,9 @@ Full reduction $\red$ diverges.
 \begin{frame}%[fragile=singleslide]
   \frametitle{Saturated sets (semantic types)}
   \begin{itemize}
-  \item Types are modeled by sets $\A$ of s.n. terms.
-  \item Semantic function space should contain $\lambda$s and terms
-    that weak head reduce to $\lambda$s.
+  \item Types are modeled by sets $\A \subseteq \SN_n$.
+%%  \item Semantic function space should contain $\lambda$s and terms
+%%    that weak head reduce to $\lambda$s. % TODO ask Andreas
   \item $n$-closure $\clos \A _n$ of $\A$ inductively:
 \[
   \ru{t \in \A}{t \in \clos \A _n}
@@ -602,7 +586,7 @@ Full reduction $\red$ diverges.
    \\
    \Den{\later A}0 & = & \slater 0 \SN_0 = \clos{\{ \nex t \}}_0 \\
    \Den{\later A}{n+1} & = & \slater{n+1} \Den A n \\
-   \Den{\mu X A}n & = & \Den{\subst {\mu X A} X A}n \\
+   \Den{\muT X A}n & = & \Den{\subst {\muT X A} X A}n \\
  \end{array}
 \]
 \vspace{-2ex}
@@ -632,20 +616,13 @@ By lex.\ induction on $(n,\tsize(A))$ where $\tsize(\later A) = 0$.
 
 \begin{frame}%[fragile=singleslide]
   \frametitle{Formalization in Agda}
+  \vspace{-10pt}
+  Syntax of types as a mixed inductive-coinductive datatype:
+  \vspace{-5pt}
+  \[\mathsf{Ty} = \nu X \mu Y.\; (Y \times Y) + X \]
+  \vspace{-30pt}
+  \input{TypesTalk}
   \begin{itemize}
-  \item Intensional type theory does not support quotients well: in
-    our case, types modulo type equality.
-  \item $\implies$ use infinite type expressions instead (coinduction).
-  \item Only guarded types admit an interpretation.
-  \item Typing judgement needs to be restricted to guarded types.
-  \item $\implies$ use mixed inductive-coinductive representation of
-    types to express guard condition.
-\[
-\begin{array}{lll}
-  A,B    & ::= & A \to B \mid \later A' \\
-  A',B'  & ::=^{\mathrm{co}} & A \\
-\end{array}
-\]
   \item Intensional (propositional) equality too weak for coinductive
     types.
   \item $\implies$ add an extensionality axiom for our coinductive type.
@@ -655,6 +632,7 @@ By lex.\ induction on $(n,\tsize(A))$ where $\tsize(\later A) = 0$.
 
 \begin{frame}%[fragile=singleslide]
   \frametitle{Well-typed terms}
+  \input{TermsTalk}
   \begin{itemize}
   \item We used intrinsically well-typed terms (data structure indexed
     by typing context and type expression).
@@ -667,30 +645,41 @@ By lex.\ induction on $(n,\tsize(A))$ where $\tsize(\later A) = 0$.
 
 
 \begin{frame}%[fragile=singleslide]
-  \frametitle{Conclusions}
+  \frametitle{Conclusions \& Further work}
   \begin{itemize}
-  \item \emph{Strong} normalization is a new result, albeit expected.
-  \item Main focus: Agda formalization.
-  \item Needed dedication (mostly Andrea's).
-  \item Forthcoming APLAS 2014 paper (literate Agda, fully
-    machine-checked).
-  \item Fuzzy hope that HoTT will improve equality situation for
-    coinductive types.
+  \item \emph{Strong} normalization is a new result, albeit expected for the restricted reduction.
+  \item Agda formalization useful as basis for further research.
+  \item Add modalities to handle (co)inductive types.
+  \item Integrate into Intensional Type Theory.
   \end{itemize}
 \end{frame}
-
 
 \begin{frame}%[fragile=singleslide]
-  \frametitle{Acknowledgments}
+  \frametitle{Conclusions \& Further work}
   \begin{itemize}
-  \item Rasmus M\o{}gelberg, for discussions and the present invitation.
-  \item Lars Birkedal, for a previous invitation that initiated this
-    research.
-  \item Neel Krishnaswami, for email input.
-  \item The (other) Agda developers, especially Stevan Andjelkovic for
-    the \LaTeX backend.
+  \item \emph{Strong} normalization is a new result, albeit expected for the restricted reduction.
+  \item Agda formalization useful as basis for further research.
+  \item Add modalities to handle (co)inductive types.
+  \item Integrate into Intensional Type Theory.
   \end{itemize}
+  \vspace{20pt}
+  \begin{center}
+  {\Large Thank you for your attention!}
+  \end{center}
 \end{frame}
+
+
+%% \begin{frame}%[fragile=singleslide]
+%%   \frametitle{Acknowledgments}
+%%   \begin{itemize}
+%%   \item Rasmus M\o{}gelberg, for discussions and the present invitation.
+%%   \item Lars Birkedal, for a previous invitation that initiated this
+%%     research.
+%%   \item Neel Krishnaswami, for email input.
+%%   \item The (other) Agda developers, especially Stevan Andjelkovic for
+%%     the \LaTeX backend.
+%%   \end{itemize}
+%% \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% END DOC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

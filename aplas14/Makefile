@@ -29,7 +29,7 @@ generatedfiles=InfiniteTypes.tex Terms.tex TermsAlt.tex \
   Subst0.tex Rename.tex NContexts.tex NReduction.tex sn-definition.tex \
   TermShape.tex SN.tex IndRen.tex AntiRename.tex SAT.tex \
   Soundness.tex SNtosn.tex AgdaExamples.tex TypeEquality.tex \
-  ECxtList.tex SNtosnR.tex SNtosn2.tex
+  ECxtList.tex SNtosnR.tex SNtosn2.tex TypesTalk.tex TermsTalk.tex
 # Agda files
 lagdafiles=$(patsubst %.tex,%.lagda,$(generatedfiles))
 
