@@ -67,7 +67,7 @@ data IndSubst {m vt Γ Δ} (σ : RenSub {m} vt Γ Δ) : ∀ {τ} → Tm Γ τ �
   ▹_   : ∀{a∞}{t : Tm Γ (force a∞)}{t'} → IndSubst σ t t' → IndSubst σ (▹_ {a∞ = a∞} t) (▹ t')
 
   -- `applicative'
-  _∗_  : ∀{a : Ty}{b∞}{t : Tm Γ (▸̂ (delay a ⇒ b∞))} {u : Tm Γ (▸ a)}{t' u'}
+  _∗_  : ∀{a : Ty}{b∞}{t : Tm Γ (▸̂ (delay (λ {_} → a) ⇒ b∞))} {u : Tm Γ (▸ a)}{t' u'}
          →  IndSubst σ t t' → IndSubst σ u u' → IndSubst σ (t ∗ u) (t' ∗ u')
 
 --  cast : ∀{a b} (eq : a ≅ b) {t : Tm Γ a}{t'} → IndSubst σ t t'      → IndSubst σ (cast eq t) (cast eq t')
@@ -82,7 +82,7 @@ data IndRen {Γ Δ} (σ : RenSub `Var Γ Δ) : ∀ {τ} → Tm Γ τ → Tm Δ �
   ▹_   : ∀{a∞}{t : Tm Γ (force a∞)}{t'} → IndRen σ t t' → IndRen σ (▹_ {a∞ = a∞} t) (▹ t')
 
   -- `applicative'
-  _∗_  : ∀{a : Ty}{b∞}{t : Tm Γ (▸̂ (delay a ⇒ b∞))} {u : Tm Γ (▸ a)}{t' u'}
+  _∗_  : ∀{a : Ty}{b∞}{t : Tm Γ (▸̂ (delay (λ {_} → a) ⇒ b∞))} {u : Tm Γ (▸ a)}{t' u'}
          →  IndRen σ t t' → IndRen σ u u' → IndRen σ (t ∗ u) (t' ∗ u')
 
 --  cast : ∀{a b} (eq : a ≅ b) {t : Tm Γ a}{t'} → IndRen σ t t'      → IndRen σ (cast eq t) (cast eq t')

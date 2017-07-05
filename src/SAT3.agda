@@ -36,6 +36,8 @@ _[→]_ : ∀{a b} → TmSet a → TmSet b → TmSet (a →̂ b)
 
 -- Cartesian product.
 
+infix 2 _[×]_
+
 _[×]_ :  ∀{a b} → TmSet a → TmSet b → TmSet (a ×̂ b)
 (𝓐 [×] 𝓑) t = 𝓐 (fst t) × 𝓑 (snd t)
 

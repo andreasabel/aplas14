@@ -17,8 +17,8 @@ data βECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → Set where
   pairr : ∀ {a b} (t : Tm Γ a)                        → βECxt Γ Γ b (a ×̂ b)
   fst   : ∀ {a b}                                     → βECxt Γ Γ (a ×̂ b) a
   snd   : ∀ {a b}                                     → βECxt Γ Γ (a ×̂ b) b
-  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a))                   → βECxt Γ Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞)
-  ∗r_   : ∀{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → βECxt Γ Γ (▸ a) (▸̂ b∞)
+  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a))                   → βECxt Γ Γ (▸̂ (delay (λ {_} → a) ⇒ b∞)) (▸̂ b∞)
+  ∗r_   : ∀{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay (λ {_} → a) ⇒ b∞))) → βECxt Γ Γ (▸ a) (▸̂ b∞)
   abs   : ∀ {a b}                                     → βECxt Γ (a ∷ Γ) b (a →̂  b)
   ▹_    : ∀ {a∞}                                      → βECxt Γ Γ (force a∞) (▸̂  a∞)
 
@@ -29,8 +29,8 @@ data βEhole {Γ : Cxt} : {Δ : Cxt} {b a : Ty} → Tm Γ b → βECxt Γ Δ a b
   pairr : ∀ {a b}{u} (t : Tm Γ a)                         → βEhole (pair t u) (pairr t) (u ∶ b)
   fst   : ∀ {a b t}                                       → βEhole {a = a ×̂ b} (fst t) fst t
   snd   : ∀ {a b t}                                       → βEhole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a))                     → βEhole {a = (▸̂ (delay a ⇒ b∞))} (t ∗ u) (u ∗l) t
-  ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → βEhole ((t ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
+  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a))                     → βEhole {a = (▸̂ (delay (λ {_} → a) ⇒ b∞))} (t ∗ u) (u ∗l) t
+  ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (▸̂ (delay (λ {_} → a) ⇒ b∞))) → βEhole ((t ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
   abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → βEhole (abs t) abs t
   ▹_    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → βEhole (▹_ {a∞ = a∞} t) ▹_ t
 

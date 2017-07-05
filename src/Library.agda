@@ -8,9 +8,12 @@ open import Data.Fin using (Fin; zero; suc) public
 open import Data.List using (List; []; _∷_; map) public
 open import Data.Nat
   using    (ℕ; zero; suc; z≤n; s≤s; pred; _≤′_; ≤′-refl; ≤′-step )
-  renaming (_≤_ to _≤ℕ_; decTotalOrder to decTotalOrderℕ; _⊔_ to max)
+  renaming (_≤_ to _≤ℕ_;  _⊔_ to max)
   public
-open import Data.Nat.Properties using (_+-mono_; ≤⇒≤′) public
+open import Data.Nat.Properties
+  using (_+-mono_; ≤⇒≤′)
+  renaming (≤-decTotalOrder to decTotalOrderℕ)
+  public
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂) renaming (map to map×) public
 
 open import Function using (id; _∘_) public
@@ -48,3 +51,5 @@ record ⊤ {a} : Set a where
 
 postulate
   TODO : ∀ {a}{A : Set a} → A
+
+-- -}

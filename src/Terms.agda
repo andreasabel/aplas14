@@ -86,7 +86,7 @@ data Tm (Γ : Cxt) : (a : Ty) → Set where
   ▹_   : ∀{a∞}         (t : Tm Γ (force a∞))           → Tm Γ (▸̂ a∞)
 
   -- `applicative'
-  _∗_  : ∀{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞)))
+  _∗_  : ∀{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay (λ {_} → a) ⇒ b∞)))
                        (u : Tm Γ (▸ a))                → Tm Γ (▸̂ b∞)
 
 -- Variable congruence extended to terms.
@@ -125,8 +125,8 @@ data _≅T_ {Γ Γ' : Cxt} : {a a' : Ty} → Tm Γ a → Tm Γ' a' → Set where
 
   -- `applicative'
   _∗_  : ∀ {a : Ty}{b∞}{a' : Ty}{b∞'}
-         → {t  : Tm Γ  (▸̂ (delay a  ⇒ b∞ ))}
-         → {t' : Tm Γ' (▸̂ (delay a' ⇒ b∞'))}              → ([t] : t ≅T t')
+         → {t  : Tm Γ  (▸̂ (delay (λ {_} → a)  ⇒ b∞ ))}
+         → {t' : Tm Γ' (▸̂ (delay (λ {_} → a') ⇒ b∞'))}              → ([t] : t ≅T t')
          → {u : Tm Γ (▸ a)} {u' : Tm Γ' (▸ a')}           → ([u] : u ≅T u')
          → (t ∗ u) ≅T (t' ∗ u')
 
@@ -191,7 +191,7 @@ coh eqC (▸̂ a≅)     (t ∗ t₁)    = coh eqC (▸̂ ≅delay (≅refl →�
 
 -- Variants of _∗_.
 
-▹app : ∀{Γ c∞ b∞}{a : Ty} (eq : c∞ ∞≅ (delay a ⇒ b∞))
+▹app : ∀{Γ c∞ b∞}{a : Ty} (eq : c∞ ∞≅ (delay (λ {_} → a) ⇒ b∞))
                           (t : Tm Γ (▸̂ c∞)) (u : Tm Γ (▸ a)) → Tm Γ (▸̂ b∞)
 ▹app eq t u = cast (▸̂ eq) t ∗ u
 

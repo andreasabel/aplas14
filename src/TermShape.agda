@@ -14,7 +14,7 @@ data ECxt (Γ : Cxt) : (a b : Ty) → Set where
   appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
   fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a
   snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
-  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → ECxt Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞)
+  _∗l   : ∀ {a b∞} (u : Tm Γ (▸ a)) → ECxt Γ (▸̂ (delay (λ {_} → a) ⇒ b∞)) (▸̂ b∞)
   ∗r_   : ∀ {a : Ty}{b∞} (t : Tm Γ (a →̂ force b∞)) → ECxt Γ (▸ a) (▸̂ b∞)
 
 -- Ehole Et E t ~~ Et = E[t]
@@ -23,7 +23,7 @@ data Ehole {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → S
   appl  : ∀ {a b t} (u : Tm Γ a)  → Ehole (app t u) (appl u) (t ∶ (a →̂ b))
   fst   : ∀ {a b t} → Ehole {a = a ×̂ b} (fst t) fst t
   snd   : ∀ {a b t} → Ehole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a)) → Ehole {a = (▸̂ (delay a ⇒ b∞))} (t ∗ u) (u ∗l) t
+  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a)) → Ehole {a = (▸̂ (delay (λ {_} → a) ⇒ b∞))} (t ∗ u) (u ∗l) t
   ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (a →̂ force b∞)) → Ehole (((▹ t) ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
 
 
@@ -99,7 +99,7 @@ data PCxt {Γ : Cxt} (P : ∀{c} → Tm Γ c → Set) : {a b : Ty} → Tm Γ b �
   _∗l   : ∀ {a b∞ t u} (𝒖 : P u) → PCxt P (_∗_ {a = a} {b∞} t u) (u ∗l) t
 
   ∗r_   : ∀ {a : Ty}{b∞}{u t}
-            (𝒕 : P (▹_ {a∞ = delay a ⇒ b∞} t))
+            (𝒕 : P (▹_ {a∞ = delay (λ {_} → a) ⇒ b∞} t))
                                     → PCxt P (_<$>_ {a = a} {b∞} t u) (∗r t) u
 
 -- Parameterized neutral terms.

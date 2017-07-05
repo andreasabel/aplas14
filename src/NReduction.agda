@@ -17,8 +17,8 @@ data NβECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → (n n' : ℕ) → Set where
   pairr : ∀ {n a b} (t : Tm Γ a)                        → NβECxt Γ Γ b (a ×̂ b) n n
   fst   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) a n n
   snd   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) b n n
-  _∗l   : ∀ {n a b∞} (u : Tm Γ (▸ a))                   → NβECxt Γ Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞) n n
-  ∗r_   : ∀ {n}{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → NβECxt Γ Γ (▸ a) (▸̂ b∞) n n
+  _∗l   : ∀ {n a b∞} (u : Tm Γ (▸ a))                   → NβECxt Γ Γ (▸̂ (delay (λ {_} → a) ⇒ b∞)) (▸̂ b∞) n n
+  ∗r_   : ∀ {n}{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay (λ {_} → a) ⇒ b∞))) → NβECxt Γ Γ (▸ a) (▸̂ b∞) n n
   abs   : ∀ {n a b}                                     → NβECxt Γ (a ∷ Γ) b (a →̂  b) n n
   ▹_    : ∀ {n a∞}                                      → NβECxt Γ Γ (force a∞) (▸̂  a∞) n (suc n)
 
@@ -29,8 +29,8 @@ data NβEhole {n : ℕ} {Γ : Cxt} : {n' : ℕ} → {Δ : Cxt} {b a : Ty} → Tm
   pairr : ∀ {a b}{u} (t : Tm Γ a)                         → NβEhole (pair t u) (pairr t) (u ∶ b)
   fst   : ∀ {a b t}                                       → NβEhole {a = a ×̂ b} (fst t) fst t
   snd   : ∀ {a b t}                                       → NβEhole {a = a ×̂ b} (snd t) snd t
-  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a))                     → NβEhole {a = (▸̂ (delay a ⇒ b∞))} (t ∗ u) (u ∗l) t
-  ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → NβEhole ((t ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
+  _∗l   : ∀ {a b∞ t} (u : Tm Γ (▸ a))                     → NβEhole {a = (▸̂ (delay (λ {_} → a) ⇒ b∞))} (t ∗ u) (u ∗l) t
+  ∗r_   : ∀ {a : Ty}{b∞}{u} (t : Tm Γ (▸̂ (delay (λ {_} → a) ⇒ b∞))) → NβEhole ((t ∗ (u ∶ ▸ a)) ∶ ▸̂ b∞) (∗r t) u
   abs   : ∀ {a b} {t : Tm (a ∷ Γ) b}                      → NβEhole (abs t) abs t
   ▹_    : ∀ {a∞} {t : Tm Γ (force a∞)}                    → NβEhole (▹_ {a∞ = a∞} t) ▹_ t
 
@@ -209,7 +209,7 @@ data _Redex {Γ} : ∀ {a} → Tm Γ a → Set where
           → (app (abs t) u) Redex
 
   β▹    : ∀ {a b∞}{t : Tm Γ (a →̂  force b∞)}{u : Tm Γ a}
-           → (▹_ {a∞ = (delay a) ⇒ b∞} t ∗ ▹ u) Redex
+           → (▹_ {a∞ = (delay (λ {_} → a)) ⇒ b∞} t ∗ ▹ u) Redex
 
   βfst  : ∀ {a b}{t : Tm Γ a}{u : Tm Γ b}
           → fst (pair t u) Redex

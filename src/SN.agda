@@ -393,7 +393,7 @@ delaySN f (exp (cong () 𝑬𝒕' t⇒) 𝒕)
 
 -- If t ∗ u ∈ SN then u ∈ SN.
 
-∗rSN  : ∀{i Γ}{a : Ty}{b∞} {t : Tm Γ (▸̂ (delay a ⇒ b∞))}
+∗rSN  : ∀{i Γ}{a : Ty}{b∞} {t : Tm Γ (▸̂ (delay (λ {_} → a) ⇒ b∞))}
                      {u : Tm Γ (▸ a)} → ∀ {n} → SN {i} n (t ∗ u) → SN {i} n u
 ∗rSN (ne (elim 𝒏 (𝒖 ∗l))) = 𝒖
 ∗rSN (ne (elim 𝒏 (∗r 𝒕))) = ne 𝒏
