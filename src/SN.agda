@@ -13,6 +13,8 @@ open import TermShape public
 
 -- Inductive definition of strong normalization.
 
+infix 7 _size_⟨_⟩⇒_ _⟨_⟩⇒_
+
 mutual
 
   -- Strongly normalizing evaluation contexts

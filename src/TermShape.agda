@@ -113,6 +113,8 @@ data PNe {Γ} (P : ∀{c} → Tm Γ c → Set) {b} : Tm Γ b → Set where
 
 -- Parametrized weak head reduction
 
+infix 10 _/_⇒_
+
 data _/_⇒_ {Γ} (P : ∀{c} → Tm Γ c → Set): ∀ {a} → Tm Γ a  → Tm Γ a → Set where
 
   β     : ∀ {a b}{t : Tm (a ∷ Γ) b}{u}

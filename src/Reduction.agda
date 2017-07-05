@@ -87,6 +87,8 @@ subst⇒β σ (cong ▹_ ▹_ t⇒)                = cong ▹_ ▹_ (subst⇒β 
 subst⇒β σ (cong (pairr t) (pairr ._) t⇒) = cong (pairr (subst σ t)) (pairr _) (subst⇒β σ t⇒)
 subst⇒β σ (cong (pairl u) (pairl ._) t⇒) = cong (pairl (subst σ u)) (pairl _) (subst⇒β σ t⇒)
 
+infix 7 _⇒β_ _⇒β*_
+
 data _⇒β*_ {Γ} {a} : Tm Γ a → Tm Γ a → Set where
   []  : ∀ {t} → t ⇒β* t
   _∷_ : ∀ {ti tm to} → ti ⇒β tm → tm ⇒β* to → ti ⇒β* to

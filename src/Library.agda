@@ -18,7 +18,7 @@ open import Function using (id; _∘_) public
 open import Induction.WellFounded using (Acc; acc) public
 
 open import Relation.Binary using (module DecTotalOrder)
-open import Relation.Binary.List.Pointwise as ListEq using ([]; _∷_) renaming (Rel to ≅L) public
+open import Relation.Binary.List.Pointwise as ListEq using ([]; _∷_) renaming (Rel to ≅L) hiding (module Rel) public
 module ≅L = ListEq
 open import Relation.Binary.PropositionalEquality as PropEq using (_≡_; module ≡-Reasoning) public
 module ≡ = PropEq

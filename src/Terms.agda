@@ -73,6 +73,9 @@ cohV (x∼y ∷ eqC) eq (suc x₁) = suc (cohV eqC eq x₁)
 
 -- Well-typed terms.
 
+infixr 10 ▹_
+infixl 7 _∗_
+
 data Tm (Γ : Cxt) : (a : Ty) → Set where
   var  : ∀{a}          (x : Var Γ a)                   → Tm Γ a
   abs  : ∀{a b}        (t : Tm (a ∷ Γ) b)              → Tm Γ (a →̂ b)
@@ -203,6 +206,7 @@ t <$> u = ▹ t ∗ u
 tmId : ∀ {Γ} a → Tm Γ a → Tm Γ a
 tmId a t = t
 
+infix 2 tmId -- _∶_
 syntax tmId a t = t ∶ a
 
 -- Equality of subterms

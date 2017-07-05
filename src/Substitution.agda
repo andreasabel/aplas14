@@ -300,8 +300,8 @@ mutual
   lifts-id {vt = `Tm}  (suc x) = ≡.refl
 
 sgs-lifts : ∀ {m vt Γ Δ a} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a} → (sgs (subst σ u) •s lifts σ) ≡s (σ •s sgs u)
-sgs-lifts {vt = `Var} = (λ { {._} (zero) → ≡.refl ; (suc x) → ≡.refl })
-sgs-lifts {vt = `Tm} {σ = σ} {u} = (λ { {._} (zero) → ≡.refl ; (suc x) → ≡.sym (≡.trans (≡.sym (subst-id (σ x)))
+sgs-lifts {vt = `Var} = (λ { (zero) → ≡.refl ; (suc x) → ≡.refl })
+sgs-lifts {vt = `Tm} {σ = σ} {u} = (λ { (zero) → ≡.refl ; (suc x) → ≡.sym (≡.trans (≡.sym (subst-id (σ x)))
                                                                                (subst-∙ (sgs (subst σ u)) {vt1 = `Var} suc (σ x))) })
 sgs-lifts-term : ∀ {m vt Γ Δ a b} {σ : RenSub {m} vt Γ Δ} {u : Tm Γ a}{t : Tm (a ∷ Γ) b}
                  → subst (sgs (subst σ u)) (subst (lifts σ) t) ≡ subst σ (subst (sgs u) t)

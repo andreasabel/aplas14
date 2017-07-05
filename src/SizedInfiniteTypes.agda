@@ -9,6 +9,10 @@ open import Library
 
 -- Infinite type expressions
 
+infixr 5 _→̂_ _⇒_
+infixl 7 _×̂_
+infixr 10 ▸̂_
+
 mutual
   data Ty {i : Size} : Set where
     -- 1̂   : Ty {i}
@@ -31,10 +35,13 @@ force (a∞ ⇒ b∞) = force a∞ →̂ force b∞
 
 -- Guarded fixpoint types (needs sized types)
 
-μ̂ : ∀{i} → (∀{j : Size< i} → ∞Ty {j} → Ty {j}) → ∞Ty {i}
-(force (μ̂ {i} F)) {j} = F (μ̂ {j} F)
+-- μ̂ : ∀{i} → (∀{j : Size< i} → ∞Ty {j} → Ty {j}) → ∞Ty {i}
+-- (force (μ̂ {i} F)) {j} = F (μ̂ {j} F)
+-- ERROR: Possibly empty type of sizes  (Size< j)
 
 -- Type equality
+
+infix 1 _≅_
 
 mutual
   data _≅_ : (a b : Ty) → Set where
