@@ -45,6 +45,8 @@ default : aplas14.pdf aplas14long.pdf
 
 all : default ship
 
+talkIOC2014 : $(destdir)/talkIOC2014.pdf
+
 ship : $(destdir)/aplas14long.pdf $(destdir)/aplas14.pdf $(destdir)/aplas14.zip
 
 $(destdir)/%.pdf : %.pdf
