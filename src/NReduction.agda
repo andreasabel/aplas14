@@ -11,19 +11,19 @@ open import Substitution
 open import SN
 
 data NβECxt (Γ : Cxt) : (Δ : Cxt) (a b : Ty) → (n n' : ℕ) → Set where
-  appl  : ∀ {n a b} (u : Tm Γ a)                        → NβECxt Γ Γ (a →̂ b) b n n 
-  appr  : ∀ {n a b} (t : Tm Γ (a →̂  b))                 → NβECxt Γ Γ a b n n 
-  pairl : ∀ {n a b} (u : Tm Γ b)                        → NβECxt Γ Γ a (a ×̂ b) n n 
-  pairr : ∀ {n a b} (t : Tm Γ a)                        → NβECxt Γ Γ b (a ×̂ b) n n 
-  fst   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) a n n 
-  snd   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) b n n 
-  _∗l   : ∀ {n a b∞} (u : Tm Γ (▸ a))                   → NβECxt Γ Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞) n n 
-  ∗r_   : ∀ {n}{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → NβECxt Γ Γ (▸ a) (▸̂ b∞) n n 
-  abs   : ∀ {n a b}                                     → NβECxt Γ (a ∷ Γ) b (a →̂  b) n n 
-  ▹_    : ∀ {n a∞}                                      → NβECxt Γ Γ (force a∞) (▸̂  a∞) n (suc n) 
+  appl  : ∀ {n a b} (u : Tm Γ a)                        → NβECxt Γ Γ (a →̂ b) b n n
+  appr  : ∀ {n a b} (t : Tm Γ (a →̂  b))                 → NβECxt Γ Γ a b n n
+  pairl : ∀ {n a b} (u : Tm Γ b)                        → NβECxt Γ Γ a (a ×̂ b) n n
+  pairr : ∀ {n a b} (t : Tm Γ a)                        → NβECxt Γ Γ b (a ×̂ b) n n
+  fst   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) a n n
+  snd   : ∀ {n a b}                                     → NβECxt Γ Γ (a ×̂ b) b n n
+  _∗l   : ∀ {n a b∞} (u : Tm Γ (▸ a))                   → NβECxt Γ Γ (▸̂ (delay a ⇒ b∞)) (▸̂ b∞) n n
+  ∗r_   : ∀ {n}{a : Ty}{b∞} (t : Tm Γ (▸̂ (delay a ⇒ b∞))) → NβECxt Γ Γ (▸ a) (▸̂ b∞) n n
+  abs   : ∀ {n a b}                                     → NβECxt Γ (a ∷ Γ) b (a →̂  b) n n
+  ▹_    : ∀ {n a∞}                                      → NβECxt Γ Γ (force a∞) (▸̂  a∞) n (suc n)
 
 data NβEhole {n : ℕ} {Γ : Cxt} : {n' : ℕ} → {Δ : Cxt} {b a : Ty} → Tm Γ b → NβECxt Γ Δ a b n n' → Tm Δ a → Set where
-  appl  : ∀ {a b t} (u : Tm Γ a)                          → NβEhole (app t u) (appl u) (t ∶ (a →̂ b)) 
+  appl  : ∀ {a b t} (u : Tm Γ a)                          → NβEhole (app t u) (appl u) (t ∶ (a →̂ b))
   appr  : ∀ {a b u} (t : Tm Γ (a →̂  b))                   → NβEhole (app t u) (appr t) u
   pairl : ∀ {a b}{t} (u : Tm Γ b)                         → NβEhole (pair t u) (pairl u) (t ∶ a)
   pairr : ∀ {a b}{u} (t : Tm Γ a)                         → NβEhole (pair t u) (pairr t) (u ∶ b)
@@ -55,7 +55,7 @@ E [ t ] = proj₁ (mkHole E {t})
 
 data NβE* : Cxt → Ty → ℕ → Cxt → Ty → ℕ → Set where
   [] : ∀ {Γ a n} → NβE* Γ a n Γ a n
-  _∷_ : ∀ {Γ₀ a₀ n₀ Γ₁ a₁ n₁ Γ₂ a₂ n₂} → NβE Γ₀ a₀ n₀  Γ₁ a₁ n₁ → NβE* Γ₁ a₁ n₁ Γ₂ a₂ n₂ → 
+  _∷_ : ∀ {Γ₀ a₀ n₀ Γ₁ a₁ n₁ Γ₂ a₂ n₂} → NβE Γ₀ a₀ n₀  Γ₁ a₁ n₁ → NβE* Γ₁ a₁ n₁ Γ₂ a₂ n₂ →
           NβE* Γ₀ a₀ n₀  Γ₂ a₂ n₂
 
 _[_]* : ∀ {n n' Γ Δ} {a b} (E : NβE* Δ a n Γ b n') (t : Tm Δ a) → Tm Γ b
@@ -153,8 +153,8 @@ nβ⇒β (cong E1 E2 t⇒) = cong (help E1) (help E2) (nβ⇒β t⇒)
     help' abs = abs
     help' ▹_ = ▹_
 
-    help : ∀ {n a Γ} {t : Tm Γ a} {n₁ Δ a₁} {t₁ : Tm Δ a₁} 
-           {E : NβECxt Γ Δ a₁ a n₁ n} 
+    help : ∀ {n a Γ} {t : Tm Γ a} {n₁ Δ a₁} {t₁ : Tm Δ a₁}
+           {E : NβECxt Γ Δ a₁ a n₁ n}
            (E1 : NβEhole t E t₁) →
            βEhole t (help' E) t₁
     help (appl u) = appl u
@@ -171,10 +171,10 @@ nβ⇒β (cong E1 E2 t⇒) = cong (help E1) (help E2) (nβ⇒β t⇒)
 
 nβ*⇒β* : ∀ {n a Γ} {t t' : Tm Γ a} → t ⟨ n ⟩⇒β* t' → t ⇒β* t'
 nβ*⇒β* [] = []
-nβ*⇒β* (x ∷ xs) = nβ⇒β x ∷ nβ*⇒β* xs 
+nβ*⇒β* (x ∷ xs) = nβ⇒β x ∷ nβ*⇒β* xs
 
 mapNβSNe : ∀ {i n m a Γ} {t t' : Tm Γ a} → t ⟨ m ⟩⇒β t' → SNe {i} n t → SNe {i} n t'
-mapNβSNe t⇒ 𝒕 = mapβSNe (nβ⇒β t⇒) 𝒕 
+mapNβSNe t⇒ 𝒕 = mapβSNe (nβ⇒β t⇒) 𝒕
 
 mapNβSN : ∀ {i n m a Γ} {t t' : Tm Γ a} → t ⟨ m ⟩⇒β t' → SN {i} n t → SN {i} n t'
 mapNβSN t⇒ 𝒕 = mapβSN (nβ⇒β t⇒) 𝒕
@@ -192,7 +192,7 @@ _[_]⇒β* : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ t₂ : Tm Γ a} → t�
 
 data SnocView {Γ} {a} {t : Tm Γ a} : ∀ {b} (Es : ECxt* Γ a b) → Set where
   [] : SnocView []
-  cons : ∀ {b c d} {El : ECxt Γ a c} (Er : ECxt Γ d b) {Ers : ECxt* Γ _ _} {Els : ECxt* Γ _ _} 
+  cons : ∀ {b c d} {El : ECxt Γ a c} (Er : ECxt Γ d b) {Ers : ECxt* Γ _ _} {Els : ECxt* Γ _ _}
          → (El ∷ Els) [ t ]* ≡ Er [ Ers [ t ]* ] → SnocView {b = b} (El ∷ Els)
 
 snocView : ∀ {Γ} {a b} (E : ECxt* Γ a b) (t : Tm Γ a) → SnocView {t = t} E
@@ -237,9 +237,9 @@ mkHole3 E {Es} {t} rewrite ≡.sym (lemma {t = t} Es {E = E}) = mkHole2 E {Es [ 
 ≡subst⇒β : ∀ {n a Γ} {t t1 t' t'1 : Tm Γ a} → t ≡ t1 → t' ≡ t'1 → t ⟨ n ⟩⇒β t' → t1 ⟨ n ⟩⇒β t'1
 ≡subst⇒β ≡.refl ≡.refl x = x
 
-split : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ : Tm Γ a}{t₂ Et₁ : Tm Γ b} → 
-         Ehole* Et₁ E t₁ → t₁ Redex → 
-         Et₁ ⟨ n ⟩⇒β t₂ → (Σ _ \ t₃ → Ehole* t₂ E t₃ × t₁ ⟨ n ⟩⇒β t₃) 
+split : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ : Tm Γ a}{t₂ Et₁ : Tm Γ b} →
+         Ehole* Et₁ E t₁ → t₁ Redex →
+         Et₁ ⟨ n ⟩⇒β t₂ → (Σ _ \ t₃ → Ehole* t₂ E t₃ × t₁ ⟨ n ⟩⇒β t₃)
          ⊎ (Σ _ \ E₁ → Ehole* t₂ E₁ t₁ × (∀ t → E [ t ]* ⟨ n ⟩⇒β E₁ [ t ]*))
 split ._ [] r t⇒ = inj₁ (_ , [] , t⇒)
 split .(appl u ∷ []) (appl u ∷ []) () β
@@ -247,32 +247,32 @@ split ._ (appl u ∷ (() ∷ eq)) r β
 split ._ ((._ ∗l) ∷ []) () β▹
 split ._ ((._ ∗l) ∷ (() ∷ eq)) r β▹
 split .((∗r t) ∷ []) ((∗r t) ∷ []) () β▹
-split ._ ((∗r t) ∷ (() ∷ eq)) r β▹ 
+split ._ ((∗r t) ∷ (() ∷ eq)) r β▹
 split ._ (fst ∷ (() ∷ eq)) r βfst
 split .(fst ∷ []) (fst ∷ []) () βfst
 split .(snd ∷ []) (snd ∷ []) () βsnd
 split ._ (snd ∷ (() ∷ eq)) r βsnd
 split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) with split _ eq r t⇒
 split ._ (appl u ∷ eq) r (cong (appl .u) (appl .u) t⇒) | inj₁ (x , eq0 , t⇒') = inj₁ (_ , ((appl u) ∷ eq0) , t⇒')
-split ._ (_∷_ {Es = Es} (appl u) eq) r (cong (appl .u) (appl .u) t⇒) | inj₂ (Es' , eq0 , f) = inj₂ (_ , ((appl u ∷ eq0) , 
+split ._ (_∷_ {Es = Es} (appl u) eq) r (cong (appl .u) (appl .u) t⇒) | inj₂ (Es' , eq0 , f) = inj₂ (_ , ((appl u ∷ eq0) ,
                                                         (λ t → cong (mkHole3 (appl u) {Es}) (mkHole3 (appl u) {Es'}) (f t))))
-split ._ (_∷_ {Es = Es} (appl t) eq) r (cong (appr Est) (appr .Est) t⇒) = inj₂ (_ , ((appl _ ∷ eq) , 
+split ._ (_∷_ {Es = Es} (appl t) eq) r (cong (appr Est) (appr .Est) t⇒) = inj₂ (_ , ((appl _ ∷ eq) ,
       (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong (appr (Es [ t₁ ]*)) (appr (Es [ t₁ ]*)) t⇒))))
-split ._ (fst ∷ eq) r (cong fst fst t⇒) with split _ eq r t⇒ 
+split ._ (fst ∷ eq) r (cong fst fst t⇒) with split _ eq r t⇒
 split ._ (fst ∷ eq) r (cong fst fst t⇒) | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , (fst ∷ eq0) , t⇒')
-split ._ (_∷_ {Es = Es} fst eq) r (cong fst fst t⇒) | inj₂ (Es' , eq0 , f) 
+split ._ (_∷_ {Es = Es} fst eq) r (cong fst fst t⇒) | inj₂ (Es' , eq0 , f)
       = inj₂ (_ , (fst ∷ eq0) , (λ t → cong (mkHole3 fst {Es}) (mkHole3 fst {Es'}) (f t)))
-split ._ (snd ∷ eq) r (cong snd snd t⇒) with split _ eq r t⇒ 
+split ._ (snd ∷ eq) r (cong snd snd t⇒) with split _ eq r t⇒
 split ._ (snd ∷ eq) r (cong snd snd t⇒) | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , (snd ∷ eq0) , t⇒')
-split ._ (_∷_ {Es = Es} snd eq) r (cong snd snd t⇒) | inj₂ (Es' , eq0 , f) 
+split ._ (_∷_ {Es = Es} snd eq) r (cong snd snd t⇒) | inj₂ (Es' , eq0 , f)
       = inj₂ (_ , (snd ∷ eq0) , (λ t → cong (mkHole3 snd {Es}) (mkHole3 snd {Es'}) (f t)))
-split ._ (_∷_ {Es = Es} (u ∗l) eq) r (cong (.u ∗l) (.u ∗l) t⇒) with split _ eq r t⇒ 
+split ._ (_∷_ {Es = Es} (u ∗l) eq) r (cong (.u ∗l) (.u ∗l) t⇒) with split _ eq r t⇒
 ... | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , u ∗l ∷ eq0 , t⇒')
 ... | inj₂ (Es' , eq0 , f)   = inj₂ (_ , (u ∗l) ∷ eq0 , (λ t → cong (mkHole3 (u ∗l) {Es}) (mkHole3 (u ∗l) {Es'}) (f t)))
-split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (Est ∗l) (.Est ∗l) (cong ▹_ ▹_ t⇒)) = inj₂ (_ , (∗r _ ∷ eq) , 
-      (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong ((Es [ t₁ ]*) ∗l) ((Es [ t₁ ]*) ∗l) (cong ▹_ ▹_ t⇒)))) -- 
+split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (Est ∗l) (.Est ∗l) (cong ▹_ ▹_ t⇒)) = inj₂ (_ , (∗r _ ∷ eq) ,
+      (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong ((Es [ t₁ ]*) ∗l) ((Es [ t₁ ]*) ∗l) (cong ▹_ ▹_ t⇒)))) --
 split ._ (_∷_ {Es = Es} (t ∗l) eq) r (cong (∗r Est) (∗r .Est) t⇒) = inj₂ (_ , (_ ∗l) ∷ eq , (λ t₁ → ≡subst⇒β (lemma Es) (lemma Es) (cong (∗r _) (∗r _) t⇒)))
-split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (∗r .(▹ t)) (∗r .(▹ t)) t⇒) with split _ eq r t⇒ 
+split ._ (_∷_ {Es = Es} (∗r t) eq) r (cong (∗r .(▹ t)) (∗r .(▹ t)) t⇒) with split _ eq r t⇒
 ... | inj₁ (_ , eq0 , t⇒') = inj₁ (_ , ∗r t ∷ eq0 , t⇒')
 ... | inj₂ (Es' , eq0 , f)   = inj₂ (_ , ∗r t ∷ eq0 , (λ t1 → cong (mkHole3 (∗r t) {Es}) (mkHole3 (∗r t) {Es'}) (f t1)))
 

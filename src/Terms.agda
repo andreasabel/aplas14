@@ -64,7 +64,7 @@ castVar (a'≅b' ∷ Γ≅Δ) a≅b zero rewrite ≅-to-≡ (≅trans (≅sym a'
 castVar (_     ∷ Γ≅Δ) a≅b (suc x)                                       = suc  (castVar Γ≅Δ a≅b x)
 
 cohV : ∀{Γ Δ a b} (eqC : Γ ≅C Δ) (eq : a ≅ b) (x : Var Γ a) → castVar eqC eq x ≅V x
-cohV (x∼y ∷ eqC) eq zero with ≅-to-≡ (≅trans (≅sym x∼y) eq) 
+cohV (x∼y ∷ eqC) eq zero with ≅-to-≡ (≅trans (≅sym x∼y) eq)
 cohV (x∼y ∷ eqC) eq zero    | ≡.refl = zero
 cohV (x∼y ∷ eqC) eq (suc x₁) = suc (cohV eqC eq x₁)
 
