@@ -11,7 +11,7 @@ open import Data.Nat
   renaming (_≤_ to _≤ℕ_;  _⊔_ to max)
   public
 open import Data.Nat.Properties
-  using (_+-mono_; ≤⇒≤′)
+  using (+-mono-≤; ≤⇒≤′)
   renaming (≤-decTotalOrder to decTotalOrderℕ)
   public
 open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂) renaming (map to map×) public
@@ -21,7 +21,9 @@ open import Function using (id; _∘_) public
 open import Induction.WellFounded using (Acc; acc) public
 
 open import Relation.Binary using (module DecTotalOrder)
-open import Relation.Binary.List.Pointwise as ListEq using ([]; _∷_) renaming (Rel to ≅L) hiding (module Rel) public
+open import Data.List.Relation.Binary.Pointwise as ListEq public
+  using ([]; _∷_)
+  renaming (Pointwise to ≅L) hiding (module Pointwise)
 module ≅L = ListEq
 open import Relation.Binary.PropositionalEquality as PropEq using (_≡_; module ≡-Reasoning) public
 module ≡ = PropEq
@@ -39,7 +41,7 @@ caseMax {suc m} {zero } P pn pm = pm z≤n
 caseMax {suc m} {suc n} P pn pm = caseMax (P ∘ suc) (pn ∘ s≤s) (pm ∘ s≤s)
 
 n≤sn : ∀{n} → n ≤ℕ suc n
-n≤sn = (z≤n {1}) +-mono DecTotalOrderℕ.refl
+n≤sn = +-mono-≤ (z≤n {1}) DecTotalOrderℕ.refl
 
 pred≤ℕ : ∀{n m} → suc n ≤ℕ suc m → n ≤ℕ m
 pred≤ℕ (s≤s p) = p

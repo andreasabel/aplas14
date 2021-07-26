@@ -1,0 +1,6 @@
+name : aplas14
+depend : standard-library
+include : .
+flags:
+  --sized-types
+  --guardedness
