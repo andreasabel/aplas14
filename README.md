@@ -5,4 +5,4 @@ Agda and LaTeX sources for APLAS 2014 paper on strong normalization of guarded S
 
 - `src/`: Agda sources
 
-Build with Agda 2.6.2 and it's standard-library 1.7.
+Builds with Agda 2.6.2 and its standard-library 1.7.
