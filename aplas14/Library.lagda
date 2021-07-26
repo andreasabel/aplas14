@@ -8,19 +8,20 @@ module Library where
 
 open import Data.Fin using (Fin; zero; suc) public
 open import Data.List using (List; []; _∷_; map) public
-open import Data.Nat
+open import Data.Nat public
   using    (ℕ; zero; suc; _+_; z≤n; s≤s; pred; _≤′_; ≤′-refl; ≤′-step)
-  renaming (_≤_ to _≤ℕ_; decTotalOrder to decTotalOrderℕ; _⊔_ to max)
-  public
-open import Data.Nat.Properties using (_+-mono_; ≤⇒≤′) public
-open import Data.Product using (Σ; _×_; _,_; proj₁; proj₂) renaming (map to map×) public
+  renaming (_≤_ to _≤ℕ_; _⊔_ to max)
+open import Data.Nat.Properties public
+  using (+-mono-≤; ≤⇒≤′)
+  renaming (≤-decTotalOrder to decTotalOrderℕ)
+open import Data.Product using (∃; Σ; _×_; _,_; proj₁; proj₂) renaming (map to map×) public
 
 open import Function using (id; _∘_) public
 
 open import Induction.WellFounded using (Acc; acc) public
 
 open import Relation.Binary using (module DecTotalOrder)
-open import Relation.Binary.List.Pointwise as ListEq using ([]; _∷_) renaming (Rel to ≅L) public
+open import Data.List.Relation.Binary.Pointwise as ListEq public using ([]; _∷_) hiding (module Pointwise) renaming (Pointwise to ≅L)
 module ≅L = ListEq
 open import Relation.Binary.PropositionalEquality as PropEq using (_≡_; module ≡-Reasoning) public
 module ≡ = PropEq
@@ -41,7 +42,7 @@ caseMax {suc m} {zero } P pn pm = pm z≤n
 caseMax {suc m} {suc n} P pn pm = caseMax (P ∘ suc) (pn ∘ s≤s) (pm ∘ s≤s)
 
 n≤sn : ∀{n} → n ≤ℕ suc n
-n≤sn = (z≤n {1}) +-mono DecTotalOrderℕ.refl
+n≤sn = +-mono-≤ (z≤n {1}) DecTotalOrderℕ.refl
 
 pred≤ℕ : ∀{n m} → suc n ≤ℕ suc m → n ≤ℕ m
 pred≤ℕ (s≤s p) = p
@@ -49,5 +50,6 @@ pred≤ℕ (s≤s p) = p
 postulate
   TODO : ∀ {a} {A : Set a} → A
 
+-- -}
 \end{code}
 }

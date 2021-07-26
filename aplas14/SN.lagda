@@ -53,6 +53,8 @@ mutual
 }
 \AgdaHide{
 \begin{code}
+infix 1 _size_⟨_⟩⇒_  _⟨_⟩⇒_
+
 -- Strong head reduction is deterministic.
 
 det⇒ : ∀ {n a Γ} {t t₁ t₂ : Tm Γ a}

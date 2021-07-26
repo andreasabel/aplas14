@@ -26,6 +26,9 @@ mutual
 \end{code}
 \AgdaHide{
 \begin{code}
+    infixr 30 force_
+  infixr 30 delay_
+  infixr 25 ▸̂_
 open ∞Ty public
 \end{code}
 }
@@ -76,5 +79,8 @@ definition of well-typed terms to follow.
 _⇒_ : (a∞ b∞ : ∞Ty) → ∞Ty
 force (a∞ ⇒ b∞) = force a∞ →̂ force b∞
 \end{code}
-
-
+\AgdaHide{
+\begin{code}
+infixr 25 ▸_
+\end{code}
+}

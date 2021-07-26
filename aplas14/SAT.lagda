@@ -235,6 +235,11 @@ to derive \af{SN} \ab{n} \ab{t} from
 which follows
 from \ab{𝓐} $\subseteq$ \af{SN}.
 % from the inclusion of \ab{𝓐} into \af{SN}.
+\AgdaHide{
+\begin{code}
+infixl 10 _⟦×⟧_
+\end{code}
+}
 \begin{code}
 _⟦×⟧_ : ∀ {n a b} (𝓐 : SAT a n) (𝓑 : SAT b n) → SAT (a ×̂ b) n
 𝓐 ⟦×⟧ 𝓑 = record

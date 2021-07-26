@@ -41,6 +41,7 @@ becomes coinductive and would no longer support recursion.
 \end{code}
 \AgdaHide{
 \begin{code}
+infixr 23 ⟦_⟧_
 -- _≤′_ is better suited for well-founded recursion.
 ⟦_⟧≤′ : (a : Ty) {n : ℕ} → ∀ {m} → m ≤′ n → SAT a m
 

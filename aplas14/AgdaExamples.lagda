@@ -15,6 +15,7 @@ open import TypeEquality
 \begin{code}
 fix : ∀{Γ a} → Tm Γ ((▸ a →̂ a) →̂ a)
 
+infixr 25 Fix_
 Fix_ : Ty → ∞Ty
 force (Fix a) = ▸̂ Fix a →̂ a
 
@@ -83,4 +84,3 @@ mapS = abs (app fix (abs (abs
 %%%\begin{verbatim}
 %%%mapS = λ f. fix λ mapS s. pair (f s) (▸app (≅delay ≅refl) mapS (tail s))
 %%%\end{verbatim}
-

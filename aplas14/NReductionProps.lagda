@@ -191,8 +191,8 @@ data _Redex {Γ} : ∀ {a} → Tm Γ a → Set where
 \begin{code}
 split : ∀ {Γ} {n} {a b} (E : ECxt* Γ a b) {t₁ : Tm Γ a}{t₂ Et₁ : Tm Γ b} →
          EHole* Et₁ E t₁ → t₁ Redex →
-         Et₁ ⟨ n ⟩⇒β t₂ → (Σ _ \ t₃ → EHole* t₂ E t₃ × t₁ ⟨ n ⟩⇒β t₃)
-         ⊎ (Σ _ \ E₁ → EHole* t₂ E₁ t₁ × (∀ t → E [ t ]* ⟨ n ⟩⇒β E₁ [ t ]*))
+         Et₁ ⟨ n ⟩⇒β t₂ → (∃ λ t₃ → (EHole* t₂ E t₃) × (t₁ ⟨ n ⟩⇒β t₃))
+         ⊎ (∃ λ E₁ → EHole* t₂ E₁ t₁ × (∀ t → E [ t ]* ⟨ n ⟩⇒β E₁ [ t ]*))
 \end{code}
 \AgdaHide{
 \begin{code}

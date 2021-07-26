@@ -18,14 +18,14 @@ data _≅_[_] {Γ : Cxt} : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a �
 \AgdaHide{
 \begin{code}
 EHole = _≅_[_]
-data ECxt (Γ : Cxt) -- : (a b : Ty) → Set
+data ECxt Γ
  where
   appl  : ∀ {a b} (u : Tm Γ a)  → ECxt Γ (a →̂ b) b
   fst   : ∀ {a b} → ECxt Γ (a ×̂ b) a
   snd   : ∀ {a b} → ECxt Γ (a ×̂ b) b
   ∗l_   : ∀ {a∞ b∞} (u : Tm Γ (▸̂ a∞)) → ECxt Γ (▸̂ (a∞ ⇒ b∞)) (▸̂ b∞)
   ∗r_   : ∀ {a∞}{b∞} (t : Tm Γ (force a∞ →̂ force b∞)) → ECxt Γ (▸̂ a∞) (▸̂ b∞)
-data _≅_[_] {Γ : Cxt} -- : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
+data _≅_[_] {Γ} -- : {a b : Ty} → Tm Γ b → ECxt Γ a b → Tm Γ a → Set
  where
   appl  : ∀ {a b t} (u : Tm Γ a)  → EHole (app t u) (appl u) (t ∶ (a →̂ b))
   fst   : ∀ {a b t} → EHole {a = a ×̂ b} (fst t) fst t
@@ -134,6 +134,8 @@ data _/_⇒_  {Γ} (P : ∀{c} → Tm Γ c → Set) :
 %%% Actually never used, still nice to mention?
 \AgdaHide{
 \begin{code}
+infix 1 _/_⇒_
+
 detP⇒  :  ∀ {a Γ} {P : ∀ {c} → Tm Γ c → Set} {t t₁ t₂ : Tm Γ a}
           → (t⇒₁ : P / t ⇒ t₁) (t⇒₂ : P / t ⇒ t₂) → t₁ ≡ t₂
 \end{code}

@@ -49,6 +49,7 @@ mkHole (∗r t)    = _ , ∗r t
 mkHole abs       = _ , abs
 mkHole next        = _ , next
 
+infix 2 _⇒β_
 data _⇒β_ {Γ} : ∀ {a} → Tm Γ a → Tm Γ a → Set where
 
   β     : ∀ {a b}{t : Tm (a ∷ Γ) b}{u}
@@ -89,6 +90,7 @@ subst⇒β σ (cong next next t⇒)                = cong next next (subst⇒β 
 subst⇒β σ (cong (pairr t) (pairr ._) t⇒) = cong (pairr (subst σ t)) (pairr _) (subst⇒β σ t⇒)
 subst⇒β σ (cong (pairl u) (pairl ._) t⇒) = cong (pairl (subst σ u)) (pairl _) (subst⇒β σ t⇒)
 
+infix 1 _⇒β*_
 data _⇒β*_ {Γ} {a} : Tm Γ a → Tm Γ a → Set where
   []  : ∀ {t} → t ⇒β* t
   _∷_ : ∀ {ti tm to} → ti ⇒β tm → tm ⇒β* to → ti ⇒β* to
@@ -170,7 +172,7 @@ mutual
   lifts⇒β* {vt = `Tm}  σ₁ (suc x)   = subst⇒β*₀ {vt = `Var} suc (σ₁ x)
 
 mutual
-  beta-shr : ∀ {i n a Γ} {t tβ th : Tm Γ a} → t ⇒β tβ → i size t ⟨ n ⟩⇒ th → (tβ ≡ th) ⊎ Σ _ \ t' → i size tβ ⟨ n ⟩⇒ t' × th ⇒β* t'
+  beta-shr : ∀ {i n a Γ} {t tβ th : Tm Γ a} → t ⇒β tβ → i size t ⟨ n ⟩⇒ th → (tβ ≡ th) ⊎ Σ _ \ t' → (i size tβ ⟨ n ⟩⇒ t') × (th ⇒β* t')
   beta-shr β (β 𝒖)                                                   = inj₁ ≡.refl
   beta-shr (cong (appl u) (appl .u) (cong abs abs tβ⇒)) (β 𝒖)        = inj₂ (_ , β 𝒖 , (subst⇒β (sgs u) tβ⇒ ∷ []))
   beta-shr (cong (appr ._) (appr ._) tβ⇒) (β {t = t} 𝒖)

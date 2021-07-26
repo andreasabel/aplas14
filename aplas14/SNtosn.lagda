@@ -130,10 +130,9 @@ substβsn f t x₁ = mapβ*SN (subst⇒β* (λ x → nβ*⇒β* (f x)) t) x₁
 
 
 antiSubst : ∀ {n Γ a b} {t : Tm (a ∷ Γ) b}{u : Tm Γ a} → sn n (subst (sgs u) t) → sn n t
-antiSubst {t = t} = subsn (λ x → NR.subst⇒β (sgs _) x)
+antiSubst {t = t} {u = u} = subsn (λ x → NR.subst⇒β (sgs u) x)
 
 subexpsn : ∀ {n Γ a b} (E : ECxt* Γ a b) {t : Tm Γ a} → sn n (E [ t ]*) -> sn n t
 subexpsn E = subsn \ x -> cong*2 E x
 \end{code}
 }
-

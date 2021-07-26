@@ -230,8 +230,8 @@ cons-to-sgs :  ∀ {Γ Δ a} (u : Tm Δ a) (σ : Subst Γ Δ)
 
 \AgdaHide{
 \begin{code}
-sgs-lifts {vt = `Var} = (λ { {._} (zero) → ≡.refl ; (suc x) → ≡.refl })
-sgs-lifts {vt = `Tm} {σ = σ} {u} = (λ { {._} (zero) → ≡.refl ; (suc x) → ≡.sym (≡.trans (≡.sym (subst-id (σ x)))
+sgs-lifts {vt = `Var} = (λ { (zero) → ≡.refl ; (suc x) → ≡.refl })
+sgs-lifts {vt = `Tm} {σ = σ} {u} = (λ { (zero) → ≡.refl ; (suc x) → ≡.sym (≡.trans (≡.sym (subst-id (σ x)))
                                                                                (subst-∙ (sgs (subst σ u)) {vt1 = `Var} suc (σ x))) })
 sgs-lifts-term {σ = σ} {u} {t} = (≡.trans (≡.sym (subst-∙ (sgs (subst σ u)) (lifts σ) t))
                                  (≡.trans (subst-ext sgs-lifts t)

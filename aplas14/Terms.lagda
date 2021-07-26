@@ -64,6 +64,11 @@ data Tm (Γ : Cxt) : (a : Ty) → Set where
   next  : ∀{a∞}     (t : Tm Γ (force a∞))                        → Tm Γ (▸̂ a∞)
   _∗_   : ∀{a∞ b∞}  (t : Tm Γ (▸̂(a∞ ⇒ b∞))) (u : Tm Γ (▸̂ a∞))  → Tm Γ (▸̂ b∞)
 \end{code}
+\AgdaHide{
+\begin{code}
+infixl 15 _∗_
+\end{code}
+}
 
 \noindent
 The most natural typing for $\anext$ and $\appli$ would be using the
@@ -87,6 +92,6 @@ tmId : ∀ {Γ} a → Tm Γ a → Tm Γ a
 tmId a t = t
 
 syntax tmId a t = t ∶ a
-
+infix 2 tmId
 \end{code}
 }

@@ -13,6 +13,7 @@ open import NContexts public -- reexport
 }
 
 \begin{code}
+infix 1 _⟨_⟩⇒β_
 data _⟨_⟩⇒β_ {Γ} : ∀ {a} → Tm Γ a → ℕ → Tm Γ a → Set where
 
   β     : ∀ {n a b}{t : Tm (a ∷ Γ) b}{u}
